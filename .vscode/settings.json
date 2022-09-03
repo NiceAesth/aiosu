@@ -3,5 +3,6 @@
         "source.organizeImports": true
     },
     "python.formatting.provider": "black",
-    "editor.formatOnSave": true
+    "editor.formatOnSave": true,
+    "files.trimTrailingWhitespace": true
 }
