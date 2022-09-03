@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 __title__ = "aiosu"
 __author__ = "Nice Aesthetics"
 __license__ = "GPLv3+"

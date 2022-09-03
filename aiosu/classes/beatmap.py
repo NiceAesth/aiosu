@@ -1,7 +1,11 @@
+from __future__ import annotations
+
 import datetime
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, List, Optional
+from typing import Any
+from typing import List
+from typing import Optional
 
 from .gamemode import Gamemode
 
@@ -23,7 +27,7 @@ class BeatmapRankStatus(Enum):
         return self.id
 
     @staticmethod
-    def from_id(id) -> "BeatmapRankStatus":
+    def from_id(id) -> BeatmapRankStatus:
         if not isinstance(id, int):
             id = int(id)
 
@@ -32,7 +36,7 @@ class BeatmapRankStatus(Enum):
                 return status
 
     @staticmethod
-    def from_name_api(name_api) -> "BeatmapRankStatus":
+    def from_name_api(name_api) -> BeatmapRankStatus:
         for status in list(BeatmapRankStatus):
             if status.name_api == name_api:
                 return status
@@ -102,7 +106,7 @@ class Beatmap:
     url: Optional[str] = None
     checksum: Optional[str] = None
     max_combo: Optional[int] = None
-    beatmapset: Optional["Beatmapset"] = None
+    beatmapset: Optional[Beatmapset] = None
     failtimes: Optional[BeatmapFailtimes] = None
 
     @property

@@ -1,4 +1,5 @@
 # Based on: https://github.com/Jylpah/blitz-tools/blob/master/blitzutils.py
+from __future__ import annotations
 
 import asyncio
 import functools
@@ -75,10 +76,12 @@ class Session(aiohttp.ClientSession):
                 orig_eof_received = proto.eof_received
 
                 proto.connection_lost = functools.partial(
-                    connection_lost, orig_lost=orig_lost
+                    connection_lost,
+                    orig_lost=orig_lost,
                 )
                 proto.eof_received = functools.partial(
-                    eof_received, orig_eof_received=orig_eof_received
+                    eof_received,
+                    orig_eof_received=orig_eof_received,
                 )
 
         if transports == 0:
@@ -146,7 +149,7 @@ class Session(aiohttp.ClientSession):
                     min(
                         self._queue.maxsize - self._queue.qsize(),
                         int(increment) + extra_increment,
-                    )
+                    ),
                 )
                 fraction = fraction % 1
                 for i in range(0, pending_items):

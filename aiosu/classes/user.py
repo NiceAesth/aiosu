@@ -1,7 +1,11 @@
+from __future__ import annotations
+
 import datetime
 import json
 from dataclasses import dataclass
-from typing import Any, List, Optional
+from typing import Any
+from typing import List
+from typing import Optional
 
 from classes import Common
 
@@ -103,7 +107,7 @@ class UserStats:
     grade_counts: UserGradeCounts
     global_rank: Optional[int]
     country_rank: Optional[int]
-    user: "Optional[User]" = None
+    user: Optional[User] = None
 
 
 @dataclass(frozen=True)

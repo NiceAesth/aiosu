@@ -1,8 +1,12 @@
+from __future__ import annotations
+
 import datetime
 from dataclasses import dataclass
-from typing import Any, Optional
+from typing import Any
+from typing import Optional
 
-from .beatmap import Beatmap, Beatmapset
+from .beatmap import Beatmap
+from .beatmap import Beatmapset
 from .gamemode import Gamemode
 from .mods import Mods
 from .user import User

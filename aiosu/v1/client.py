@@ -1,9 +1,15 @@
+from __future__ import annotations
+
 import asyncio
 from typing import Union
 
 import orjson
 
-from ..classes import Beatmap, Beatmapset, Score, Session, User
+from ..classes import Beatmap
+from ..classes import Beatmapset
+from ..classes import Score
+from ..classes import Session
+from ..classes import User
 
 
 class Client:
@@ -31,7 +37,7 @@ class Client:
     async def get_user(self, query: Union[str, int], **kwargs) -> list[User]:
         if (qtype := kwargs.pop("qtype", None)) not in ("string", "id", None):
             raise ValueError(
-                'Invalid qtype specified. Valid options are: "string", "id", None'
+                'Invalid qtype specified. Valid options are: "string", "id", None',
             )
         url = f"{self.__base_url}/get_user"
         params = {
@@ -51,11 +57,11 @@ class Client:
     ) -> list[Score]:
         if request_type not in ("best", "recent"):
             raise ValueError(
-                'Invalid request_type specified. Valid options are: "best", "recent"'
+                'Invalid request_type specified. Valid options are: "best", "recent"',
             )
         if (qtype := kwargs.pop("qtype", None)) not in ("string", "id", None):
             raise ValueError(
-                'Invalid qtype specified. Valid options are: "string", "id", None'
+                'Invalid qtype specified. Valid options are: "string", "id", None',
             )
         url = f"{self.__base_url}/get_user_{request_type}"
         params = {
@@ -85,7 +91,7 @@ class Client:
             raise ValueError("Invalid limit specified. Limit must be between 1 and 500")
         if (qtype := kwargs.get("qtype", None)) not in ("string", "id", None):
             raise ValueError(
-                'Invalid qtype specified. Valid options are: "string", "id", None'
+                'Invalid qtype specified. Valid options are: "string", "id", None',
             )
         url = f"{self.__base_url}/get_beatmaps"
         params = {
@@ -109,7 +115,7 @@ class Client:
             params["h"] = kwargs.pop("hash")
         else:
             raise ValueError(
-                "Either hash, since, user_query, beatmap_id or beatmapset_id must be specified."
+                "Either hash, since, user_query, beatmap_id or beatmapset_id must be specified.",
             )
         async with self.__session.get(url, params=params) as resp:
             json = await resp.json()
@@ -120,7 +126,7 @@ class Client:
             raise ValueError("Invalid limit specified. Limit must be between 1 and 100")
         if (qtype := kwargs.get("qtype", None)) not in ("string", "id", None):
             raise ValueError(
-                'Invalid qtype specified. Valid options are: "string", "id", None'
+                'Invalid qtype specified. Valid options are: "string", "id", None',
             )
         url = f"{self.__base_url}/get_scores"
         params = {
@@ -152,7 +158,7 @@ class Client:
     async def get_replay(self, **kwargs):
         if (qtype := kwargs.get("qtype", None)) not in ("string", "id", None):
             raise ValueError(
-                'Invalid qtype specified. Valid options are: "string", "id", None'
+                'Invalid qtype specified. Valid options are: "string", "id", None',
             )
         url = f"{self.__base_url}/get_match"
         params = {"k": self.__token, "m": kwargs.pop("mode", 0)}
@@ -165,7 +171,7 @@ class Client:
                 params["type"] = kwargs.pop("qtype")
         else:
             raise ValueError(
-                "Either score_id or beatmap_id + user_id must be specified."
+                "Either score_id or beatmap_id + user_id must be specified.",
             )
         if "mods" in kwargs:
             params["mods"] = kwargs.pop("mods")

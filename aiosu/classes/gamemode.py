@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from enum import Enum
 
 
@@ -8,7 +10,12 @@ class Gamemode(Enum):
     MANIA = (3, "https://i.imgur.com/0uZM1PZ.png", "Mania", "Mania", "mania")
 
     def __init__(
-        self, id: int, icon: str, name_full: str, name_short: str, name_api: str
+        self,
+        id: int,
+        icon: str,
+        name_full: str,
+        name_short: str,
+        name_api: str,
     ) -> None:
         self.id: int = id
         self.icon: str = icon
@@ -20,7 +27,7 @@ class Gamemode(Enum):
         return self.id
 
     @staticmethod
-    def from_id(id) -> "Gamemode":
+    def from_id(id) -> Gamemode:
         if not isinstance(id, int):
             id = int(id)
 
@@ -29,13 +36,13 @@ class Gamemode(Enum):
                 return mode
 
     @staticmethod
-    def from_name_short(name_short) -> "Gamemode":
+    def from_name_short(name_short) -> Gamemode:
         for mode in list(Gamemode):
             if mode.name_short == name_short:
                 return mode
 
     @staticmethod
-    def from_api_name(name_api) -> "Gamemode":
+    def from_api_name(name_api) -> Gamemode:
         for mode in list(Gamemode):
             if mode.name_api == name_api:
                 return mode

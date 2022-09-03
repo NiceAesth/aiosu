@@ -1,13 +1,17 @@
+from __future__ import annotations
+
 import re
 
 import setuptools
 
-with open("aiosu/__init__.py", "r") as f:
+with open("aiosu/__init__.py") as f:
     version = re.search(
-        r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]', f.read(), re.MULTILINE
+        r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]',
+        f.read(),
+        re.MULTILINE,
     ).group(1)
 
-with open("README.md", "r") as f:
+with open("README.md") as f:
     long_description = f.read()
 
 setuptools.setup(
