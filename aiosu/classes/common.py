@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import datetime
 from dataclasses import dataclass
-from typing import Any
 
 from emojiflags.lookup import lookup as flag_lookup
 

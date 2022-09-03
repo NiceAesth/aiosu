@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import datetime
 from dataclasses import dataclass
-from typing import Any
 from typing import Optional
 
 from .beatmap import Beatmap
