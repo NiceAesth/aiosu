@@ -1,5 +1,7 @@
-import orjson
 import asyncio
+
+import orjson
+
 from ..classes import Session
 
 

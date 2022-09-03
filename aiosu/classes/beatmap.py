@@ -1,8 +1,9 @@
 import datetime
-from enum import Enum
 from dataclasses import dataclass
+from enum import Enum
+from typing import Any, List, Optional
+
 from .gamemode import Gamemode
-from typing import Optional, Any, List
 
 
 class BeatmapRankStatus(Enum):

@@ -1,5 +1,6 @@
-import setuptools
 import re
+
+import setuptools
 
 with open("aiosu/__init__.py", "r") as f:
     version = re.search(
@@ -25,10 +26,7 @@ setuptools.setup(
         "Programming Language :: Python :: 3.9",
     ],
     packages=setuptools.find_packages(),
-    install_requires=[
-        "aiohttp",
-        "orjson",
-    ],
+    install_requires=["aiohttp", "orjson", "emojiflags"],
     python_requires=">=3.9",
     package_data={
         "aiosu": ["py.typed"],

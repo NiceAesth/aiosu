@@ -1,11 +1,12 @@
 # Based on: https://github.com/Jylpah/blitz-tools/blob/master/blitzutils.py
 
-from multiprocessing.sharedctypes import Value
-import time
-import orjson
-import aiohttp
 import asyncio
 import functools
+import time
+from multiprocessing.sharedctypes import Value
+
+import aiohttp
+import orjson
 
 
 class Session(aiohttp.ClientSession):

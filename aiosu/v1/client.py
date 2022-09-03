@@ -1,7 +1,9 @@
-import orjson
 import asyncio
-from ..classes import Session
 from typing import Union
+
+import orjson
+
+from ..classes import Session
 
 
 class Client:
