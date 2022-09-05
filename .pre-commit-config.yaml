@@ -11,16 +11,16 @@ repos:
     -   id: requirements-txt-fixer
     -   id: trailing-whitespace
 -   repo: https://github.com/psf/black
-    rev: 22.3.0
+    rev: 22.8.0
     hooks:
     -   id: black
 -   repo: https://github.com/asottile/pyupgrade
-    rev: v2.34.0
+    rev: v2.37.3
     hooks:
     -   id: pyupgrade
         args: [--py37-plus, --keep-runtime-typing]
 -   repo: https://github.com/asottile/reorder_python_imports
-    rev: v3.1.0
+    rev: v3.8.2
     hooks:
     -   id: reorder-python-imports
         args: [--py37-plus, --add-import, 'from __future__ import annotations']
