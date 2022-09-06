@@ -1,12 +1,11 @@
 from __future__ import annotations
 
 import datetime
-from dataclasses import dataclass
 from enum import Enum
-from typing import List
 from typing import Optional
 
 from .gamemode import Gamemode
+from .models import BaseModel
 
 
 class BeatmapRankStatus(Enum):
@@ -18,43 +17,39 @@ class BeatmapRankStatus(Enum):
     QUALIFIED = (3, "qualified")
     LOVED = (4, "loved")
 
-    def __init__(self, id: int, name_api: str):
+    def __init__(self, id: int, name_api: str) -> None:
         self.id: int = id
         self.name_api: str = name_api
 
-    def __int__(self):
+    def __int__(self) -> int:
         return self.id
 
-    @staticmethod
-    def from_id(id) -> BeatmapRankStatus:
-        if not isinstance(id, int):
-            id = int(id)
+    def __repr__(self) -> str:
+        return self.name_api
 
-        for status in list(BeatmapRankStatus):
-            if status.id == id:
-                return status
+    @classmethod
+    def _missing_(cls, query) -> BeatmapRankStatus:
+        if isinstance(query, int):
+            for status in list(BeatmapRankStatus):
+                if status.id == query:
+                    return status
+        elif isinstance(query, str):
+            for status in list(BeatmapRankStatus):
+                if status.name_api == query.lower():
+                    return status
 
-    @staticmethod
-    def from_name_api(name_api) -> BeatmapRankStatus:
-        for status in list(BeatmapRankStatus):
-            if status.name_api == name_api:
-                return status
 
-
-@dataclass
-class BeatmapAvailability:
+class BeatmapAvailability(BaseModel):
     more_information: Optional[str] = None
     download_disabled: Optional[bool] = None
 
 
-@dataclass
-class BeatmapNominations:
+class BeatmapNominations(BaseModel):
     current: Optional[int] = None
     required: Optional[int] = None
 
 
-@dataclass(frozen=True)
-class BeatmapCovers:
+class BeatmapCovers(BaseModel):
     cover: str
     cover_2_x: str
     card: str
@@ -65,20 +60,17 @@ class BeatmapCovers:
     slimcover_2_x: str
 
 
-@dataclass(frozen=True)
-class BeatmapHype:
+class BeatmapHype(BaseModel):
     current: int
     required: int
 
 
-@dataclass
-class BeatmapFailtimes:
-    exit: Optional[List[int]] = None
-    fail: Optional[List[int]] = None
+class BeatmapFailtimes(BaseModel):
+    exit: Optional[list[int]] = None
+    fail: Optional[list[int]] = None
 
 
-@dataclass(frozen=True)
-class Beatmap:
+class Beatmap(BaseModel):
     beatmapset_id: int = None
     difficulty_rating: float = None
     id: int = None
@@ -113,8 +105,7 @@ class Beatmap:
         return self.count_spinners + self.count_circles + self.count_sliders
 
 
-@dataclass(frozen=True)
-class Beatmapset:
+class Beatmapset(BaseModel):
     artist: str = None
     artist_unicode: str = None
     covers: BeatmapCovers = None
@@ -144,6 +135,6 @@ class Beatmapset:
     storyboard: Optional[bool] = None
     submitted_date: Optional[datetime.datetime] = None
     tags: Optional[str] = None
-    ratings: Optional[List[int]] = None
+    ratings: Optional[list[int]] = None
     has_favourited: Optional[bool] = None
-    beatmaps: Optional[List[Beatmap]] = None
+    beatmaps: Optional[list[Beatmap]] = None

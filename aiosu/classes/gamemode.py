@@ -26,23 +26,18 @@ class Gamemode(Enum):
     def __int__(self) -> int:
         return self.id
 
-    @staticmethod
-    def from_id(id) -> Gamemode:
-        if not isinstance(id, int):
-            id = int(id)
+    def __repr__(self) -> str:
+        return self.name_api
 
-        for mode in list(Gamemode):
-            if mode.id == id:
-                return mode
+    def __format__(self, spec):
+        if spec == "f":
+            return self.name_full
+        if spec == "s":
+            return self.name_short
+        return self.name_api
 
-    @staticmethod
-    def from_name_short(name_short) -> Gamemode:
+    @classmethod
+    def _missing_(cls, query) -> Gamemode:
         for mode in list(Gamemode):
-            if mode.name_short == name_short:
-                return mode
-
-    @staticmethod
-    def from_api_name(name_api) -> Gamemode:
-        for mode in list(Gamemode):
-            if mode.name_api == name_api:
+            if query in (mode.name_api, mode.name_short, mode.id):
                 return mode

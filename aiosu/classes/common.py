@@ -1,25 +1,23 @@
 from __future__ import annotations
 
 import datetime
-from dataclasses import dataclass
 
 from emojiflags.lookup import lookup as flag_lookup
 
+from .models import BaseModel
 
-@dataclass
-class TimestampedCount:
-    start_date: datetime
+
+class TimestampedCount(BaseModel):
+    start_date: datetime.datetime
     count: int
 
 
-@dataclass
-class Achievement:
-    achieved_at: datetime
+class Achievement(BaseModel):
+    achieved_at: datetime.datetime
     achievement_id: int
 
 
-@dataclass
-class Country:
+class Country(BaseModel):
     code: str
     name: str
 

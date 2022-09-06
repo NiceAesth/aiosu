@@ -1,3 +1,4 @@
 aiohttp
 emojiflags
 orjson
+pydantic

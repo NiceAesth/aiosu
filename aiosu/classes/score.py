@@ -1,24 +1,22 @@
 from __future__ import annotations
 
 import datetime
-from dataclasses import dataclass
 from typing import Optional
 
 from .beatmap import Beatmap
 from .beatmap import Beatmapset
 from .gamemode import Gamemode
+from .models import BaseModel
 from .mods import Mods
 from .user import User
 
 
-@dataclass(frozen=True)
-class ScoreWeight:
+class ScoreWeight(BaseModel):
     percentage: float
     pp: float
 
 
-@dataclass(frozen=True)
-class ScoreStatistics:
+class ScoreStatistics(BaseModel):
     count_50: int
     count_100: int
     count_300: int
@@ -27,8 +25,7 @@ class ScoreStatistics:
     count_miss: int
 
 
-@dataclass()
-class Score:
+class Score(BaseModel):
     id: int
     user_id: int
     accuracy: float
@@ -39,7 +36,7 @@ class Score:
     perfect: bool
     statistics: ScoreStatistics
     rank: str
-    created_at: datetime
+    created_at: datetime.datetime
     mode: Gamemode
     replay: bool
     pp: Optional[float] = 0

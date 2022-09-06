@@ -1,68 +1,76 @@
 from __future__ import annotations
 
 import datetime
-from dataclasses import dataclass
+from enum import Enum
 from typing import Any
-from typing import List
 from typing import Optional
 
-from classes import Common
-
+from .common import Achievement
+from .common import Country
+from .common import TimestampedCount
 from .gamemode import Gamemode
+from .models import BaseModel
 
 
-@dataclass(frozen=True)
-class Userpage:
+class UserQueryType(Enum):
+    ID = ("id", "id")
+    USERNAME = ("string", "username")
+
+    def __init__(self, old, new) -> None:
+        self.old_api_name = old
+        self.new_api_name = new
+
+    @classmethod
+    def _missing_(cls, query) -> UserQueryType:
+        for q in list(UserQueryType):
+            if query in q:
+                return q
+
+
+class Userpage(BaseModel):
     html: str
     raw: Optional[str] = None
 
 
-@dataclass(frozen=True)
-class UserLevel:
+class UserLevel(BaseModel):
     current: int
     progress: int
 
 
-@dataclass(frozen=True)
-class UserKudosu:
+class UserKudosu(BaseModel):
     total: int
     available: int
 
 
-@dataclass(frozen=True)
-class UserRankHistoryElement:
+class UserRankHistoryElement(BaseModel):
     mode: str
-    data: List[int]
+    data: list[int]
 
     @property
     def average_gain(self):
         return (self.data[1] - self.data[-1]) / len(self.data)
 
 
-@dataclass(frozen=True)
-class UserProfileCover:
+class UserProfileCover(BaseModel):
     url: str
     custom_url: Optional[str] = None
     id: Optional[str] = None
 
 
-@dataclass(frozen=True)
-class UserProfileTournamentBanner:
+class UserProfileTournamentBanner(BaseModel):
     tournament_id: int
     image: str
     id: Optional[int] = None
 
 
-@dataclass(frozen=True)
-class UserBadge:
-    awarded_at: datetime
+class UserBadge(BaseModel):
+    awarded_at: datetime.datetime
     description: str
     image_url: str
     url: str
 
 
-@dataclass(frozen=True)
-class UserAccountHistory:
+class UserAccountHistory(BaseModel):
     description: str
     id: int
     length: int
@@ -70,8 +78,7 @@ class UserAccountHistory:
     type: str
 
 
-@dataclass(frozen=True)
-class UserGradeCounts:
+class UserGradeCounts(BaseModel):
     ss: int
     ssh: int
     s: int
@@ -79,8 +86,7 @@ class UserGradeCounts:
     a: int
 
 
-@dataclass(frozen=True)
-class UserGroup:
+class UserGroup(BaseModel):
     id: int
     identifier: str
     name: str
@@ -90,8 +96,7 @@ class UserGroup:
     is_probationary: Optional[bool] = None
 
 
-@dataclass(frozen=True)
-class UserStats:
+class UserStats(BaseModel):
     level: UserLevel
     pp: float
     ranked_score: int
@@ -109,8 +114,7 @@ class UserStats:
     user: Optional[User] = None
 
 
-@dataclass(frozen=True)
-class User:
+class User(BaseModel):
     avatar_url: str
     country_code: str
     default_group: str
@@ -134,34 +138,34 @@ class User:
     max_friends: Optional[int] = None
     occupation: Optional[str] = None
     playmode: Optional[Gamemode] = None
-    playstyle: Optional[List[str]] = None
+    playstyle: Optional[list[str]] = None
     post_count: Optional[int] = None
-    profile_order: Optional[List[str]] = None
+    profile_order: Optional[list[str]] = None
     title: Optional[str] = None
     twitter: Optional[str] = None
     website: Optional[str] = None
-    country: Optional[Common.Country] = None
+    country: Optional[Country] = None
     cover: Optional[UserProfileCover] = None
     is_restricted: Optional[bool] = None
-    account_history: Optional[List[Any]] = None
+    account_history: Optional[list[Any]] = None
     active_tournament_banner: Optional[UserProfileTournamentBanner] = None
-    badges: Optional[List[UserBadge]] = None
+    badges: Optional[list[UserBadge]] = None
     beatmap_playcounts_count: Optional[int] = None
     favourite_beatmapset_count: Optional[int] = None
     follower_count: Optional[int] = None
     graveyard_beatmapset_count: Optional[int] = None
-    groups: Optional[List[UserGroup]] = None
+    groups: Optional[list[UserGroup]] = None
     loved_beatmapset_count: Optional[int] = None
-    monthly_playcounts: Optional[List[Common.TimestampedCount]] = None
+    monthly_playcounts: Optional[list[TimestampedCount]] = None
     page: Optional[Userpage] = None
     pending_beatmapset_count: Optional[int] = None
-    previous_usernames: Optional[List[Any]] = None
+    previous_usernames: Optional[list[Any]] = None
     ranked_beatmapset_count: Optional[int] = None
-    replays_watched_counts: Optional[List[Common.TimestampedCount]] = None
+    replays_watched_counts: Optional[list[TimestampedCount]] = None
     scores_best_count: Optional[int] = None
     scores_first_count: Optional[int] = None
     scores_recent_count: Optional[int] = None
     statistics: Optional[UserStats] = None
     support_level: Optional[int] = None
-    user_achievements: Optional[List[Common.Achievement]] = None
+    user_achievements: Optional[list[Achievement]] = None
     rank_history: Optional[UserRankHistoryElement] = None

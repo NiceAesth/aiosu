@@ -30,7 +30,7 @@ setuptools.setup(
         "Programming Language :: Python :: 3.9",
     ],
     packages=setuptools.find_packages(),
-    install_requires=["aiohttp", "orjson", "emojiflags"],
+    install_requires=["aiohttp", "orjson", "emojiflags", "pydantic"],
     python_requires=">=3.9",
     package_data={
         "aiosu": ["py.typed"],
