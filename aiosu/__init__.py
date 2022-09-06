@@ -6,4 +6,4 @@ __license__ = "GPLv3+"
 __copyright__ = "Copyright 2022 Nice Aesthetics"
 __version__ = "0.0.1"
 
-from . import classes, v1, v2
+from . import classes, v1, v2, utils

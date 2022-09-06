@@ -2,9 +2,13 @@ from __future__ import annotations
 
 import asyncio
 import datetime
+from typing import Union
 
+from .. import utils
 from ..classes import APIException
+from ..classes import Beatmap
 from ..classes import Gamemode
+from ..classes import Mods
 from ..classes import OAuthToken
 from ..classes import Score
 from ..classes import Session
@@ -65,8 +69,8 @@ class Client:
             return User.parse_obj(json)
 
     @check_token
-    async def get_user(self, **kwargs) -> User:
-        url = f'{self.__base_url}/{kwargs.pop("query")}'
+    async def get_user(self, user_query: Union[str, int], **kwargs) -> User:
+        url = f"{self.__base_url}/{user_query}"
         params = {}
         if "mode" in kwargs:
             mode = Gamemode(kwargs.pop("mode"))
@@ -80,6 +84,80 @@ class Client:
                 raise APIException(resp.status, json.get("error", ""))
             return User.parse_obj(json)
 
+    async def __get_type_scores(
+        self, user_id: int, request_type: str, **kwargs
+    ) -> list[Score]:
+        if not 1 <= kwargs.get("limit", 100) <= 100:
+            raise ValueError("Invalid limit specified. Limit must be between 1 and 100")
+        if request_type not in ("best", "firsts" "recent"):
+            raise ValueError(
+                'Invalid request_type specified. Valid options are: "best", "recent"',
+            )
+        url = f"{self.__base_url}/users/{user_id}/scores/{request_type}"
+        params = {
+            "include_fails": kwargs.pop("include_fails", False),
+            "offset": kwargs.pop("offset", 0),
+            "limit": kwargs.pop("limit", 100),
+        }
+        if "mode" in kwargs:
+            mode = Gamemode(kwargs.pop("mode"))
+            params["mode"] = repr(mode)
+        if "limit" in kwargs:
+            params["limit"] = kwargs.pop("mode")
+        async with self.__session.get(url, params=params) as resp:
+            json = await resp.json()
+            if json.status != 200:
+                raise APIException(resp.status, json.get("error", ""))
+            return utils.from_list(Score.parse_obj, json)
+
     @check_token
-    async def get_scores(self, **kwargs) -> list[Score]:
-        pass
+    async def get_user_recents(self, user_id: int, **kwargs) -> list[Score]:
+        return self.__get_type_scores(user_id, "recent", **kwargs)
+
+    @check_token
+    async def get_user_bests(self, user_id: int, **kwargs) -> list[Score]:
+        return self.__get_type_scores(user_id, "best", **kwargs)
+
+    @check_token
+    async def get_user_firsts(self, user_id: int, **kwargs) -> list[Score]:
+        return self.__get_type_scores(user_id, "firsts", **kwargs)
+
+    @check_token
+    async def get_user_beatmap_scores(self, user_id: int, beatmap_id: int, **kwargs):
+        url = f"{self.__base_url}/beatmaps/{beatmap_id}/scores/users/{user_id}/all"
+        params = {}
+        if "mode" in kwargs:
+            mode = Gamemode(kwargs.pop("mode"))
+            params["mode"] = repr(mode)
+        async with self.__session.get(url) as resp:
+            json = await resp.json()
+            if json.status != 200:
+                raise APIException(resp.status, json.get("error", ""))
+            return utils.from_list(Score.parse_obj, json.get("scores", []))
+
+    @check_token
+    async def get_beatmap_scores(self, beatmap_id: int, **kwargs):
+        url = f"{self.__base_url}/beatmaps/{beatmap_id}"
+        params = {}
+        if "mode" in kwargs:
+            mode = Gamemode(kwargs.pop("mode"))
+            params["mode"] = repr(mode)
+        if "mods" in kwargs:
+            mods = Mods(kwargs.pop("mods"))
+            params["mode"] = repr(mods)
+        if "type" in kwargs:
+            params["type"] = kwargs.pop("type")
+        async with self.__session.get(url) as resp:
+            json = await resp.json()
+            if json.status != 200:
+                raise APIException(resp.status, json.get("error", ""))
+            return utils.from_list(Score.parse_obj, json.get("scores", []))
+
+    @check_token
+    async def get_beatmap(self, beatmap_id: int) -> Beatmap:
+        url = f"{self.__base_url}/beatmaps/{beatmap_id}"
+        async with self.__session.get(url) as resp:
+            json = await resp.json()
+            if json.status != 200:
+                raise APIException(resp.status, json.get("error", ""))
+            return Beatmap.parse_obj(json)
