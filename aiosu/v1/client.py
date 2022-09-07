@@ -33,11 +33,11 @@ class Client:
                 await func(*args, **kwargs)
 
     @rate_limited
-    async def get_user(self, query: Union[str, int], **kwargs) -> list[User]:
+    async def get_user(self, user_query: Union[str, int], **kwargs) -> list[User]:
         url = f"{self.base_url}/get_user"
         params = {
             "k": self.token,
-            "u": query,
+            "u": user_query,
             "m": kwargs.pop("mode", 0),
             "event_days": kwargs.pop("event_days", 1),
         }
@@ -50,16 +50,16 @@ class Client:
 
     @rate_limited
     async def __get_type_scores(
-        self, query: Union[str, int], request_type: str, **kwargs
+        self, user_query: Union[str, int], request_type: str, **kwargs
     ) -> list[Score]:
-        if request_type not in ("best", "recent"):
+        if request_type not in ("recent", "best"):
             raise ValueError(
                 'Invalid request_type specified. Valid options are: "best", "recent"',
             )
         url = f"{self.base_url}/get_user_{request_type}"
         params = {
             "k": self.token,
-            "u": query,
+            "u": user_query,
             "m": kwargs.pop("mode", 0),
             "limit": kwargs.pop("limit", 10),
         }
@@ -70,15 +70,19 @@ class Client:
             json = await resp.json()
         return json
 
-    async def get_user_recents(self, query: Union[str, int], **kwargs) -> list[Score]:
+    async def get_user_recents(
+        self, user_query: Union[str, int], **kwargs
+    ) -> list[Score]:
         if not 1 <= kwargs.get("limit", 50) <= 50:
             raise ValueError("Invalid limit specified. Limit must be between 1 and 50")
-        return self.__get_type_scores(query, "recent", **kwargs)
+        return self.__get_type_scores(user_query, "recent", **kwargs)
 
-    async def get_user_bests(self, query: Union[str, int], **kwargs) -> list[Score]:
+    async def get_user_bests(
+        self, user_query: Union[str, int], **kwargs
+    ) -> list[Score]:
         if not 1 <= kwargs.get("limit", 100) <= 100:
             raise ValueError("Invalid limit specified. Limit must be between 1 and 100")
-        return self.__get_type_scores(query, "best", **kwargs)
+        return self.__get_type_scores(user_query, "best", **kwargs)
 
     @rate_limited
     async def get_beatmaps(self, **kwargs) -> Union[list[Beatmap], list[Beatmapset]]:

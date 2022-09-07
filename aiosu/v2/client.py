@@ -47,7 +47,7 @@ class Client:
                 self.__session.headers[
                     "Authorization"
                 ] = f"Bearer {self.token.access_token}"
-            await func(*args, **kwargs)
+            return await func(*args, **kwargs)
 
         return _check_token
 
@@ -56,7 +56,7 @@ class Client:
         async def _rate_limited(*args, **kwargs):
             self = args[0]
             async with self._limiter:
-                await func(*args, **kwargs)
+                return await func(*args, **kwargs)
 
         return _rate_limited
 
@@ -94,9 +94,9 @@ class Client:
     ) -> list[Score]:
         if not 1 <= kwargs.get("limit", 100) <= 100:
             raise ValueError("Invalid limit specified. Limit must be between 1 and 100")
-        if request_type not in ("best", "firsts" "recent"):
+        if request_type not in ("recent", "best", "firsts"):
             raise ValueError(
-                'Invalid request_type specified. Valid options are: "best", "recent"',
+                f'"{request_type}" is not a valid request_type. Valid options are: "recent", "best", "firsts"',
             )
         url = f"{self.base_url}/users/{user_id}/scores/{request_type}"
         params = {
@@ -116,13 +116,13 @@ class Client:
             return utils.from_list(Score.parse_obj, json)
 
     async def get_user_recents(self, user_id: int, **kwargs) -> list[Score]:
-        return self.__get_type_scores(user_id, "recent", **kwargs)
+        return await self.__get_type_scores(user_id, "recent", **kwargs)
 
     async def get_user_bests(self, user_id: int, **kwargs) -> list[Score]:
-        return self.__get_type_scores(user_id, "best", **kwargs)
+        return await self.__get_type_scores(user_id, "best", **kwargs)
 
     async def get_user_firsts(self, user_id: int, **kwargs) -> list[Score]:
-        return self.__get_type_scores(user_id, "firsts", **kwargs)
+        return await self.__get_type_scores(user_id, "firsts", **kwargs)
 
     @rate_limited
     @check_token
@@ -141,7 +141,7 @@ class Client:
     @rate_limited
     @check_token
     async def get_beatmap_scores(self, beatmap_id: int, **kwargs):
-        url = f"{self.base_url}/beatmaps/{beatmap_id}"
+        url = f"{self.base_url}/beatmaps/{beatmap_id}/scores"
         params = {}
         if "mode" in kwargs:
             mode = Gamemode(kwargs.pop("mode"))
