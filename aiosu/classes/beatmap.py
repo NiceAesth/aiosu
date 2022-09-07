@@ -51,13 +51,13 @@ class BeatmapNominations(BaseModel):
 
 class BeatmapCovers(BaseModel):
     cover: str
-    cover_2_x: str
     card: str
-    card_2_x: str
     list: str
-    list_2_x: str
     slimcover: str
-    slimcover_2_x: str
+    cover_2_x: Optional[str]
+    card_2_x: Optional[str]
+    list_2_x: Optional[str]
+    slimcover_2_x: Optional[str]
 
 
 class BeatmapHype(BaseModel):
@@ -138,3 +138,6 @@ class Beatmapset(BaseModel):
     ratings: Optional[list[int]] = None
     has_favourited: Optional[bool] = None
     beatmaps: Optional[list[Beatmap]] = None
+
+
+Beatmap.update_forward_refs()
