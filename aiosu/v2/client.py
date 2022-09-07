@@ -1,8 +1,10 @@
 from __future__ import annotations
 
-import asyncio
 import datetime
 from typing import Union
+
+import aiohttp
+from aiolimiter import AsyncLimiter
 
 from .. import utils
 from ..classes import APIException
@@ -11,7 +13,6 @@ from ..classes import Gamemode
 from ..classes import Mods
 from ..classes import OAuthToken
 from ..classes import Score
-from ..classes import Session
 from ..classes import User
 from ..classes import UserQueryType
 
@@ -21,24 +22,15 @@ class Client:
         self.client_secret: str = kwargs.pop("client_secret", None)
         self.client_id: int = kwargs.pop("client_id", None)
         self.token: OAuthToken = kwargs.pop("token", OAuthToken())
-        self.__base_url: str = kwargs.pop("base_url", "https://osu.ppy.sh/api/v2")
-        self.__session: Session = Session(
+        self.base_url: str = kwargs.pop("base_url", "https://osu.ppy.sh/api/v2")
+        self._limiter: AsyncLimiter = kwargs.pop("limiter", AsyncLimiter(1200, 60))
+        self.__session: aiohttp.ClientSession = aiohttp.ClientSession(
             headers={
                 "Authorization": f"Bearer {self.token.access_token}",
                 "Content-Type": "application/json",
                 "Accept": "application/json",
             },
         )
-
-    def __del__(self):
-        try:
-            loop = asyncio.get_event_loop()
-            if loop.is_running():
-                loop.create_task(self.__session.close())
-            else:
-                loop.run_until_complete(self.__session.close())
-        except Exception:
-            pass
 
     async def __aenter__(self):
         return self
@@ -59,18 +51,29 @@ class Client:
 
         return _check_token
 
+    @staticmethod
+    def rate_limited(func):
+        async def _rate_limited(*args, **kwargs):
+            self = args[0]
+            async with self._limiter:
+                await func(*args, **kwargs)
+
+        return _rate_limited
+
+    @rate_limited
     @check_token
     async def get_me(self) -> User:
-        url = f"{self.__base_url}/me"
+        url = f"{self.base_url}/me"
         async with self.__session.get(url) as resp:
             json = await resp.json()
-            if json.status != 200:
+            if resp.status != 200:
                 raise APIException(resp.status, json.get("error", ""))
             return User.parse_obj(json)
 
+    @rate_limited
     @check_token
     async def get_user(self, user_query: Union[str, int], **kwargs) -> User:
-        url = f"{self.__base_url}/{user_query}"
+        url = f"{self.base_url}/{user_query}"
         params = {}
         if "mode" in kwargs:
             mode = Gamemode(kwargs.pop("mode"))
@@ -80,10 +83,12 @@ class Client:
             params["type"] = qtype.new_api_name
         async with self.__session.get(url, params=params) as resp:
             json = await resp.json()
-            if json.status != 200:
+            if resp.status != 200:
                 raise APIException(resp.status, json.get("error", ""))
             return User.parse_obj(json)
 
+    @rate_limited
+    @check_token
     async def __get_type_scores(
         self, user_id: int, request_type: str, **kwargs
     ) -> list[Score]:
@@ -93,7 +98,7 @@ class Client:
             raise ValueError(
                 'Invalid request_type specified. Valid options are: "best", "recent"',
             )
-        url = f"{self.__base_url}/users/{user_id}/scores/{request_type}"
+        url = f"{self.base_url}/users/{user_id}/scores/{request_type}"
         params = {
             "include_fails": kwargs.pop("include_fails", False),
             "offset": kwargs.pop("offset", 0),
@@ -106,38 +111,37 @@ class Client:
             params["limit"] = kwargs.pop("mode")
         async with self.__session.get(url, params=params) as resp:
             json = await resp.json()
-            if json.status != 200:
+            if resp.status != 200:
                 raise APIException(resp.status, json.get("error", ""))
             return utils.from_list(Score.parse_obj, json)
 
-    @check_token
     async def get_user_recents(self, user_id: int, **kwargs) -> list[Score]:
         return self.__get_type_scores(user_id, "recent", **kwargs)
 
-    @check_token
     async def get_user_bests(self, user_id: int, **kwargs) -> list[Score]:
         return self.__get_type_scores(user_id, "best", **kwargs)
 
-    @check_token
     async def get_user_firsts(self, user_id: int, **kwargs) -> list[Score]:
         return self.__get_type_scores(user_id, "firsts", **kwargs)
 
+    @rate_limited
     @check_token
     async def get_user_beatmap_scores(self, user_id: int, beatmap_id: int, **kwargs):
-        url = f"{self.__base_url}/beatmaps/{beatmap_id}/scores/users/{user_id}/all"
+        url = f"{self.base_url}/beatmaps/{beatmap_id}/scores/users/{user_id}/all"
         params = {}
         if "mode" in kwargs:
             mode = Gamemode(kwargs.pop("mode"))
             params["mode"] = repr(mode)
         async with self.__session.get(url) as resp:
             json = await resp.json()
-            if json.status != 200:
+            if resp.status != 200:
                 raise APIException(resp.status, json.get("error", ""))
             return utils.from_list(Score.parse_obj, json.get("scores", []))
 
+    @rate_limited
     @check_token
     async def get_beatmap_scores(self, beatmap_id: int, **kwargs):
-        url = f"{self.__base_url}/beatmaps/{beatmap_id}"
+        url = f"{self.base_url}/beatmaps/{beatmap_id}"
         params = {}
         if "mode" in kwargs:
             mode = Gamemode(kwargs.pop("mode"))
@@ -149,15 +153,16 @@ class Client:
             params["type"] = kwargs.pop("type")
         async with self.__session.get(url) as resp:
             json = await resp.json()
-            if json.status != 200:
+            if resp.status != 200:
                 raise APIException(resp.status, json.get("error", ""))
             return utils.from_list(Score.parse_obj, json.get("scores", []))
 
+    @rate_limited
     @check_token
     async def get_beatmap(self, beatmap_id: int) -> Beatmap:
-        url = f"{self.__base_url}/beatmaps/{beatmap_id}"
+        url = f"{self.base_url}/beatmaps/{beatmap_id}"
         async with self.__session.get(url) as resp:
             json = await resp.json()
-            if json.status != 200:
+            if resp.status != 200:
                 raise APIException(resp.status, json.get("error", ""))
             return Beatmap.parse_obj(json)

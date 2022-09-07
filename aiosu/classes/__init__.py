@@ -20,7 +20,6 @@ from .mods import Mods
 from .score import Score
 from .score import ScoreStatistics
 from .score import ScoreWeight
-from .session import Session
 from .token import OAuthToken
 from .user import User
 from .user import UserAccountHistory

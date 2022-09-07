@@ -15,7 +15,9 @@ class BaseModel(pydantic.BaseModel):
     class Config:
         json_loads = orjson.loads
         json_dumps = orjson_dumps
-        json_encoders = {Mods: lambda v: repr(v)}
+        json_encoders = {
+            Mods: lambda v: repr(v),
+        }
 
 
 class FrozenModel(pydantic.BaseModel):

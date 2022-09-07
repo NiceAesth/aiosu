@@ -1,4 +1,8 @@
 aiohttp
+aiolimiter
 emojiflags
 orjson
 pydantic
+pytest
+pytest-asyncio
+pytest-mock

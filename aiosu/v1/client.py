@@ -1,31 +1,23 @@
 from __future__ import annotations
 
-import asyncio
 from typing import Union
+
+import aiohttp
+from aiolimiter import AsyncLimiter
 
 from ..classes import Beatmap
 from ..classes import Beatmapset
 from ..classes import Score
-from ..classes import Session
 from ..classes import User
 from ..classes import UserQueryType
 
 
 class Client:
     def __init__(self, token, **kwargs) -> None:
-        self.__token = token
-        self.__base_url = kwargs.pop("base_url", "https://osu.ppy.sh/api")
-        self.__session = Session()
-
-    def __del__(self):
-        try:
-            loop = asyncio.get_event_loop()
-            if loop.is_running():
-                loop.create_task(self.__session.close())
-            else:
-                loop.run_until_complete(self.__session.close())
-        except Exception:
-            pass
+        self.token: str = token
+        self.base_url: str = kwargs.pop("base_url", "https://osu.ppy.sh/api")
+        self._limiter: AsyncLimiter = kwargs.pop("limiter", AsyncLimiter(1200, 60))
+        self.__session: aiohttp.ClientSession = aiohttp.ClientSession()
 
     async def __aenter__(self):
         return self
@@ -33,10 +25,18 @@ class Client:
     async def __aexit__(self, exc_type, exc, tb):
         await self.__session.close()
 
+    @staticmethod
+    def rate_limited(func):
+        async def _rate_limited(*args, **kwargs):
+            self = args[0]
+            async with self._limiter:
+                await func(*args, **kwargs)
+
+    @rate_limited
     async def get_user(self, query: Union[str, int], **kwargs) -> list[User]:
-        url = f"{self.__base_url}/get_user"
+        url = f"{self.base_url}/get_user"
         params = {
-            "k": self.__token,
+            "k": self.token,
             "u": query,
             "m": kwargs.pop("mode", 0),
             "event_days": kwargs.pop("event_days", 1),
@@ -48,6 +48,7 @@ class Client:
             json = await resp.json()
         return json
 
+    @rate_limited
     async def __get_type_scores(
         self, query: Union[str, int], request_type: str, **kwargs
     ) -> list[Score]:
@@ -55,9 +56,9 @@ class Client:
             raise ValueError(
                 'Invalid request_type specified. Valid options are: "best", "recent"',
             )
-        url = f"{self.__base_url}/get_user_{request_type}"
+        url = f"{self.base_url}/get_user_{request_type}"
         params = {
-            "k": self.__token,
+            "k": self.token,
             "u": query,
             "m": kwargs.pop("mode", 0),
             "limit": kwargs.pop("limit", 10),
@@ -79,12 +80,13 @@ class Client:
             raise ValueError("Invalid limit specified. Limit must be between 1 and 100")
         return self.__get_type_scores(query, "best", **kwargs)
 
+    @rate_limited
     async def get_beatmaps(self, **kwargs) -> Union[list[Beatmap], list[Beatmapset]]:
         if not 1 <= kwargs.get("limit", 500) <= 500:
             raise ValueError("Invalid limit specified. Limit must be between 1 and 500")
-        url = f"{self.__base_url}/get_beatmaps"
+        url = f"{self.base_url}/get_beatmaps"
         params = {
-            "k": self.__token,
+            "k": self.token,
             "m": kwargs.pop("mode", 0),
             "limit": kwargs.pop("limit", 500),
             "a": kwargs.pop("converts", False),
@@ -111,12 +113,13 @@ class Client:
             json = await resp.json()
         return json
 
+    @rate_limited
     async def get_scores(self, beatmap_id, **kwargs) -> list[Score]:
         if not 1 <= kwargs.get("limit", 100) <= 100:
             raise ValueError("Invalid limit specified. Limit must be between 1 and 100")
-        url = f"{self.__base_url}/get_scores"
+        url = f"{self.base_url}/get_scores"
         params = {
-            "k": self.__token,
+            "k": self.token,
             "b": beatmap_id,
             "m": kwargs.pop("mode", 0),
             "limit": kwargs.pop("limit", 50),
@@ -132,19 +135,21 @@ class Client:
             json = await resp.json()
         return json
 
+    @rate_limited
     async def get_match(self, match_id: int):
-        url = f"{self.__base_url}/get_match"
+        url = f"{self.base_url}/get_match"
         params = {
-            "k": self.__token,
+            "k": self.token,
             "mp": match_id,
         }
         async with self.__session.get(url, params=params) as resp:
             json = await resp.json()
         return json
 
+    @rate_limited
     async def get_replay(self, **kwargs):
-        url = f"{self.__base_url}/get_match"
-        params = {"k": self.__token, "m": kwargs.pop("mode", 0)}
+        url = f"{self.base_url}/get_match"
+        params = {"k": self.token, "m": kwargs.pop("mode", 0)}
         if "score_id" in kwargs:
             params["s"] = kwargs.pop("score_id")
         elif "beatmap_id" in kwargs and "user_query" in kwargs:

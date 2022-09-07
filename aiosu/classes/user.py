@@ -124,8 +124,8 @@ class User(BaseModel):
     is_online: bool
     is_supporter: bool
     pm_friends_only: bool
-    profile_colour: str
-    name: str
+    username: str
+    profile_colour: Optional[str]
     is_deleted: Optional[bool] = None
     last_visit: Optional[datetime.datetime] = None
     discord: Optional[str] = None
