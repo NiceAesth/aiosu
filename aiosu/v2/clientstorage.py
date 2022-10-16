@@ -5,7 +5,7 @@ from ..classes import OAuthToken
 
 
 class ClientStorage:
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         self.client_secret: str = kwargs.pop("client_secret", None)
         self.client_id: int = kwargs.pop("client_id", None)
         self.base_url: str = kwargs.pop("base_url", "https://osu.ppy.sh/api/v2")
