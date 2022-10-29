@@ -30,7 +30,9 @@ class Client:
         async def _rate_limited(*args, **kwargs):
             self = args[0]
             async with self._limiter:
-                await func(*args, **kwargs)
+                return await func(*args, **kwargs)
+
+        return _rate_limited
 
     @rate_limited
     async def get_user(self, user_query: Union[str, int], **kwargs) -> list[User]:
