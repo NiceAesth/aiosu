@@ -16,7 +16,7 @@ class BaseModel(pydantic.BaseModel):
         json_loads = orjson.loads
         json_dumps = orjson_dumps
         json_encoders = {
-            Mods: lambda v: repr(v),
+            Mods: lambda v: str(v),
         }
 
 

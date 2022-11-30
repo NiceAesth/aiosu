@@ -3,6 +3,7 @@ from __future__ import annotations
 from .beatmap import Beatmap
 from .beatmap import BeatmapAvailability
 from .beatmap import BeatmapCovers
+from .beatmap import BeatmapDifficultyAttributes
 from .beatmap import BeatmapFailtimes
 from .beatmap import BeatmapHype
 from .beatmap import BeatmapNominations
@@ -17,6 +18,11 @@ from .models import BaseModel
 from .models import FrozenModel
 from .mods import Mod
 from .mods import Mods
+from .performance import CatchPerformanceAttributes
+from .performance import ManiaPerformanceAttributes
+from .performance import OsuPerformanceAttributes
+from .performance import PerformanceAttributes
+from .performance import TaikoPerformanceAttributes
 from .score import Score
 from .score import ScoreStatistics
 from .score import ScoreWeight

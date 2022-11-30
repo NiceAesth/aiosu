@@ -9,7 +9,16 @@ class ClientStorage:
         self.client_secret: str = kwargs.pop("client_secret", None)
         self.client_id: int = kwargs.pop("client_id", None)
         self.base_url: str = kwargs.pop("base_url", "https://osu.ppy.sh/api/v2")
+        self.__create_app_client: bool = kwargs.pop("create_app_client", False)
+        self.__app_client = kwargs.pop("app_client", None)
         self.clients = {}
+
+    @property
+    async def app_client(self):
+        if self.__app_client is None:
+            raise ("Client credential grant creation is still WIP")
+
+        return self.__app_client
 
     def _get_client_args(self) -> Dict:
         return {

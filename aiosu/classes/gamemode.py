@@ -26,7 +26,7 @@ class Gamemode(Enum):
     def __int__(self) -> int:
         return self.id
 
-    def __repr__(self) -> str:
+    def __str__(self) -> str:
         return self.name_api
 
     def __format__(self, spec):

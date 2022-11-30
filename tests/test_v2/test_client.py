@@ -52,6 +52,17 @@ def beatmap():
     return _beatmap
 
 
+@pytest.fixture
+def difficulty_attributes():
+    def _difficulty_attributes(mode="osu"):
+        with open(f"tests/data/v2/difficulty_attributes_{mode}.json", "rb") as f:
+            data = orjson.loads(f.read())
+        f.close()
+        return data
+
+    return _difficulty_attributes
+
+
 class TestClient:
     @pytest.mark.asyncio
     async def test_get_me(self, mocker, token, user):
@@ -184,3 +195,18 @@ class TestClient:
             mocker.patch("aiohttp.ClientSession.get", return_value=resp)
             data = await client.get_beatmap(2354779)
             assert isinstance(data, aiosu.classes.Beatmap)
+
+    @pytest.mark.asyncio
+    async def test_get_beatmap_attributes(
+        self,
+        mocker,
+        token,
+        beatmap,
+        difficulty_attributes,
+    ):
+        client = aiosu.v2.Client(token=token)
+        for mode in modes:
+            diffatrib = difficulty_attributes(mode)["2354779"]
+            resp = MockResponse(diffatrib, 200)
+            mocker.patch("aiohttp.ClientSession.post", return_value=resp)
+            data = await client.get_beatmap_attributes("2354779")

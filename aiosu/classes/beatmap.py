@@ -24,7 +24,7 @@ class BeatmapRankStatus(Enum):
     def __int__(self) -> int:
         return self.id
 
-    def __repr__(self) -> str:
+    def __str__(self) -> str:
         return self.name_api
 
     @classmethod
@@ -68,6 +68,26 @@ class BeatmapHype(BaseModel):
 class BeatmapFailtimes(BaseModel):
     exit: Optional[list[int]] = None
     fail: Optional[list[int]] = None
+
+
+class BeatmapDifficultyAttributes(BaseModel):
+    max_combo: int
+    star_rating: float
+    # osu standard
+    aim_difficulty: Optional[float] = None
+    approach_rate: Optional[float] = None  # osu catch
+    flashlight_difficulty: Optional[float] = None
+    overall_difficulty: Optional[float] = None
+    slider_factor: Optional[float] = None
+    speed_difficulty: Optional[float] = None
+    speed_note_count: Optional[float] = None
+    # osu taiko
+    stamina_difficulty: Optional[float] = None
+    rhythm_difficulty: Optional[float] = None
+    colour_difficulty: Optional[float] = None
+    # osu mania
+    great_hit_window: Optional[float] = None
+    score_multiplier: Optional[float] = None
 
 
 class Beatmap(BaseModel):

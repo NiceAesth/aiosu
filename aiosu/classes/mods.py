@@ -46,7 +46,7 @@ class Mod(Enum):
     def __int__(self) -> int:
         return self.bitmask
 
-    def __repr__(self) -> str:
+    def __str__(self) -> str:
         return self.short_name
 
     @classmethod
@@ -73,7 +73,7 @@ class Mods(UserList):
     def bitwise(self) -> int:
         return reduce(lambda x, y: int(x) | int(y), self, 0)
 
-    def __repr__(self) -> str:
+    def __str__(self) -> str:
         if len(self) == 0:
             return "NM"
 

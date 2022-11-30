@@ -6,9 +6,10 @@ from typing import Union
 import aiohttp
 from aiolimiter import AsyncLimiter
 
-from .. import utils
+from .. import helpers
 from ..classes import APIException
 from ..classes import Beatmap
+from ..classes import BeatmapDifficultyAttributes
 from ..classes import Gamemode
 from ..classes import Mods
 from ..classes import OAuthToken
@@ -36,6 +37,9 @@ class Client:
         return self
 
     async def __aexit__(self, exc_type, exc, tb):
+        await self.close()
+
+    async def close(self):
         await self.__session.close()
 
     @staticmethod
@@ -106,14 +110,14 @@ class Client:
         }
         if "mode" in kwargs:
             mode = Gamemode(kwargs.pop("mode"))
-            params["mode"] = repr(mode)
+            params["mode"] = str(mode)
         if "limit" in kwargs:
             params["limit"] = kwargs.pop("mode")
         async with self.__session.get(url, params=params) as resp:
             json = await resp.json()
             if resp.status != 200:
                 raise APIException(resp.status, json.get("error", ""))
-            return utils.from_list(Score.parse_obj, json)
+            return helpers.from_list(Score.parse_obj, json)
 
     async def get_user_recents(self, user_id: int, **kwargs) -> list[Score]:
         return await self.__get_type_scores(user_id, "recent", **kwargs)
@@ -131,12 +135,12 @@ class Client:
         params = {}
         if "mode" in kwargs:
             mode = Gamemode(kwargs.pop("mode"))
-            params["mode"] = repr(mode)
+            params["mode"] = str(mode)
         async with self.__session.get(url) as resp:
             json = await resp.json()
             if resp.status != 200:
                 raise APIException(resp.status, json.get("error", ""))
-            return utils.from_list(Score.parse_obj, json.get("scores", []))
+            return helpers.from_list(Score.parse_obj, json.get("scores", []))
 
     @rate_limited
     @check_token
@@ -145,17 +149,17 @@ class Client:
         params = {}
         if "mode" in kwargs:
             mode = Gamemode(kwargs.pop("mode"))
-            params["mode"] = repr(mode)
+            params["mode"] = str(mode)
         if "mods" in kwargs:
             mods = Mods(kwargs.pop("mods"))
-            params["mode"] = repr(mods)
+            params["mode"] = str(mods)
         if "type" in kwargs:
             params["type"] = kwargs.pop("type")
         async with self.__session.get(url) as resp:
             json = await resp.json()
             if resp.status != 200:
                 raise APIException(resp.status, json.get("error", ""))
-            return utils.from_list(Score.parse_obj, json.get("scores", []))
+            return helpers.from_list(Score.parse_obj, json.get("scores", []))
 
     @rate_limited
     @check_token
@@ -166,3 +170,16 @@ class Client:
             if resp.status != 200:
                 raise APIException(resp.status, json.get("error", ""))
             return Beatmap.parse_obj(json)
+
+    @rate_limited
+    @check_token
+    async def get_beatmap_attributes(
+        self,
+        beatmap_id: int,
+    ) -> BeatmapDifficultyAttributes:
+        url = f"{self.base_url}/beatmaps/{beatmap_id}/attributes"
+        async with self.__session.post(url) as resp:
+            json = await resp.json()
+            if resp.status != 200:
+                raise APIException(resp.status, json.get("error", ""))
+            return BeatmapDifficultyAttributes.parse_obj(json.get("attributes"))
