@@ -174,8 +174,7 @@ class Client:
     @rate_limited
     @check_token
     async def get_beatmap_attributes(
-        self,
-        beatmap_id: int,
+        self, beatmap_id: int, **kwargs
     ) -> BeatmapDifficultyAttributes:
         url = f"{self.base_url}/beatmaps/{beatmap_id}/attributes"
         params = {}
