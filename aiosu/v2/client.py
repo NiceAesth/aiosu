@@ -130,9 +130,7 @@ class Client:
 
     @rate_limited
     @check_token
-    async def get_user_beatmap_scores(
-        self, user_id: int, beatmap_id: int, **kwargs
-    ) -> list[Score]:
+    async def get_user_beatmap_scores(self, user_id: int, beatmap_id: int, **kwargs):
         url = f"{self.base_url}/beatmaps/{beatmap_id}/scores/users/{user_id}/all"
         params = {}
         if "mode" in kwargs:
@@ -146,7 +144,7 @@ class Client:
 
     @rate_limited
     @check_token
-    async def get_beatmap_scores(self, beatmap_id: int, **kwargs) -> list[Score]:
+    async def get_beatmap_scores(self, beatmap_id: int, **kwargs):
         url = f"{self.base_url}/beatmaps/{beatmap_id}/scores"
         params = {}
         if "mode" in kwargs:
@@ -176,7 +174,8 @@ class Client:
     @rate_limited
     @check_token
     async def get_beatmap_attributes(
-        self, beatmap_id: int, **kwargs
+        self,
+        beatmap_id: int,
     ) -> BeatmapDifficultyAttributes:
         url = f"{self.base_url}/beatmaps/{beatmap_id}/attributes"
         params = {}
