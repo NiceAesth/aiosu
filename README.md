@@ -5,4 +5,4 @@ Simple and fast osu! API v1 and v2 library
 
 ## Acknowledgments
 
-* [https://github.com/osuAkatsuki/performance-calculator](osu!Akatsuki) for performance and accuracy utils
+* [osu!Akatsuki](https://github.com/osuAkatsuki/performance-calculator) for performance and accuracy utils
