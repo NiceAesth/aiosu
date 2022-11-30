@@ -130,9 +130,7 @@ class Client:
 
     @rate_limited
     @check_token
-    async def get_user_beatmap_scores(
-        self, user_id: int, beatmap_id: int, **kwargs
-    ) -> list[Score]:
+    async def get_user_beatmap_scores(self, user_id: int, beatmap_id: int, **kwargs):
         url = f"{self.base_url}/beatmaps/{beatmap_id}/scores/users/{user_id}/all"
         params = {}
         if "mode" in kwargs:
@@ -146,7 +144,7 @@ class Client:
 
     @rate_limited
     @check_token
-    async def get_beatmap_scores(self, beatmap_id: int, **kwargs) -> list[Score]:
+    async def get_beatmap_scores(self, beatmap_id: int, **kwargs):
         url = f"{self.base_url}/beatmaps/{beatmap_id}/scores"
         params = {}
         if "mode" in kwargs:
@@ -176,19 +174,11 @@ class Client:
     @rate_limited
     @check_token
     async def get_beatmap_attributes(
-        self, beatmap_id: int, **kwargs
+        self,
+        beatmap_id: int,
     ) -> BeatmapDifficultyAttributes:
         url = f"{self.base_url}/beatmaps/{beatmap_id}/attributes"
-        params = {}
-        if "mode" in kwargs:
-            mode = Gamemode(kwargs.pop("mode"))
-            params["mode"] = str(mode)
-        if "mods" in kwargs:
-            mods = Mods(kwargs.pop("mods"))
-            params["mode"] = str(mods)
-        if "type" in kwargs:
-            params["type"] = kwargs.pop("type")
-        async with self.__session.post(url, data=data) as resp:
+        async with self.__session.post(url) as resp:
             json = await resp.json()
             if resp.status != 200:
                 raise APIException(resp.status, json.get("error", ""))
