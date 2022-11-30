@@ -188,7 +188,7 @@ class Client:
             params["mode"] = str(mods)
         if "type" in kwargs:
             params["type"] = kwargs.pop("type")
-        async with self.__session.post(url, data=data) as resp:
+        async with self.__session.post(url, data=params) as resp:
             json = await resp.json()
             if resp.status != 200:
                 raise APIException(resp.status, json.get("error", ""))
