@@ -1,4 +1,4 @@
-name: pytest
+name: mypy
 
 # Controls when the workflow will run
 on:
@@ -12,12 +12,12 @@ on:
   workflow_dispatch:
 
 jobs:
-  pytest:
+  mypy:
     runs-on: ubuntu-latest
 
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3
 
-      - name: GitHub Action for pytest
-        uses: cclauss/GitHub-Action-for-pytest@master
+      - name: GitHub Action for mypy
+        uses: jpetrucciani/mypy-check@master

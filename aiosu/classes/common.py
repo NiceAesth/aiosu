@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import datetime
 
-from emojiflags.lookup import lookup as flag_lookup
+from emojiflags.lookup import lookup as flag_lookup  # type: ignore
 from pydantic import validator
 
 from .models import BaseModel
@@ -13,7 +13,7 @@ class TimestampedCount(BaseModel):
     count: int
 
     @validator("start_date", pre=True)
-    def date_validate(cls, v):
+    def date_validate(cls, v: str) -> datetime.datetime:
         return datetime.datetime.strptime(v, "%Y-%m-%d")
 
 

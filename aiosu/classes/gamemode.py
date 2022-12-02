@@ -29,7 +29,7 @@ class Gamemode(Enum):
     def __str__(self) -> str:
         return self.name_api
 
-    def __format__(self, spec):
+    def __format__(self, spec: str) -> str:
         if spec == "f":
             return self.name_full
         if spec == "s":
@@ -37,7 +37,8 @@ class Gamemode(Enum):
         return self.name_api
 
     @classmethod
-    def _missing_(cls, query) -> Gamemode:
+    def _missing_(cls, query: object) -> Gamemode:
         for mode in list(Gamemode):
             if query in (mode.name_api, mode.name_short, mode.id):
                 return mode
+        raise ValueError(f"Gamemode {query} does not exist.")

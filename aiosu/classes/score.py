@@ -50,7 +50,10 @@ class Score(BaseModel):
     rank_country: Optional[int] = None
 
     @property
-    def completion(self):
+    def completion(self) -> float:  # Should probably move to utils
+        if not self.beatmap:
+            raise ValueError("Beatmap object is not set.")
+
         if self.mode == Gamemode.STANDARD:
             return (
                 (
@@ -91,9 +94,10 @@ class Score(BaseModel):
                 )
                 / self.beatmap.count_objects
             ) * 100
+        raise ValueError("Unknown mode specified.")
 
     @property
-    def score_url(self):
+    def score_url(self) -> Optional[str]:
         # score.id has undefined behaviour, best_id is the one you should use as it returns None if the URL does not exist
         return (
             f"https://osu.ppy.sh/scores/{self.mode.name_api}/{self.best_id}"
@@ -102,7 +106,7 @@ class Score(BaseModel):
         )
 
     @property
-    def replay_url(self):
+    def replay_url(self) -> Optional[str]:
         # score.id has undefined behaviour, best_id is the one you should use as it returns None if the URL does not exist
         return (
             f"https://osu.ppy.sh/scores/{self.mode.name_api}/{self.best_id}/download"

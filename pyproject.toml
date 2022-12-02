@@ -1,0 +1,11 @@
+[tool.mypy]
+plugins = ["pydantic.mypy"]
+mypy_path = "./"
+exclude = ["aiosu/utils"]
+files = ["aiosu", "setup.py"]
+disallow_untyped_defs = true
+disallow_any_unimported = true
+show_error_codes = true
+
+[tools.pytest.ini_options]
+testpaths = ["tests"]

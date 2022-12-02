@@ -16,15 +16,16 @@ class UserQueryType(Enum):
     ID = ("id", "id")
     USERNAME = ("string", "username")
 
-    def __init__(self, old, new) -> None:
+    def __init__(self, old: str, new: str) -> None:
         self.old_api_name = old
         self.new_api_name = new
 
     @classmethod
-    def _missing_(cls, query) -> UserQueryType:
+    def _missing_(cls, query: object) -> UserQueryType:
         for q in list(UserQueryType):
-            if query in q:
+            if query in q.value:
                 return q
+        raise ValueError(f"UserQueryType {query} does not exist.")
 
 
 class Userpage(BaseModel):
@@ -47,7 +48,7 @@ class UserRankHistoryElement(BaseModel):
     data: list[int]
 
     @property
-    def average_gain(self):
+    def average_gain(self) -> float:
         return (self.data[1] - self.data[-1]) / len(self.data)
 
 

@@ -1,5 +1,10 @@
 from __future__ import annotations
 
+from types import TracebackType
+from typing import Any
+from typing import Callable
+from typing import Optional
+from typing import Type
 from typing import Union
 
 import aiohttp
@@ -13,21 +18,29 @@ from ..classes import UserQueryType
 
 
 class Client:
-    def __init__(self, token, **kwargs) -> None:
+    def __init__(self, token: str, **kwargs: Any) -> None:
         self.token: str = token
         self.base_url: str = kwargs.pop("base_url", "https://osu.ppy.sh/api")
         self._limiter: AsyncLimiter = kwargs.pop("limiter", AsyncLimiter(1200, 60))
         self.__session: aiohttp.ClientSession = aiohttp.ClientSession()
 
-    async def __aenter__(self):
+    async def __aenter__(self) -> "Client":
         return self
 
-    async def __aexit__(self, exc_type, exc, tb):
+    async def __aexit__(
+        self,
+        exc_type: Optional[Type[BaseException]],
+        exc: Optional[BaseException],
+        traceback: Optional[TracebackType],
+    ) -> None:
+        await self.close()
+
+    async def close(self) -> None:
         await self.__session.close()
 
     @staticmethod
-    def rate_limited(func):
-        async def _rate_limited(*args, **kwargs):
+    def rate_limited(func: Callable) -> Callable:
+        async def _rate_limited(*args: Any, **kwargs: Any) -> Any:
             self = args[0]
             async with self._limiter:
                 return await func(*args, **kwargs)
@@ -35,7 +48,7 @@ class Client:
         return _rate_limited
 
     @rate_limited
-    async def get_user(self, user_query: Union[str, int], **kwargs) -> list[User]:
+    async def get_user(self, user_query: Union[str, int], **kwargs: Any) -> list[User]:
         url = f"{self.base_url}/get_user"
         params = {
             "k": self.token,
@@ -44,7 +57,7 @@ class Client:
             "event_days": kwargs.pop("event_days", 1),
         }
         if "qtype" in kwargs:
-            qtype = UserQueryType(kwargs.pop("qtype"))
+            qtype = UserQueryType(kwargs.pop("qtype"))  # type: ignore
             params["type"] = qtype.old_api_name
         async with self.__session.get(url, params=params) as resp:
             json = await resp.json()
@@ -52,7 +65,7 @@ class Client:
 
     @rate_limited
     async def __get_type_scores(
-        self, user_query: Union[str, int], request_type: str, **kwargs
+        self, user_query: Union[str, int], request_type: str, **kwargs: Any
     ) -> list[Score]:
         if request_type not in ("recent", "best"):
             raise ValueError(
@@ -66,28 +79,30 @@ class Client:
             "limit": kwargs.pop("limit", 10),
         }
         if "qtype" in kwargs:
-            qtype = UserQueryType(kwargs.pop("qtype"))
+            qtype = UserQueryType(kwargs.pop("qtype"))  # type: ignore
             params["type"] = qtype.old_api_name
         async with self.__session.get(url, params=params) as resp:
             json = await resp.json()
         return json
 
     async def get_user_recents(
-        self, user_query: Union[str, int], **kwargs
+        self, user_query: Union[str, int], **kwargs: Any
     ) -> list[Score]:
         if not 1 <= kwargs.get("limit", 50) <= 50:
             raise ValueError("Invalid limit specified. Limit must be between 1 and 50")
         return self.__get_type_scores(user_query, "recent", **kwargs)
 
     async def get_user_bests(
-        self, user_query: Union[str, int], **kwargs
+        self, user_query: Union[str, int], **kwargs: Any
     ) -> list[Score]:
         if not 1 <= kwargs.get("limit", 100) <= 100:
             raise ValueError("Invalid limit specified. Limit must be between 1 and 100")
         return self.__get_type_scores(user_query, "best", **kwargs)
 
     @rate_limited
-    async def get_beatmaps(self, **kwargs) -> Union[list[Beatmap], list[Beatmapset]]:
+    async def get_beatmaps(
+        self, **kwargs: Any
+    ) -> Union[list[Beatmap], list[Beatmapset]]:
         if not 1 <= kwargs.get("limit", 500) <= 500:
             raise ValueError("Invalid limit specified. Limit must be between 1 and 500")
         url = f"{self.base_url}/get_beatmaps"
@@ -105,7 +120,7 @@ class Client:
         elif "user_query" in kwargs:
             params["u"] = kwargs.pop("user_query")
             if "qtype" in kwargs:
-                qtype = UserQueryType(kwargs.pop("qtype"))
+                qtype = UserQueryType(kwargs.pop("qtype"))  # type: ignore
                 params["type"] = qtype.old_api_name
         elif "since" in kwargs:
             params["since"] = kwargs.pop("since")
@@ -120,7 +135,7 @@ class Client:
         return json
 
     @rate_limited
-    async def get_scores(self, beatmap_id, **kwargs) -> list[Score]:
+    async def get_scores(self, beatmap_id: int, **kwargs: Any) -> list[Score]:
         if not 1 <= kwargs.get("limit", 100) <= 100:
             raise ValueError("Invalid limit specified. Limit must be between 1 and 100")
         url = f"{self.base_url}/get_scores"
@@ -133,7 +148,7 @@ class Client:
         if "user_query" in kwargs:
             params["u"] = kwargs.pop("user_query")
             if "qtype" in kwargs:
-                qtype = UserQueryType(kwargs.pop("qtype"))
+                qtype = UserQueryType(kwargs.pop("qtype"))  # type: ignore
                 params["type"] = qtype.old_api_name
         if "mods" in kwargs:
             params["mods"] = kwargs.pop("mods")
@@ -142,7 +157,7 @@ class Client:
         return json
 
     @rate_limited
-    async def get_match(self, match_id: int):
+    async def get_match(self, match_id: int) -> Any:
         url = f"{self.base_url}/get_match"
         params = {
             "k": self.token,
@@ -153,8 +168,8 @@ class Client:
         return json
 
     @rate_limited
-    async def get_replay(self, **kwargs):
-        url = f"{self.base_url}/get_match"
+    async def get_replay(self, **kwargs: Any) -> Any:
+        url = f"{self.base_url}/get_replay"
         params = {"k": self.token, "m": kwargs.pop("mode", 0)}
         if "score_id" in kwargs:
             params["s"] = kwargs.pop("score_id")
@@ -162,7 +177,7 @@ class Client:
             params["b"] = kwargs.pop("beatmap_id")
             params["u"] = kwargs.pop("user_query")
             if "qtype" in kwargs:
-                qtype = UserQueryType(kwargs.pop("qtype"))
+                qtype = UserQueryType(kwargs.pop("qtype"))  # type: ignore
                 params["type"] = qtype.old_api_name
         else:
             raise ValueError(

@@ -6,11 +6,13 @@ from ..classes import Score
 
 
 class AbstractAccuracyCalculator(abc.ABC):
-    @abc.abstractstaticmethod
+    @staticmethod
+    @abc.abstractmethod
     def calculate(score: Score) -> float:
         ...
 
-    @abc.abstractstaticmethod
+    @staticmethod
+    @abc.abstractmethod
     def calculate_weighted(score: Score) -> float:
         ...
 
@@ -26,7 +28,7 @@ class OsuAccuracyCalculator(AbstractAccuracyCalculator):
         )
 
         accuracy = 0.0
-        if score.beatmap.count_objects > 0:
+        if total_hits > 0:
             accuracy = max(
                 (
                     score.statistics.count_300 * 6
@@ -41,13 +43,18 @@ class OsuAccuracyCalculator(AbstractAccuracyCalculator):
 
     @staticmethod
     def calculate_weighted(score: Score) -> float:
+        if score.beatmap is None:
+            raise ValueError("Given score does not have a beatmap.")
+
         total_hits = (
             score.statistics.count_300
             + score.statistics.count_100
             + score.statistics.count_50
             + score.statistics.count_miss
         )
-        amount_hit_objects_with_accuracy = score.beatmap.count_circles
+
+        if (amount_hit_objects_with_accuracy := score.beatmap.count_circles) is None:
+            raise ValueError("Beatmap object does not contain object information.")
 
         better_accuracy_percentage = 0.0
         if amount_hit_objects_with_accuracy > 0:
