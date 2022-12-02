@@ -21,3 +21,5 @@ jobs:
 
       - name: GitHub Action for mypy
         uses: jpetrucciani/mypy-check@master
+        with:
+          requirements_file: "requirements.txt"
