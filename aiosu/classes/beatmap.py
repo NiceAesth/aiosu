@@ -28,7 +28,7 @@ class BeatmapRankStatus(Enum):
         return self.name_api
 
     @classmethod
-    def _missing_(cls, query) -> BeatmapRankStatus:
+    def _missing_(cls, query: object) -> BeatmapRankStatus:
         if isinstance(query, int):
             for status in list(BeatmapRankStatus):
                 if status.id == query:
@@ -37,6 +37,7 @@ class BeatmapRankStatus(Enum):
             for status in list(BeatmapRankStatus):
                 if status.name_api == query.lower():
                     return status
+        raise ValueError(f"BeatmapRankStatus {query} does not exist.")
 
 
 class BeatmapAvailability(BaseModel):
@@ -91,14 +92,14 @@ class BeatmapDifficultyAttributes(BaseModel):
 
 
 class Beatmap(BaseModel):
-    beatmapset_id: int = None
-    difficulty_rating: float = None
-    id: int = None
-    mode: Gamemode = None
-    status: BeatmapRankStatus = None
-    total_length: int = None
-    user_id: int = None
-    version: str = None
+    beatmapset_id: int
+    difficulty_rating: float
+    id: int
+    mode: Gamemode
+    status: BeatmapRankStatus
+    total_length: int
+    user_id: int
+    version: str
     accuracy: Optional[float] = None
     ar: Optional[float] = None
     bpm: Optional[float] = None
@@ -121,26 +122,32 @@ class Beatmap(BaseModel):
     failtimes: Optional[BeatmapFailtimes] = None
 
     @property
-    def count_objects(self):
+    def count_objects(self) -> int:
+        if (
+            self.count_circles is None
+            or self.count_spinners is None
+            or self.count_sliders is None
+        ):
+            raise ValueError("Beatmap contains no object count information.")
         return self.count_spinners + self.count_circles + self.count_sliders
 
 
 class Beatmapset(BaseModel):
-    artist: str = None
-    artist_unicode: str = None
-    covers: BeatmapCovers = None
-    creator: str = None
-    favourite_count: int = None
-    id: int = None
-    nsfw: bool = None
-    play_count: int = None
-    preview_url: str = None
-    source: str = None
-    status: BeatmapRankStatus = None
-    title: str = None
-    title_unicode: str = None
-    user_id: int = None
-    video: bool = None
+    artist: str
+    artist_unicode: str
+    covers: BeatmapCovers
+    creator: str
+    favourite_count: int
+    id: int
+    nsfw: bool
+    play_count: int
+    preview_url: str
+    source: str
+    status: BeatmapRankStatus
+    title: str
+    title_unicode: str
+    user_id: int
+    video: bool
     hype: Optional[BeatmapHype] = None
     availability: Optional[BeatmapAvailability] = None
     bpm: Optional[float] = None

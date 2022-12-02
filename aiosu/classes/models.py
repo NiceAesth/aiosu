@@ -1,12 +1,14 @@
 from __future__ import annotations
 
+from typing import Any
+
 import orjson
 import pydantic
 
 from .mods import Mods
 
 
-def orjson_dumps(v, *, default):
+def orjson_dumps(v: object, *, default: Any) -> str:
     # orjson.dumps returns bytes, to match standard json.dumps we need to decode
     return orjson.dumps(v, default=default).decode()
 
@@ -21,6 +23,6 @@ class BaseModel(pydantic.BaseModel):
 
 
 class FrozenModel(BaseModel):
-    def __init__(self, **data) -> None:
+    def __init__(self, **data: Any) -> None:
         super().__init__(**data)
         self.__config__.frozen = True

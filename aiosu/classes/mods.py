@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections import UserList
+from collections.abc import Generator
 from enum import Enum
 from functools import reduce
 from typing import Union
@@ -39,7 +40,7 @@ class Mod(Enum):
     Key2 = (268435456, "2K")
     Mirror = (1073741824, "MR")
 
-    def __init__(self, value, short_name="") -> None:
+    def __init__(self, value: int, short_name: str = "") -> None:
         self.bitmask = value
         self.short_name = short_name
 
@@ -49,11 +50,15 @@ class Mod(Enum):
     def __str__(self) -> str:
         return self.short_name
 
+    def __and__(self, __o: int) -> int:
+        return int(self) & __o
+
     @classmethod
-    def _missing_(cls, query) -> Mod:
+    def _missing_(cls, query: object) -> Mod:
         for mod in list(Mod):
-            if query in (mod.short_name, mod.bitmask):
+            if query in mod.value:
                 return mod
+        raise ValueError(f"Mod {query} does not exist.")
 
 
 class Mods(UserList):
@@ -65,7 +70,7 @@ class Mods(UserList):
         if isinstance(mods, str):
             mods = [mods[i : i + 2] for i in range(0, len(mods), 2)]
         if isinstance(mods, list):
-            self.data = [Mod(mod) for mod in mods]
+            self.data = [Mod(mod) for mod in mods]  # type: ignore
         if isinstance(mods, int):
             self.data = [mod for mod in list(Mod) if mod & mods]
 
@@ -90,16 +95,19 @@ class Mods(UserList):
     def __int__(self) -> int:
         return self.bitwise
 
+    def __and__(self, __o: int) -> int:
+        return int(self) & __o
+
     @classmethod
-    def __get_validators__(cls) -> function:
+    def __get_validators__(cls) -> Generator:
         yield cls.validate
 
     @classmethod
-    def __modify_schema__(cls, field_schema):
+    def __modify_schema__(cls, field_schema):  # type: ignore
         pass  # Genuinely not sure about implementing this
 
     @classmethod
-    def validate(cls, v) -> Mods:
+    def validate(cls, v: object) -> Mods:
         if not isinstance(v, (list, str, int)):
             raise TypeError("Invalid type specified ")
         return cls(v)

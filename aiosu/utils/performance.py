@@ -45,6 +45,9 @@ class AbstractPerformanceCalculator(abc.ABC):
 
 class OsuPerformanceCalculator(AbstractPerformanceCalculator):
     def calculate(self, score: Score) -> OsuPerformanceAttributes:
+        if score.beatmap is None:
+            raise ValueError("Given score does not have a beatmap.")
+
         effective_miss_count = self._calculate_effective_miss_count(score)
         total_hits = (
             score.statistics.count_300
@@ -60,7 +63,7 @@ class OsuPerformanceCalculator(AbstractPerformanceCalculator):
 
         if Mod.SpunOut in score.mods and total_hits > 0:
             multiplier *= 1.0 - math.pow(
-                (self.score.beatmap.count_spinners / total_hits),
+                (score.beatmap.count_spinners / total_hits),  # type: ignore
                 0.85,
             )
 
@@ -101,7 +104,7 @@ class OsuPerformanceCalculator(AbstractPerformanceCalculator):
     ) -> float:
         aim_value = (
             math.pow(
-                5.0 * max(1.0, self.difficulty_attributes.aim_difficulty / 0.0675)
+                5.0 * max(1.0, self.difficulty_attributes.aim_difficulty / 0.0675)  # type: ignore
                 - 4.0,
                 3.0,
             )
@@ -124,22 +127,22 @@ class OsuPerformanceCalculator(AbstractPerformanceCalculator):
         aim_value *= self._get_combo_scaling_factor(score)
 
         approach_rate_factor = 0.0
-        if self.difficulty_attributes.approach_rate > 10.33:
+        if self.difficulty_attributes.approach_rate > 10.33:  # type: ignore
             approach_rate_factor = 0.3 * (
-                self.difficulty_attributes.approach_rate - 10.33
+                self.difficulty_attributes.approach_rate - 10.33  # type: ignore
             )
-        elif self.difficulty_attributes.approach_rate < 8.0:
+        elif self.difficulty_attributes.approach_rate < 8.0:  # type: ignore
             approach_rate_factor = 0.05 * (
-                8.0 - self.difficulty_attributes.approach_rate
+                8.0 - self.difficulty_attributes.approach_rate  # type: ignore
             )
 
         aim_value *= 1.0 + approach_rate_factor * length_bonus
 
         if Mod.Hidden in score.mods:
-            aim_value *= 1.0 + 0.04 * (12.0 - self.difficulty_attributes.approach_rate)
+            aim_value *= 1.0 + 0.04 * (12.0 - self.difficulty_attributes.approach_rate)  # type: ignore
 
-        if score.beatmap.count_sliders > 0:
-            estimate_difficult_sliders = score.beatmap.count_sliders * 0.15
+        if score.beatmap.count_sliders > 0:  # type: ignore
+            estimate_difficult_sliders = score.beatmap.count_sliders * 0.15  # type: ignore
 
             estimate_slider_ends_dropped = clamp(
                 min(
@@ -152,8 +155,8 @@ class OsuPerformanceCalculator(AbstractPerformanceCalculator):
                 estimate_difficult_sliders,
             )
 
-            slider_nerf_factor = (
-                1 - self.difficulty_attributes.slider_factor
+            slider_nerf_factor = (  # type: ignore
+                1 - self.difficulty_attributes.slider_factor  # type: ignore
             ) * math.pow(
                 1 - estimate_slider_ends_dropped / estimate_difficult_sliders,
                 3,
@@ -164,7 +167,7 @@ class OsuPerformanceCalculator(AbstractPerformanceCalculator):
         accuracy = score.accuracy if score.accuracy <= 1.0 else score.accuracy / 100
         aim_value *= accuracy
         aim_value *= (
-            0.98 + math.pow(self.difficulty_attributes.overall_difficulty, 2) / 2500
+            0.98 + math.pow(self.difficulty_attributes.overall_difficulty, 2) / 2500  # type: ignore
         )
 
         return aim_value
@@ -177,7 +180,7 @@ class OsuPerformanceCalculator(AbstractPerformanceCalculator):
     ) -> float:
         speed_value = (
             math.pow(
-                5.0 * max(1.0, self.difficulty_attributes.speed_difficulty / 0.0675)
+                5.0 * max(1.0, self.difficulty_attributes.speed_difficulty / 0.0675)  # type: ignore
                 - 4.0,
                 3.0,
             )
@@ -200,19 +203,19 @@ class OsuPerformanceCalculator(AbstractPerformanceCalculator):
         speed_value *= self._get_combo_scaling_factor(score)
 
         approach_rate_factor = 0.0
-        if self.difficulty_attributes.approach_rate > 10.33:
+        if self.difficulty_attributes.approach_rate > 10.33:  # type: ignore
             approach_rate_factor = 0.3 * (
-                self.difficulty_attributes.approach_rate - 10.33
+                self.difficulty_attributes.approach_rate - 10.33  # type: ignore
             )
 
         speed_value *= 1.0 + approach_rate_factor * length_bonus
 
         if Mod.Hidden in score.mods:
             speed_value *= 1.0 + 0.04 * (
-                12.0 - self.difficulty_attributes.approach_rate
+                12.0 - self.difficulty_attributes.approach_rate  # type: ignore
             )
 
-        relevant_total_diff = total_hits - self.difficulty_attributes.speed_note_count
+        relevant_total_diff = total_hits - self.difficulty_attributes.speed_note_count  # type: ignore
         relevant_count_great = max(0, score.statistics.count_300 - relevant_total_diff)
         relevant_count_ok = max(
             0,
@@ -231,20 +234,22 @@ class OsuPerformanceCalculator(AbstractPerformanceCalculator):
         )
 
         relevant_accuracy = 0
-        if self.difficulty_attributes.speed_note_count > 0:
+        if self.difficulty_attributes.speed_note_count > 0:  # type: ignore
             relevant_accuracy = (
                 relevant_count_great * 6.0
                 + relevant_count_ok * 2.0
                 + relevant_count_meh
-            ) / (self.difficulty_attributes.speed_note_count * 6.0)
+            ) / (
+                self.difficulty_attributes.speed_note_count * 6.0  # type: ignore
+            )
 
         accuracy = score.accuracy if score.accuracy <= 1.0 else score.accuracy / 100
 
         speed_value *= (
-            0.95 + math.pow(self.difficulty_attributes.overall_difficulty, 2) / 750
+            0.95 + math.pow(self.difficulty_attributes.overall_difficulty, 2) / 750  # type: ignore
         ) * math.pow(
             (accuracy + relevant_accuracy) / 2.0,
-            (14.5 - max(self.difficulty_attributes.overall_difficulty, 8)) / 2,
+            (14.5 - max(self.difficulty_attributes.overall_difficulty, 8)) / 2,  # type: ignore
         )
 
         speed_value *= math.pow(
@@ -264,14 +269,14 @@ class OsuPerformanceCalculator(AbstractPerformanceCalculator):
         better_accuracy_percentage = accuracy_calculator.calculate_weighted(score)
 
         accuracy_value = (
-            math.pow(1.52163, self.difficulty_attributes.overall_difficulty)
+            math.pow(1.52163, self.difficulty_attributes.overall_difficulty)  # type: ignore
             * math.pow(better_accuracy_percentage, 24)
             * 2.83
         )
 
         accuracy_value *= min(
             1.15,
-            math.pow(score.beatmap.count_circles / 1000.0, 0.3),
+            math.pow(score.beatmap.count_circles / 1000.0, 0.3),  # type: ignore
         )
 
         if Mod.Hidden in score.mods:
@@ -292,7 +297,7 @@ class OsuPerformanceCalculator(AbstractPerformanceCalculator):
             return 0.0
 
         flashlight_value = (
-            math.pow(self.difficulty_attributes.flashlight_difficulty, 2.0) * 25.0
+            math.pow(self.difficulty_attributes.flashlight_difficulty, 2.0) * 25.0  # type: ignore
         )
 
         if effective_miss_count > 0:
@@ -312,7 +317,7 @@ class OsuPerformanceCalculator(AbstractPerformanceCalculator):
         accuracy = score.accuracy if score.accuracy <= 1.0 else score.accuracy / 100
         flashlight_value *= 0.5 + accuracy / 2.0
         flashlight_value *= (
-            0.98 + math.pow(self.difficulty_attributes.overall_difficulty, 2) / 2500.0
+            0.98 + math.pow(self.difficulty_attributes.overall_difficulty, 2) / 2500.0  # type: ignore
         )
 
         return flashlight_value
@@ -320,9 +325,9 @@ class OsuPerformanceCalculator(AbstractPerformanceCalculator):
     def _calculate_effective_miss_count(self, score: Score) -> float:
         combo_based_miss_count = 0.0
 
-        if score.beatmap.count_sliders > 0:
+        if score.beatmap.count_sliders > 0:  # type: ignore
             full_combo_threshold = (
-                self.difficulty_attributes.max_combo - 0.1 * score.beatmap.count_sliders
+                self.difficulty_attributes.max_combo - 0.1 * score.beatmap.count_sliders  # type: ignore
             )
 
             if score.max_combo < full_combo_threshold:
@@ -446,11 +451,11 @@ class TaikoPerformanceCalculator(AbstractPerformanceCalculator):
         total_hits: int,
         accuracy: float,
     ) -> float:
-        if self.difficulty_attributes.great_hit_window <= 0:
+        if self.difficulty_attributes.great_hit_window <= 0:  # type: ignore
             return 0
 
         accuracy_value = (
-            math.pow(60.0 / self.difficulty_attributes.great_hit_window, 1.1)
+            math.pow(60.0 / self.difficulty_attributes.great_hit_window, 1.1)  # type: ignore
             * math.pow(accuracy, 8.0)
             * math.pow(self.difficulty_attributes.star_rating, 0.4)
             * 27.0
@@ -556,7 +561,7 @@ class CatchPerformanceCalculator(AbstractPerformanceCalculator):
                 1.0,
             )
 
-        approach_rate = self.difficulty_attributes.approach_rate
+        approach_rate: float = self.difficulty_attributes.approach_rate  # type: ignore
         approach_rate_factor = 1.0
 
         if approach_rate > 9.0:

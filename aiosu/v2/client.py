@@ -1,6 +1,11 @@
 from __future__ import annotations
 
 import datetime
+from types import TracebackType
+from typing import Any
+from typing import Callable
+from typing import Optional
+from typing import Type
 from typing import Union
 
 import aiohttp
@@ -19,7 +24,7 @@ from ..classes import UserQueryType
 
 
 class Client:
-    def __init__(self, **kwargs) -> None:
+    def __init__(self, **kwargs: Any) -> None:
         self.client_secret: str = kwargs.pop("client_secret", None)
         self.client_id: int = kwargs.pop("client_id", None)
         self.token: OAuthToken = kwargs.pop("token", OAuthToken())
@@ -33,18 +38,23 @@ class Client:
             },
         )
 
-    async def __aenter__(self):
+    async def __aenter__(self) -> "Client":
         return self
 
-    async def __aexit__(self, exc_type, exc, tb):
+    async def __aexit__(
+        self,
+        exc_type: Optional[Type[BaseException]],
+        exc: Optional[BaseException],
+        traceback: Optional[TracebackType],
+    ) -> None:
         await self.close()
 
-    async def close(self):
+    async def close(self) -> None:
         await self.__session.close()
 
     @staticmethod
-    def check_token(func):
-        async def _check_token(*args, **kwargs):
+    def check_token(func: Callable) -> Callable:
+        async def _check_token(*args: Any, **kwargs: Any) -> Any:
             self = args[0]
             if datetime.datetime.now() > self.token.expires_on:
                 print("refreshing token")
@@ -56,8 +66,8 @@ class Client:
         return _check_token
 
     @staticmethod
-    def rate_limited(func):
-        async def _rate_limited(*args, **kwargs):
+    def rate_limited(func: Callable) -> Callable:
+        async def _rate_limited(*args: Any, **kwargs: Any) -> Any:
             self = args[0]
             async with self._limiter:
                 return await func(*args, **kwargs)
@@ -76,14 +86,14 @@ class Client:
 
     @rate_limited
     @check_token
-    async def get_user(self, user_query: Union[str, int], **kwargs) -> User:
+    async def get_user(self, user_query: Union[str, int], **kwargs: Any) -> User:
         url = f"{self.base_url}/{user_query}"
         params = {}
         if "mode" in kwargs:
-            mode = Gamemode(kwargs.pop("mode"))
+            mode = Gamemode(kwargs.pop("mode"))  # type: ignore
             url += f"/{mode}"
         if "qtype" in kwargs:
-            qtype = UserQueryType(kwargs.pop("qtype"))
+            qtype = UserQueryType(kwargs.pop("qtype"))  # type: ignore
             params["type"] = qtype.new_api_name
         async with self.__session.get(url, params=params) as resp:
             json = await resp.json()
@@ -94,7 +104,7 @@ class Client:
     @rate_limited
     @check_token
     async def __get_type_scores(
-        self, user_id: int, request_type: str, **kwargs
+        self, user_id: int, request_type: str, **kwargs: Any
     ) -> list[Score]:
         if not 1 <= kwargs.get("limit", 100) <= 100:
             raise ValueError("Invalid limit specified. Limit must be between 1 and 100")
@@ -109,32 +119,34 @@ class Client:
             "limit": kwargs.pop("limit", 100),
         }
         if "mode" in kwargs:
-            mode = Gamemode(kwargs.pop("mode"))
+            mode = Gamemode(kwargs.pop("mode"))  # type: ignore
             params["mode"] = str(mode)
         if "limit" in kwargs:
-            params["limit"] = kwargs.pop("mode")
+            params["limit"] = kwargs.pop("limit")
         async with self.__session.get(url, params=params) as resp:
             json = await resp.json()
             if resp.status != 200:
                 raise APIException(resp.status, json.get("error", ""))
             return helpers.from_list(Score.parse_obj, json)
 
-    async def get_user_recents(self, user_id: int, **kwargs) -> list[Score]:
+    async def get_user_recents(self, user_id: int, **kwargs: Any) -> list[Score]:
         return await self.__get_type_scores(user_id, "recent", **kwargs)
 
-    async def get_user_bests(self, user_id: int, **kwargs) -> list[Score]:
+    async def get_user_bests(self, user_id: int, **kwargs: Any) -> list[Score]:
         return await self.__get_type_scores(user_id, "best", **kwargs)
 
-    async def get_user_firsts(self, user_id: int, **kwargs) -> list[Score]:
+    async def get_user_firsts(self, user_id: int, **kwargs: Any) -> list[Score]:
         return await self.__get_type_scores(user_id, "firsts", **kwargs)
 
     @rate_limited
     @check_token
-    async def get_user_beatmap_scores(self, user_id: int, beatmap_id: int, **kwargs):
+    async def get_user_beatmap_scores(
+        self, user_id: int, beatmap_id: int, **kwargs: Any
+    ) -> list[Score]:
         url = f"{self.base_url}/beatmaps/{beatmap_id}/scores/users/{user_id}/all"
         params = {}
         if "mode" in kwargs:
-            mode = Gamemode(kwargs.pop("mode"))
+            mode = Gamemode(kwargs.pop("mode"))  # type: ignore
             params["mode"] = str(mode)
         async with self.__session.get(url) as resp:
             json = await resp.json()
@@ -144,11 +156,11 @@ class Client:
 
     @rate_limited
     @check_token
-    async def get_beatmap_scores(self, beatmap_id: int, **kwargs):
+    async def get_beatmap_scores(self, beatmap_id: int, **kwargs: Any) -> list[Score]:
         url = f"{self.base_url}/beatmaps/{beatmap_id}/scores"
         params = {}
         if "mode" in kwargs:
-            mode = Gamemode(kwargs.pop("mode"))
+            mode = Gamemode(kwargs.pop("mode"))  # type: ignore
             params["mode"] = str(mode)
         if "mods" in kwargs:
             mods = Mods(kwargs.pop("mods"))
@@ -174,12 +186,12 @@ class Client:
     @rate_limited
     @check_token
     async def get_beatmap_attributes(
-        self, beatmap_id: int, **kwargs
+        self, beatmap_id: int, **kwargs: Any
     ) -> BeatmapDifficultyAttributes:
         url = f"{self.base_url}/beatmaps/{beatmap_id}/attributes"
         params = {}
         if "mode" in kwargs:
-            mode = Gamemode(kwargs.pop("mode"))
+            mode = Gamemode(kwargs.pop("mode"))  # type: ignore
             params["mode"] = str(mode)
         if "mods" in kwargs:
             mods = Mods(kwargs.pop("mods"))

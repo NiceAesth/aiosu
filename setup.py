@@ -2,14 +2,15 @@ from __future__ import annotations
 
 import re
 
-import setuptools
+import setuptools  # type: ignore
 
 with open("aiosu/__init__.py") as f:
-    version = re.search(
+    if search := re.search(
         r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]',
         f.read(),
         re.MULTILINE,
-    ).group(1)
+    ):
+        version = search.group(1)
 
 with open("README.md") as f:
     long_description = f.read()

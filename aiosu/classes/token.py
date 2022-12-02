@@ -7,6 +7,6 @@ from .models import BaseModel
 
 class OAuthToken(BaseModel):
     token_type: str = "Bearer"
-    access_token: str = None
-    refresh_token: str = None
+    access_token: str = ""
+    refresh_token: str = ""
     expires_on: datetime.datetime = datetime.datetime.utcfromtimestamp(0)
