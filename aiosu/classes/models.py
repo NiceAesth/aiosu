@@ -20,7 +20,7 @@ class BaseModel(pydantic.BaseModel):
         }
 
 
-class FrozenModel(pydantic.BaseModel):
+class FrozenModel(BaseModel):
     def __init__(self, **data) -> None:
         super().__init__(**data)
         self.__config__.frozen = True
