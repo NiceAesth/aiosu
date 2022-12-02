@@ -54,11 +54,17 @@ class Mod(Enum):
         return int(self) & __o
 
     @classmethod
-    def _missing_(cls, query: object) -> Mod:
+    def from_type(cls, __o: object) -> Mod:
+        if isinstance(__o, cls):
+            return __o
         for mod in list(Mod):
-            if query in mod.value:
+            if __o in mod.value:
                 return mod
-        raise ValueError(f"Mod {query} does not exist.")
+        raise ValueError(f"Mod {__o} does not exist.")
+
+    @classmethod
+    def _missing_(cls, query: object) -> Mod:
+        return cls.from_type(query)
 
 
 class Mods(UserList):
@@ -67,11 +73,11 @@ class Mods(UserList):
     def __init__(self, mods: Union[list[str], str, int] = []) -> None:
         super().__init__(self)
         self.data = []
-        if isinstance(mods, str):
+        if isinstance(mods, str):  # string of mods
             mods = [mods[i : i + 2] for i in range(0, len(mods), 2)]
-        if isinstance(mods, list):
+        if isinstance(mods, list):  # List of Mod types
             self.data = [Mod(mod) for mod in mods]  # type: ignore
-        if isinstance(mods, int):
+        if isinstance(mods, int):  # Bitwise representation of mods
             self.data = [mod for mod in list(Mod) if mod & mods]
 
     @property

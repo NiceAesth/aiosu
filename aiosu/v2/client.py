@@ -57,7 +57,6 @@ class Client:
         async def _check_token(*args: Any, **kwargs: Any) -> Any:
             self = args[0]
             if datetime.datetime.now() > self.token.expires_on:
-                print("refreshing token")
                 self.__session.headers[
                     "Authorization"
                 ] = f"Bearer {self.token.access_token}"
