@@ -22,5 +22,6 @@ jobs:
       - name: GitHub Action for mypy
         uses: jpetrucciani/mypy-check@master
         with:
+          path: '.'
           requirements_file: "requirements.txt"
           mypy_flags: '--config-file pyproject.toml'
