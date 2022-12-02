@@ -27,7 +27,7 @@ __all__ = [
 OSU_BASE_MULTIPLIER = 1.14
 TAIKO_BASE_MULTIPLIER = 1.13
 MANIA_BASE_MULTIPLIER = 8.0
-CATCH_BASE_MULTIPLIER = 1
+CATCH_BASE_MULTIPLIER = 1.0
 
 clamp: Callable[[float, float, float], float] = (
     lambda x, l, u: l if x < l else u if x > u else x
@@ -534,6 +534,9 @@ class CatchPerformanceCalculator(AbstractPerformanceCalculator):
             + score.statistics.count_100
             + score.statistics.count_300
         )
+
+        multiplier = CATCH_BASE_MULTIPLIER
+
         total_value = (
             math.pow(
                 5.0 * max(1.0, self.difficulty_attributes.star_rating / 0.0049) - 4.0,
@@ -587,5 +590,7 @@ class CatchPerformanceCalculator(AbstractPerformanceCalculator):
 
         if Mod.NoFail in score.mods:
             total_value *= 0.90
+
+        total_value *= multiplier
 
         return CatchPerformanceAttributes(total=total_value)

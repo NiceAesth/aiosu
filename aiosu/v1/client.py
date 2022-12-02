@@ -12,6 +12,7 @@ from aiolimiter import AsyncLimiter
 
 from ..classes import Beatmap
 from ..classes import Beatmapset
+from ..classes import Gamemode
 from ..classes import Score
 from ..classes import User
 from ..classes import UserQueryType
@@ -53,9 +54,9 @@ class Client:
         params = {
             "k": self.token,
             "u": user_query,
-            "m": kwargs.pop("mode", 0),
             "event_days": kwargs.pop("event_days", 1),
         }
+        params["m"] = int(Gamemode(kwargs.pop("mode", 0)))  # type: ignore
         if "qtype" in kwargs:
             qtype = UserQueryType(kwargs.pop("qtype"))  # type: ignore
             params["type"] = qtype.old_api_name
@@ -75,9 +76,9 @@ class Client:
         params = {
             "k": self.token,
             "u": user_query,
-            "m": kwargs.pop("mode", 0),
             "limit": kwargs.pop("limit", 10),
         }
+        params["m"] = int(Gamemode(kwargs.pop("mode", 0)))  # type: ignore
         if "qtype" in kwargs:
             qtype = UserQueryType(kwargs.pop("qtype"))  # type: ignore
             params["type"] = qtype.old_api_name
@@ -90,29 +91,27 @@ class Client:
     ) -> list[Score]:
         if not 1 <= kwargs.get("limit", 50) <= 50:
             raise ValueError("Invalid limit specified. Limit must be between 1 and 50")
-        return self.__get_type_scores(user_query, "recent", **kwargs)
+        return await self.__get_type_scores(user_query, "recent", **kwargs)
 
     async def get_user_bests(
         self, user_query: Union[str, int], **kwargs: Any
     ) -> list[Score]:
         if not 1 <= kwargs.get("limit", 100) <= 100:
             raise ValueError("Invalid limit specified. Limit must be between 1 and 100")
-        return self.__get_type_scores(user_query, "best", **kwargs)
+        return await self.__get_type_scores(user_query, "best", **kwargs)
 
     @rate_limited
-    async def get_beatmaps(
-        self, **kwargs: Any
-    ) -> Union[list[Beatmap], list[Beatmapset]]:
+    async def get_beatmap(self, **kwargs: Any) -> list[Beatmap]:
         if not 1 <= kwargs.get("limit", 500) <= 500:
             raise ValueError("Invalid limit specified. Limit must be between 1 and 500")
         url = f"{self.base_url}/get_beatmaps"
         params = {
             "k": self.token,
-            "m": kwargs.pop("mode", 0),
             "limit": kwargs.pop("limit", 500),
-            "a": kwargs.pop("converts", False),
+            "a": int(kwargs.pop("converts", False)),
             "mods": kwargs.pop("mods", 0),
         }
+        params["m"] = int(Gamemode(kwargs.pop("mode", 0)))  # type: ignore
         if "beatmap_id" in kwargs:
             params["b"] = kwargs.pop("beatmap_id")
         elif "beatmapset_id" in kwargs:
@@ -135,16 +134,16 @@ class Client:
         return json
 
     @rate_limited
-    async def get_scores(self, beatmap_id: int, **kwargs: Any) -> list[Score]:
+    async def get_beatmap_scores(self, beatmap_id: int, **kwargs: Any) -> list[Score]:
         if not 1 <= kwargs.get("limit", 100) <= 100:
             raise ValueError("Invalid limit specified. Limit must be between 1 and 100")
         url = f"{self.base_url}/get_scores"
         params = {
             "k": self.token,
             "b": beatmap_id,
-            "m": kwargs.pop("mode", 0),
             "limit": kwargs.pop("limit", 50),
         }
+        params["m"] = int(Gamemode(kwargs.pop("mode", 0)))  # type: ignore
         if "user_query" in kwargs:
             params["u"] = kwargs.pop("user_query")
             if "qtype" in kwargs:
@@ -170,7 +169,8 @@ class Client:
     @rate_limited
     async def get_replay(self, **kwargs: Any) -> Any:
         url = f"{self.base_url}/get_replay"
-        params = {"k": self.token, "m": kwargs.pop("mode", 0)}
+        params = {"k": self.token}
+        params["m"] = int(Gamemode(kwargs.pop("mode", 0)))  # type: ignore
         if "score_id" in kwargs:
             params["s"] = kwargs.pop("score_id")
         elif "beatmap_id" in kwargs and "user_query" in kwargs:

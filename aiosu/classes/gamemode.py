@@ -37,8 +37,14 @@ class Gamemode(Enum):
         return self.name_api
 
     @classmethod
-    def _missing_(cls, query: object) -> Gamemode:
+    def from_type(cls, __o: object) -> Gamemode:
+        if isinstance(__o, cls):
+            return __o
         for mode in list(Gamemode):
-            if query in (mode.name_api, mode.name_short, mode.id):
+            if __o in (mode.name_api, mode.name_short, mode.id):
                 return mode
-        raise ValueError(f"Gamemode {query} does not exist.")
+        raise ValueError(f"Gamemode {__o} does not exist.")
+
+    @classmethod
+    def _missing_(cls, query: object) -> Gamemode:
+        return cls.from_type(query)
