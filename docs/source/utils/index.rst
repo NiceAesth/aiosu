@@ -1,13 +1,14 @@
 Utilities
 =========
 
-
+Accuracy
+--------
 .. automodule:: aiosu.utils.accuracy
     :members:
-    :imported-members:
     :undoc-members:
 
+Performance
+-----------
 .. automodule:: aiosu.utils.performance
     :members:
-    :imported-members:
     :undoc-members:
