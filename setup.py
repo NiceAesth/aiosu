@@ -15,6 +15,17 @@ with open("aiosu/__init__.py") as f:
 with open("README.md") as f:
     long_description = f.read()
 
+extras_require = {
+    "docs": [
+        "sphinx",
+    ],
+    "dev": [
+        "pytest",
+        "pytest-asyncio",
+        "pytest-mock",
+    ],
+}
+
 setuptools.setup(
     name="aiosu",
     version=version,
@@ -32,6 +43,7 @@ setuptools.setup(
     ],
     packages=setuptools.find_packages(),
     install_requires=["aiohttp", "aiolimiter", "orjson", "emojiflags", "pydantic"],
+    extras_require=extras_require,
     python_requires=">=3.9",
     package_data={
         "aiosu": ["py.typed"],
