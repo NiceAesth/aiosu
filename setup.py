@@ -12,7 +12,7 @@ with open("aiosu/__init__.py") as f:
     ):
         version = search.group(1)
 
-with open("README.md") as f:
+with open("README.rst") as f:
     long_description = f.read()
 
 extras_require = {
@@ -31,7 +31,7 @@ setuptools.setup(
     version=version,
     description="Simple and fast osu! API v1 and v2 library",
     long_description=long_description,
-    long_description_content_type="text/markdown",
+    long_description_content_type="text/x-rst",
     url="https://github.com/NiceAesth/aiosu",
     author="Nice Aesthetics",
     author_email="nice@aesth.dev",
