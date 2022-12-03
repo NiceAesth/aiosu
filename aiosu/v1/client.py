@@ -369,7 +369,7 @@ class Client:
             * *qtype* (``str``) --
                 Optional, \"string\" or \"id\". Type of the user_query
 
-        :raises ValueError: If neither scode_id nor beatmap_id + user_id specified
+        :raises ValueError: If neither score_id nor beatmap_id + user_id specified
         :raises APIException: Contains status code and error message
         :return: The data for the requested replay
         :rtype: aiosu.classes.legacy.replay.Replay

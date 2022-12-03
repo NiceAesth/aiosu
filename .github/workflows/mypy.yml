@@ -25,3 +25,4 @@ jobs:
           path: ''
           requirements_file: "requirements.txt"
           mypy_flags: '--config-file pyproject.toml'
+          python_version: "3.9"
