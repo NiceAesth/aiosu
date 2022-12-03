@@ -1,3 +1,6 @@
+"""
+This module contains models for API v2 token objects.
+"""
 from __future__ import annotations
 
 import datetime

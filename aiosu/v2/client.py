@@ -1,6 +1,12 @@
+"""
+This module handles API requests for API v2 (OAuth).
+
+You can read more about it here: https://osu.ppy.sh/docs/index.html
+"""
 from __future__ import annotations
 
 import datetime
+import functools
 from types import TracebackType
 from typing import Any
 from typing import Callable
@@ -24,6 +30,8 @@ from ..classes import UserQueryType
 
 
 class Client:
+    """osu! API v2 Client"""
+
     def __init__(self, **kwargs: Any) -> None:
         self.client_secret: str = kwargs.pop("client_secret", None)
         self.client_id: int = kwargs.pop("client_id", None)
@@ -54,6 +62,12 @@ class Client:
 
     @staticmethod
     def check_token(func: Callable) -> Callable:
+        """
+        A decorator that checks the current token, to be used as:
+        @check_token
+        """
+
+        @functools.wraps(func)
         async def _check_token(*args: Any, **kwargs: Any) -> Any:
             self = args[0]
             if datetime.datetime.now() > self.token.expires_on:
@@ -66,6 +80,12 @@ class Client:
 
     @staticmethod
     def rate_limited(func: Callable) -> Callable:
+        """
+        A decorator that enforces rate limiting, to be used as:
+        @rate_limited
+        """
+
+        @functools.wraps(func)
         async def _rate_limited(*args: Any, **kwargs: Any) -> Any:
             self = args[0]
             async with self._limiter:
@@ -76,6 +96,12 @@ class Client:
     @rate_limited
     @check_token
     async def get_me(self) -> User:
+        """Gets the user who owns the current token
+
+        :raises APIException: Contains status code and error message
+        :return: Requested user
+        :rtype: User
+        """
         url = f"{self.base_url}/me"
         async with self.__session.get(url) as resp:
             json = await resp.json()
@@ -86,6 +112,14 @@ class Client:
     @rate_limited
     @check_token
     async def get_user(self, user_query: Union[str, int], **kwargs: Any) -> User:
+        """Gets a user by a query.
+
+        :param user_query: Username or ID to search by
+        :type user_query: Union[str, int]
+        :raises APIException: Contains status code and error message
+        :return: Requested user
+        :rtype: User
+        """
         url = f"{self.base_url}/{user_query}"
         params = {}
         if "mode" in kwargs:
@@ -105,6 +139,18 @@ class Client:
     async def __get_type_scores(
         self, user_id: int, request_type: str, **kwargs: Any
     ) -> list[Score]:
+        """INTERNAL: Get a user's scores by type
+
+        :param user_id: User ID to search by
+        :type user_id: int
+        :param request_type: "recent", "best" or "firsts"
+        :type request_type: str
+        :raises ValueError: If limit is not between 1 and 100
+        :raises ValueError: If type is invalid
+        :raises APIException: Contains status code and error message
+        :return: List of requested scores
+        :rtype: list[Score]
+        """
         if not 1 <= kwargs.get("limit", 100) <= 100:
             raise ValueError("Invalid limit specified. Limit must be between 1 and 100")
         if request_type not in ("recent", "best", "firsts"):
@@ -129,12 +175,36 @@ class Client:
             return helpers.from_list(Score.parse_obj, json)
 
     async def get_user_recents(self, user_id: int, **kwargs: Any) -> list[Score]:
+        """Get a user's recent scores.
+
+        :param user_id: User ID to search by
+        :type user_id: int
+        :raises APIException: Contains status code and error message
+        :return: List of requested scores
+        :rtype: list[Score]
+        """
         return await self.__get_type_scores(user_id, "recent", **kwargs)
 
     async def get_user_bests(self, user_id: int, **kwargs: Any) -> list[Score]:
+        """Get a user's top scores.
+
+        :param user_id: User ID to search by
+        :type user_id: int
+        :raises APIException: Contains status code and error message
+        :return: List of requested scores
+        :rtype: list[Score]
+        """
         return await self.__get_type_scores(user_id, "best", **kwargs)
 
     async def get_user_firsts(self, user_id: int, **kwargs: Any) -> list[Score]:
+        """Get a user's first place scores.
+
+        :param user_id: User ID to search by
+        :type user_id: int
+        :raises APIException: Contains status code and error message
+        :return: List of requested scores
+        :rtype: list[Score]
+        """
         return await self.__get_type_scores(user_id, "firsts", **kwargs)
 
     @rate_limited
@@ -142,6 +212,16 @@ class Client:
     async def get_user_beatmap_scores(
         self, user_id: int, beatmap_id: int, **kwargs: Any
     ) -> list[Score]:
+        """Get a user's scores on a specific beatmap.
+
+        :param user_id: User ID to search by
+        :type user_id: int
+        :param beatmap_id: Beatmap ID to search by
+        :type beatmap_id: int
+        :raises APIException: Contains status code and error message
+        :return: List of requested scores
+        :rtype: list[Score]
+        """
         url = f"{self.base_url}/beatmaps/{beatmap_id}/scores/users/{user_id}/all"
         params = {}
         if "mode" in kwargs:
@@ -156,6 +236,14 @@ class Client:
     @rate_limited
     @check_token
     async def get_beatmap_scores(self, beatmap_id: int, **kwargs: Any) -> list[Score]:
+        """Get scores submitted on a specific beatmap.
+
+        :param beatmap_id: Beatmap ID to search by
+        :type beatmap_id: int
+        :raises APIException: Contains status code and error message
+        :return: List of requested scores
+        :rtype: list[Score]
+        """
         url = f"{self.base_url}/beatmaps/{beatmap_id}/scores"
         params = {}
         if "mode" in kwargs:

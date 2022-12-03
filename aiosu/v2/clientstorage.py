@@ -1,3 +1,6 @@
+"""
+This module handles multiple API v2 Client sessions.
+"""
 from __future__ import annotations
 
 from typing import Any

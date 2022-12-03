@@ -1,3 +1,6 @@
+"""
+This module contains models for Beatmap objects.
+"""
 from __future__ import annotations
 
 import datetime

@@ -1,3 +1,8 @@
+"""
+This module contains performance calculators for osu! gamemodes.
+
+Only compatible with scores from API v2.
+"""
 from __future__ import annotations
 
 import abc

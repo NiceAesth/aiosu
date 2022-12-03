@@ -1,3 +1,6 @@
+"""
+This module contains custom exception types.
+"""
 from __future__ import annotations
 
 

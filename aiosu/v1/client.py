@@ -1,3 +1,8 @@
+"""
+This module handles API requests for API v1.
+
+You can read more about it here: https://github.com/ppy/osu-api/wiki
+"""
 from __future__ import annotations
 
 from types import TracebackType

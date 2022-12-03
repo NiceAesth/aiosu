@@ -1,3 +1,6 @@
+"""
+This module contains models for User objects.
+"""
 from __future__ import annotations
 
 import datetime
