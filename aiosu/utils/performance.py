@@ -3,6 +3,10 @@ from __future__ import annotations
 import abc
 import math
 from typing import Callable
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from ..classes import Score
 
 from ..classes import BeatmapDifficultyAttributes
 from ..classes import CatchPerformanceAttributes
@@ -10,7 +14,6 @@ from ..classes import ManiaPerformanceAttributes
 from ..classes import Mod
 from ..classes import OsuPerformanceAttributes
 from ..classes import PerformanceAttributes
-from ..classes import Score
 from ..classes import TaikoPerformanceAttributes
 from .accuracy import CatchAccuracyCalculator
 from .accuracy import ManiaAccuracyCalculator

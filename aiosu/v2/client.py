@@ -38,7 +38,7 @@ class Client:
             },
         )
 
-    async def __aenter__(self) -> "Client":
+    async def __aenter__(self) -> Client:
         return self
 
     async def __aexit__(

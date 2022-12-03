@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import abc
+from typing import TYPE_CHECKING
 
-from ..classes import Score
+if TYPE_CHECKING:
+    from ..classes import Score
 
 
 class AbstractAccuracyCalculator(abc.ABC):
