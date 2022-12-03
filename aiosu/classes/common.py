@@ -16,7 +16,7 @@ class TimestampedCount(BaseModel):
     count: int
 
     @validator("start_date", pre=True)
-    def date_validate(cls, v: str) -> datetime.datetime:
+    def _date_validate(cls, v: str) -> datetime.datetime:
         return datetime.datetime.strptime(v, "%Y-%m-%d")
 
 
@@ -31,4 +31,9 @@ class Country(BaseModel):
 
     @property
     def flag_emoji(self) -> str:
+        """Emoji for the flag.
+
+        :return: Unicode emoji representation of the country's flag
+        :rtype: str
+        """
         return flag_lookup(self.code)

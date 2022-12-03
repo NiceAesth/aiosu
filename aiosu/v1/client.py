@@ -5,6 +5,7 @@ You can read more about it here: https://github.com/ppy/osu-api/wiki
 """
 from __future__ import annotations
 
+import functools
 from types import TracebackType
 from typing import Any
 from typing import Callable
@@ -28,6 +29,12 @@ from ..classes.legacy import Replay
 
 
 def rate_limited(func: Callable) -> Callable:
+    """
+    A decorator that enforces rate limiting, to be used as:
+    @rate_limited
+    """
+
+    @functools.wraps(func)
     async def _rate_limited(*args: Any, **kwargs: Any) -> Any:
         self = args[0]
         async with self._limiter:
@@ -37,6 +44,8 @@ def rate_limited(func: Callable) -> Callable:
 
 
 class Client:
+    """osu! API v1 Client"""
+
     def __init__(self, token: str, **kwargs: Any) -> None:
         self.token: str = token
         self.base_url: str = kwargs.pop("base_url", "https://osu.ppy.sh/api")
@@ -55,10 +64,30 @@ class Client:
         await self.close()
 
     async def close(self) -> None:
+        """Closes the client session."""
         await self.__session.close()
 
     @rate_limited
     async def get_user(self, user_query: Union[str, int], **kwargs: Any) -> list[User]:
+        r"""Gets a user by a query.
+
+        :param user_query: Username or ID to search by
+        :type user_query: Union[str, int]
+        :param \**kwargs:
+            See below
+
+        :Keyword Arguments:
+            * *mode* (``aiosu.classes.gamemode.Gamemode``) --
+                Optional, gamemode to search for, defaults to standard
+            * *qtype* (``str``) --
+                Optional, \"string\" or \"id\". Type of the user_query
+            * *event_days* (``aiosu.classes.gamemode.Gamemode``) --
+                Optional, max number of days since last event, Min: 1, Max: 31, defaults to 1
+
+        :raises APIException: Contains status code and error message
+        :return: Requested user
+        :rtype: list[aiosu.classes.user.User]
+        """
         url = f"{self.base_url}/get_user"
         params = {
             "k": self.token,
@@ -79,6 +108,28 @@ class Client:
     async def __get_type_scores(
         self, user_query: Union[str, int], request_type: str, **kwargs: Any
     ) -> list[Score]:
+        r"""INTERNAL: Get a user's scores by type
+
+        :param user_query: Username or ID to search by
+        :type user_query: Union[str, int]
+        :param request_type: "recent" or "best"
+        :type request_type: str
+        :param \**kwargs:
+            See below
+
+        :Keyword Arguments:
+            * *mode* (``aiosu.classes.gamemode.Gamemode``) --
+                Optional, gamemode to search for, defaults to standard
+            * *limit* (``int``) --
+                Optional, number of scores to get, defaults to 10
+            * *qtype* (``str``) --
+                Optional, \"string\" or \"id\". Type of the user_query
+
+        :raises ValueError: If request_type is invalid
+        :raises APIException: Contains status code and error message
+        :return: List of requested scores
+        :rtype: list[aiosu.classes.score.Score]
+        """
         if request_type not in ("recent", "best"):
             raise ValueError(
                 'Invalid request_type specified. Valid options are: "best", "recent"',
@@ -104,6 +155,26 @@ class Client:
     async def get_user_recents(
         self, user_query: Union[str, int], **kwargs: Any
     ) -> list[Score]:
+        r"""Get a user's recent scores.
+
+        :param user_query: Username or ID to search by
+        :type user_query: Union[str, int]
+        :param \**kwargs:
+            See below
+
+        :Keyword Arguments:
+            * *mode* (``aiosu.classes.gamemode.Gamemode``) --
+                Optional, gamemode to search for, defaults to standard
+            * *limit* (``int``) --
+                Optional, number of scores to get, Min: 1, Max: 50, defaults to 50
+            * *qtype* (``str``) --
+                Optional, \"string\" or \"id\". Type of the user_query
+
+        :raises ValueError: If limit is not between 1 and 50
+        :raises APIException: Contains status code and error message
+        :return: List of requested scores
+        :rtype: list[aiosu.classes.score.Score]
+        """
         if not 1 <= kwargs.get("limit", 50) <= 50:
             raise ValueError("Invalid limit specified. Limit must be between 1 and 50")
         return await self.__get_type_scores(user_query, "recent", **kwargs)
@@ -111,12 +182,65 @@ class Client:
     async def get_user_bests(
         self, user_query: Union[str, int], **kwargs: Any
     ) -> list[Score]:
+        r"""Get a user's best scores.
+
+        :param user_query: Username or ID to search by
+        :type user_query: Union[str, int]
+        :param \**kwargs:
+            See below
+
+        :Keyword Arguments:
+            * *mode* (``aiosu.classes.gamemode.Gamemode``) --
+                Optional, gamemode to search for, defaults to standard
+            * *limit* (``int``) --
+                Optional, number of scores to get, Min: 1, Max: 100, defaults to 100
+            * *qtype* (``str``) --
+                Optional, \"string\" or \"id\". Type of the user_query
+
+        :raises ValueError: If limit is not between 1 and 100
+        :raises APIException: Contains status code and error message
+        :return: List of requested scores
+        :rtype: list[aiosu.classes.score.Score]
+        """
         if not 1 <= kwargs.get("limit", 100) <= 100:
             raise ValueError("Invalid limit specified. Limit must be between 1 and 100")
         return await self.__get_type_scores(user_query, "best", **kwargs)
 
     @rate_limited
     async def get_beatmap(self, **kwargs: Any) -> list[Beatmapset]:
+        r"""Get beatmap data.
+
+        :param \**kwargs:
+            See below
+
+        :Keyword Arguments:
+            * *limit* (``int``) --
+                Optional, number of scores to get, Min: 1, Max: 500, defaults to 500
+            * *mode* (``aiosu.classes.gamemode.Gamemode``) --
+                Optional, gamemode to search for, defaults to standard
+            * *converts* (``bool``) --
+                Optional, whether to return converts, defaults to False
+            * *mods* (``aiosu.classes.mods.Mods``) --
+                Optional, mods to apply to the result
+            * *beatmap_id* (``int``) --
+                Optional, The ID of the beatmap
+            * *beatmapset_id* (``int``) --
+                Optional, The ID of the beatmapset
+            * *since* (``datetime.datetime``) --
+                Optional, Return all beatmaps with a leaderboard since this date
+            * *hash* (``str``) --
+                Optional, The MD5 hash of the beatmap
+            * *user_query* (``Union[str, int]``) --
+                Optional, username or ID to search by
+            * *qtype* (``str``) --
+                Optional, \"string\" or \"id\". Type of the user_query
+
+        :raises ValueError: If limit is not between 1 and 500
+        :raises ValueError: If none of hash, since, user_query, beatmap_id or beatmapset_id specified.
+        :raises APIException: Contains status code and error message
+        :return: List of beatmapsets each containing one difficulty of the result
+        :rtype: list[aiosu.classes.beatmap.Beatmapset]
+        """
         if not 1 <= kwargs.get("limit", 500) <= 500:
             raise ValueError("Invalid limit specified. Limit must be between 1 and 500")
         url = f"{self.base_url}/get_beatmaps"
@@ -154,6 +278,30 @@ class Client:
 
     @rate_limited
     async def get_beatmap_scores(self, beatmap_id: int, **kwargs: Any) -> list[Score]:
+        r"""Get a user's best scores.
+
+        :param beatmap_id: The ID of the beatmap
+        :type beatmap_id: int
+        :param \**kwargs:
+            See below
+
+        :Keyword Arguments:
+            * *mode* (``aiosu.classes.gamemode.Gamemode``) --
+                Optional, gamemode to search for, defaults to standard
+            * *mods* (``aiosu.classes.mods.Mods``) --
+                Optional, mods to search for
+            * *limit* (``int``) --
+                Optional, number of scores to get, Min: 1, Max: 100, defaults to 100
+            * *user_query* (``Union[str, int]``) --
+                Optional, username or ID to search by
+            * *qtype* (``str``) --
+                Optional, \"string\" or \"id\". Type of the user_query
+
+        :raises ValueError: If limit is not between 1 and 100
+        :raises APIException: Contains status code and error message
+        :return: List of requested scores
+        :rtype: list[aiosu.classes.score.Score]
+        """
         if not 1 <= kwargs.get("limit", 100) <= 100:
             raise ValueError("Invalid limit specified. Limit must be between 1 and 100")
         url = f"{self.base_url}/get_scores"
@@ -181,6 +329,14 @@ class Client:
 
     @rate_limited
     async def get_match(self, match_id: int) -> Any:
+        r"""Gets a multiplayer match. (WIP, currently returns raw JSON)
+
+        :param match_id: The ID of the match
+        :type match_id: int
+        :raises APIException: Contains status code and error message
+        :return: The requested multiplayer match
+        :rtype: aiosu.classes.legacy.match.Match
+        """
         url = f"{self.base_url}/get_match"
         params = {
             "k": self.token,
@@ -194,6 +350,30 @@ class Client:
 
     @rate_limited
     async def get_replay(self, **kwargs: Any) -> Replay:
+        r"""Gets data for a replay.
+
+        :param \**kwargs:
+            See below
+
+        :Keyword Arguments:
+            * *mode* (``aiosu.classes.gamemode.Gamemode``) --
+                Optional, gamemode to search for, defaults to standard
+            * *mods* (``aiosu.classes.mods.Mods``) --
+                Optional, mods to search for
+            * *score_id* (``int``) --
+                Optional, the ID of the score
+            * *beatmap_id* (``int``) --
+                Optional, the ID of the beatmap, specified together with user_query
+            * *user_query* (``Union[str, int]``) --
+                Optional, username or ID to search by, specified together with beatmap_id
+            * *qtype* (``str``) --
+                Optional, \"string\" or \"id\". Type of the user_query
+
+        :raises ValueError: If neither scode_id nor beatmap_id + user_id specified
+        :raises APIException: Contains status code and error message
+        :return: The data for the requested replay
+        :rtype: aiosu.classes.legacy.replay.Replay
+        """
         url = f"{self.base_url}/get_replay"
         params = {"k": self.token}
         params["m"] = int(Gamemode(kwargs.pop("mode", 0)))  # type: ignore

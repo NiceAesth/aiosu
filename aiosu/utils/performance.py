@@ -1,7 +1,5 @@
 """
-This module contains performance calculators for osu! gamemodes.
-
-Only compatible with scores from API v2.
+This module contains performance point calculators for osu! gamemodes.
 """
 from __future__ import annotations
 
@@ -52,7 +50,21 @@ class AbstractPerformanceCalculator(abc.ABC):
 
 
 class OsuPerformanceCalculator(AbstractPerformanceCalculator):
+    """osu!std performance point calculator. Only compatible with scores from API v2.
+
+    :param difficulty_attributes: API difficulty attributes for a beatmap
+    :type difficulty_attributes: BeatmapDifficultyAttributes
+    """
+
     def calculate(self, score: Score) -> OsuPerformanceAttributes:
+        """Calculates performance points for a score.
+
+        :param score: The score to calculate pp for
+        :type score: aiosu.classes.score.Score
+        :raises ValueError: If score does not have an associated beatmap
+        :return: Performance attributes for the score
+        :rtype: aiosu.classes.performance.OsuPerformanceAttributes
+        """
         if score.beatmap is None:
             raise ValueError("Given score does not have a beatmap.")
 
@@ -365,7 +377,20 @@ class OsuPerformanceCalculator(AbstractPerformanceCalculator):
 
 
 class TaikoPerformanceCalculator(AbstractPerformanceCalculator):
+    """osu!taiko performance point calculator.
+
+    :param difficulty_attributes: API difficulty attributes for a beatmap
+    :type difficulty_attributes: BeatmapDifficultyAttributes
+    """
+
     def calculate(self, score: Score) -> TaikoPerformanceAttributes:
+        """Calculates performance points for a score
+
+        :param score: The score to calculate pp for
+        :type score: aiosu.classes.score.Score
+        :return: Performance attributes for the score
+        :rtype: aiosu.classes.performance.TaikoPerformanceAttributes
+        """
         accuracy_calculator = TaikoAccuracyCalculator()
         accuracy = accuracy_calculator.calculate_weighted(score)
 
@@ -493,7 +518,20 @@ class TaikoPerformanceCalculator(AbstractPerformanceCalculator):
 
 
 class ManiaPerformanceCalculator(AbstractPerformanceCalculator):
+    """osu!mania performance point calculator.
+
+    :param difficulty_attributes: API difficulty attributes for a beatmap
+    :type difficulty_attributes: BeatmapDifficultyAttributes
+    """
+
     def calculate(self, score: Score) -> ManiaPerformanceAttributes:
+        """Calculates performance points for a score.
+
+        :param score: The score to calculate pp for
+        :type score: aiosu.classes.score.Score
+        :return: Performance attributes for the score
+        :rtype: aiosu.classes.performance.ManiaPerformanceAttributes
+        """
         accuracy_calculator = ManiaAccuracyCalculator()
         accuracy = ManiaAccuracyCalculator().calculate_weighted(score)
 
@@ -533,7 +571,20 @@ class ManiaPerformanceCalculator(AbstractPerformanceCalculator):
 
 
 class CatchPerformanceCalculator(AbstractPerformanceCalculator):
+    """osu!catch performance point calculator.
+
+    :param difficulty_attributes: API difficulty attributes for a beatmap
+    :type difficulty_attributes: BeatmapDifficultyAttributes
+    """
+
     def calculate(self, score: Score) -> CatchPerformanceAttributes:
+        """Calculates performance points for a score.
+
+        :param score: The score to calculate pp for
+        :type score: aiosu.classes.score.Score
+        :return: Performance attributes for the score
+        :rtype: aiosu.classes.performance.CatchPerformanceAttributes
+        """
         accuracy_calculator = CatchAccuracyCalculator()
         accuracy = accuracy_calculator.calculate_weighted(score)
 

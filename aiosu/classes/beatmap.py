@@ -100,7 +100,7 @@ class BeatmapDifficultyAttributes(BaseModel):
     star_rating: float
     # osu standard
     aim_difficulty: Optional[float] = None
-    approach_rate: Optional[float] = None  # osu catch
+    approach_rate: Optional[float] = None  # osu catch + standard
     flashlight_difficulty: Optional[float] = None
     overall_difficulty: Optional[float] = None
     slider_factor: Optional[float] = None
@@ -116,10 +116,10 @@ class BeatmapDifficultyAttributes(BaseModel):
 
 
 class Beatmap(BaseModel):
-    beatmapset_id: int
-    difficulty_rating: float
     id: int
     mode: Gamemode
+    beatmapset_id: int
+    difficulty_rating: float
     status: BeatmapRankStatus
     total_length: int
     user_id: int
@@ -147,6 +147,12 @@ class Beatmap(BaseModel):
 
     @property
     def count_objects(self) -> int:
+        """Total count of the objects.
+
+        :raises ValueError: Raised if object counts are none
+        :return: Sum of counts of all objects
+        :rtype: int
+        """
         if (
             self.count_circles is None
             or self.count_spinners is None
@@ -158,6 +164,11 @@ class Beatmap(BaseModel):
     # Support both since API decided to name them differently for Beatmap and Beatmapset
     @property
     def play_count(self) -> Optional[int]:
+        """Alias for playcount.
+
+        :return: Playcount of the beatmap
+        :rtype: Optional[int]
+        """
         return self.playcount
 
     @play_count.setter
@@ -231,6 +242,11 @@ class Beatmapset(BaseModel):
 
     @property
     def playcount(self) -> int:
+        """Alias for play_count
+
+        :return: Playcount of the beatmap
+        :rtype: int
+        """
         return self.playcount
 
     @playcount.setter

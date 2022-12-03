@@ -85,6 +85,11 @@ class Mods(UserList):
 
     @property
     def bitwise(self) -> int:
+        """Bitwise representation.
+
+        :return: Bitwise representation of the mod combination
+        :rtype: int
+        """
         return reduce(lambda x, y: int(x) | int(y), self, 0)
 
     def __str__(self) -> str:
@@ -109,14 +114,14 @@ class Mods(UserList):
 
     @classmethod
     def __get_validators__(cls) -> Generator:
-        yield cls.validate
+        yield cls._validate
 
     @classmethod
     def __modify_schema__(cls, field_schema):  # type: ignore
         pass  # Genuinely not sure about implementing this
 
     @classmethod
-    def validate(cls, v: object) -> Mods:
+    def _validate(cls, v: object) -> Mods:
         if not isinstance(v, (list, str, int)):
             raise TypeError("Invalid type specified ")
         return cls(v)
