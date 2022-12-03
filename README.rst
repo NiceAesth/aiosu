@@ -1,7 +1,7 @@
 aiosu
 =====
 
-|Python| |pre-commit.ci status| |pytest| Simple and fast osu! API v1 and
+|Python| |pre-commit.ci status| |pytest| |rtd| Simple and fast osu! API v1 and
 v2 library
 
 Acknowledgments
@@ -14,3 +14,6 @@ Acknowledgments
 .. |pre-commit.ci status| image:: https://results.pre-commit.ci/badge/github/NiceAesth/aiosu/master.svg
    :target: https://results.pre-commit.ci/latest/github/NiceAesth/aiosu/master
 .. |pytest| image:: https://github.com/NiceAesth/aiosu/actions/workflows/pytest.yml/badge.svg
+.. |rtd| image:: https://readthedocs.org/projects/aiosu/badge/?version=latest
+    :target: https://aiosu.readthedocs.io/en/latest/?badge=latest
+    :alt: Documentation Status
