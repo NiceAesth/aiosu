@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import datetime
 from enum import Enum
+from typing import Any
 from typing import Optional
 
 from .gamemode import Gamemode
@@ -44,6 +45,10 @@ class BeatmapAvailability(BaseModel):
     more_information: Optional[str] = None
     download_disabled: Optional[bool] = None
 
+    @classmethod
+    def _from_api_v1(cls, data: Any) -> BeatmapAvailability:
+        return cls.parse_obj({"download_disabled": data["download_unavailable"]})
+
 
 class BeatmapNominations(BaseModel):
     current: Optional[int] = None
@@ -59,6 +64,22 @@ class BeatmapCovers(BaseModel):
     card_2_x: Optional[str]
     list_2_x: Optional[str]
     slimcover_2_x: Optional[str]
+
+    @classmethod
+    def _from_api_v1(cls, data: Any) -> BeatmapCovers:
+        base_url = "https://assets.ppy.sh/beatmaps/"
+        return cls.parse_obj(
+            {
+                "cover": f"{base_url}{data['beatmapset_id']}/covers/cover.jpg",
+                "card": f"{base_url}{data['beatmapset_id']}/covers/card.jpg",
+                "list": f"{base_url}{data['beatmapset_id']}/covers/list.jpg",
+                "slimcover": f"{base_url}{data['beatmapset_id']}/covers/slimcover.jpg",
+                "cover_2_x": f"{base_url}{data['beatmapset_id']}/covers/cover@2x.jpg",
+                "card_2_x": f"{base_url}{data['beatmapset_id']}/covers/card@2x.jpg",
+                "list_2_x": f"{base_url}{data['beatmapset_id']}/covers/list@2x.jpg",
+                "slimcover_2_x": f"{base_url}{data['beatmapset_id']}/covers/slimcover@2x.jpg",
+            },
+        )
 
 
 class BeatmapHype(BaseModel):
@@ -131,6 +152,45 @@ class Beatmap(BaseModel):
             raise ValueError("Beatmap contains no object count information.")
         return self.count_spinners + self.count_circles + self.count_sliders
 
+    # Support both since API decided to name them differently for Beatmap and Beatmapset
+    @property
+    def play_count(self) -> Optional[int]:
+        return self.playcount
+
+    @play_count.setter
+    def play_count(self, new_value: int) -> None:
+        self.playcount = new_value
+
+    @classmethod
+    def _from_api_v1(cls, data: Any) -> Beatmap:
+        return cls.parse_obj(
+            {
+                "beatmapset_id": data["beatmapset_id"],
+                "difficulty_rating": data["difficultyrating"],
+                "id": data["beatmap_id"],
+                "mode": int(data["mode"]),
+                "status": int(data["approved"]),
+                "total_length": data["total_length"],
+                "hit_length": data["total_length"],
+                "user_id": data["creator_id"],
+                "version": data["version"],
+                "accuracy": data["diff_overall"],
+                "cs": data["diff_size"],
+                "ar": data["diff_approach"],
+                "drain": data["diff_drain"],
+                "last_updated": data["last_update"],
+                "bpm": data["bpm"],
+                "checksum": data["file_md5"],
+                "mode": int(data["mode"]),
+                "playcount": data["playcount"],
+                "passcount": data["passcount"],
+                "count_circles": data["count_normal"],
+                "count_sliders": data["count_slider"],
+                "count_spinners": data["count_spinner"],
+                "max_combo": data["max_combo"],
+            },
+        )
+
 
 class Beatmapset(BaseModel):
     artist: str
@@ -139,7 +199,6 @@ class Beatmapset(BaseModel):
     creator: str
     favourite_count: int
     id: int
-    nsfw: bool
     play_count: int
     preview_url: str
     source: str
@@ -148,6 +207,7 @@ class Beatmapset(BaseModel):
     title_unicode: str
     user_id: int
     video: bool
+    nsfw: Optional[bool] = None
     hype: Optional[BeatmapHype] = None
     availability: Optional[BeatmapAvailability] = None
     bpm: Optional[float] = None
@@ -165,6 +225,42 @@ class Beatmapset(BaseModel):
     ratings: Optional[list[int]] = None
     has_favourited: Optional[bool] = None
     beatmaps: Optional[list[Beatmap]] = None
+
+    @property
+    def playcount(self) -> int:
+        return self.playcount
+
+    @playcount.setter
+    def playcount(self, new_value: int) -> None:
+        self.playcount = new_value
+
+    @classmethod
+    def _from_api_v1(cls, data: Any) -> Beatmapset:
+        return cls.parse_obj(
+            {
+                "artist": data["artist"],
+                "artist_unicode": data["artist"],
+                "covers": BeatmapCovers._from_api_v1(data),
+                "favourite_count": data["favourite_count"],
+                "id": data["beatmapset_id"],
+                "creator": data["creator"],
+                "play_count": data["playcount"],
+                "preview_url": f"https://b.ppy.sh/preview/{data['beatmapset_id']}.mp3",
+                "source": data["source"],
+                "status": int(data["approved"]),
+                "title": data["title"],
+                "title_unicode": data["title"],
+                "user_id": data["creator_id"],
+                "video": data["video"],
+                "submitted_date": data["submit_date"],
+                "ranked_date": data["approved_date"],
+                "last_updated": data["last_update"],
+                "tags": data["tags"],
+                "storyboard": data["storyboard"],
+                "availabiliy": BeatmapAvailability._from_api_v1(data),
+                "beatmaps": [Beatmap._from_api_v1(data)],
+            },
+        )
 
 
 Beatmap.update_forward_refs()

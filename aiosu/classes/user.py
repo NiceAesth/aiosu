@@ -37,6 +37,13 @@ class UserLevel(BaseModel):
     current: int
     progress: int
 
+    @classmethod
+    def _from_api_v1(cls, data: Any) -> UserLevel:
+        level = float(data["level"])
+        current = int(level)
+        progress = (level - current) * 100
+        return cls.parse_obj({"current": current, "progress": progress})
+
 
 class UserKudosu(BaseModel):
     total: int
@@ -86,6 +93,18 @@ class UserGradeCounts(BaseModel):
     sh: int
     a: int
 
+    @classmethod
+    def _from_api_v1(cls, data: Any) -> UserGradeCounts:
+        return cls.parse_obj(
+            {
+                "ss": data["count_rank_ss"],
+                "ssh": data["count_rank_ssh"],
+                "s": data["count_rank_s"],
+                "sh": data["count_rank_sh"],
+                "a": data["count_rank_a"],
+            },
+        )
+
 
 class UserGroup(BaseModel):
     id: int
@@ -106,26 +125,43 @@ class UserStats(BaseModel):
     play_time: int
     total_score: int
     total_hits: int
-    maximum_combo: int
-    replays_watched_by_others: int
     is_ranked: bool
     grade_counts: UserGradeCounts
+    replays_watched_by_others: Optional[int]
+    maximum_combo: Optional[int]
     global_rank: Optional[int]
     country_rank: Optional[int]
     user: Optional[User] = None
+
+    @classmethod
+    def _from_api_v1(cls, data: Any) -> UserStats:
+        return cls.parse_obj(
+            {
+                "level": UserLevel._from_api_v1(data),
+                "pp": data["pp_raw"],
+                "ranked_score": data["ranked_score"],
+                "hit_accuracy": data["accuracy"],
+                "play_count": data["playcount"],
+                "play_time": data["total_seconds_played"],
+                "total_score": data["total_score"],
+                "total_hits": data["count300"] + data["count100"] + data["count50"],
+                "is_ranked": data["pp_raw"] != "0",
+                "grade_counts": UserGradeCounts._from_api_v1(data),
+            },
+        )
 
 
 class User(BaseModel):
     avatar_url: str
     country_code: str
-    default_group: str
     id: int
-    is_active: bool
-    is_bot: bool
-    is_online: bool
-    is_supporter: bool
-    pm_friends_only: bool
     username: str
+    default_group: Optional[str]
+    is_active: Optional[bool]
+    is_bot: Optional[bool]
+    is_online: Optional[bool]
+    is_supporter: Optional[bool]
+    pm_friends_only: Optional[bool]
     profile_colour: Optional[str]
     is_deleted: Optional[bool] = None
     last_visit: Optional[datetime.datetime] = None
@@ -170,3 +206,16 @@ class User(BaseModel):
     support_level: Optional[int] = None
     user_achievements: Optional[list[Achievement]] = None
     rank_history: Optional[UserRankHistoryElement] = None
+
+    @classmethod
+    def _from_api_v1(cls, data: Any) -> User:
+        return cls.parse_obj(
+            {
+                "avatar_url": f"https://s.ppy.sh/a/{data['user_id']}",
+                "country_code": data["country"],
+                "id": data["user_id"],
+                "username": data["username"],
+                "join_date": data["join_date"],
+                "statistics": UserStats._from_api_v1(data),
+            },
+        )

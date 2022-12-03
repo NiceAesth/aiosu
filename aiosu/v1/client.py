@@ -10,12 +10,16 @@ from typing import Union
 import aiohttp
 from aiolimiter import AsyncLimiter
 
+from .. import helpers
+from ..classes import APIException
 from ..classes import Beatmap
 from ..classes import Beatmapset
 from ..classes import Gamemode
+from ..classes import Mods
 from ..classes import Score
 from ..classes import User
 from ..classes import UserQueryType
+from ..classes.legacy import Replay
 
 
 class Client:
@@ -25,7 +29,7 @@ class Client:
         self._limiter: AsyncLimiter = kwargs.pop("limiter", AsyncLimiter(1200, 60))
         self.__session: aiohttp.ClientSession = aiohttp.ClientSession()
 
-    async def __aenter__(self) -> "Client":
+    async def __aenter__(self) -> Client:
         return self
 
     async def __aexit__(
@@ -62,7 +66,9 @@ class Client:
             params["type"] = qtype.old_api_name
         async with self.__session.get(url, params=params) as resp:
             json = await resp.json()
-        return json
+            if resp.status != 200:
+                raise APIException(resp.status, json.get("error", ""))
+            return helpers.from_list(User._from_api_v1, json)
 
     @rate_limited
     async def __get_type_scores(
@@ -78,13 +84,17 @@ class Client:
             "u": user_query,
             "limit": kwargs.pop("limit", 10),
         }
-        params["m"] = int(Gamemode(kwargs.pop("mode", 0)))  # type: ignore
+        mode = Gamemode(kwargs.pop("mode", 0))  # type: ignore
+        params["m"] = int(mode)
         if "qtype" in kwargs:
             qtype = UserQueryType(kwargs.pop("qtype"))  # type: ignore
             params["type"] = qtype.old_api_name
         async with self.__session.get(url, params=params) as resp:
             json = await resp.json()
-        return json
+            if resp.status != 200:
+                raise APIException(resp.status, json.get("error", ""))
+            score_conv = lambda x: Score._from_api_v1(x, mode)
+            return helpers.from_list(score_conv, json)
 
     async def get_user_recents(
         self, user_query: Union[str, int], **kwargs: Any
@@ -101,7 +111,7 @@ class Client:
         return await self.__get_type_scores(user_query, "best", **kwargs)
 
     @rate_limited
-    async def get_beatmap(self, **kwargs: Any) -> list[Beatmap]:
+    async def get_beatmap(self, **kwargs: Any) -> list[Beatmapset]:
         if not 1 <= kwargs.get("limit", 500) <= 500:
             raise ValueError("Invalid limit specified. Limit must be between 1 and 500")
         url = f"{self.base_url}/get_beatmaps"
@@ -109,9 +119,11 @@ class Client:
             "k": self.token,
             "limit": kwargs.pop("limit", 500),
             "a": int(kwargs.pop("converts", False)),
-            "mods": kwargs.pop("mods", 0),
         }
         params["m"] = int(Gamemode(kwargs.pop("mode", 0)))  # type: ignore
+        if "mods" in kwargs:
+            mods = Mods(kwargs.pop("mods"))
+            params["mode"] = str(mods)
         if "beatmap_id" in kwargs:
             params["b"] = kwargs.pop("beatmap_id")
         elif "beatmapset_id" in kwargs:
@@ -131,7 +143,9 @@ class Client:
             )
         async with self.__session.get(url, params=params) as resp:
             json = await resp.json()
-        return json
+            if resp.status != 200:
+                raise APIException(resp.status, json.get("error", ""))
+            return helpers.from_list(Beatmapset._from_api_v1, json)
 
     @rate_limited
     async def get_beatmap_scores(self, beatmap_id: int, **kwargs: Any) -> list[Score]:
@@ -143,17 +157,22 @@ class Client:
             "b": beatmap_id,
             "limit": kwargs.pop("limit", 50),
         }
-        params["m"] = int(Gamemode(kwargs.pop("mode", 0)))  # type: ignore
+        mode = Gamemode(kwargs.pop("mode", 0))  # type: ignore
+        params["m"] = int(mode)
         if "user_query" in kwargs:
             params["u"] = kwargs.pop("user_query")
             if "qtype" in kwargs:
                 qtype = UserQueryType(kwargs.pop("qtype"))  # type: ignore
                 params["type"] = qtype.old_api_name
         if "mods" in kwargs:
-            params["mods"] = kwargs.pop("mods")
+            mods = Mods(kwargs.pop("mods"))
+            params["mode"] = str(mods)
         async with self.__session.get(url, params=params) as resp:
             json = await resp.json()
-        return json
+            if resp.status != 200:
+                raise APIException(resp.status, json.get("error", ""))
+            score_conv = lambda x: Score._from_api_v1(x, mode)
+            return helpers.from_list(score_conv, json)
 
     @rate_limited
     async def get_match(self, match_id: int) -> Any:
@@ -164,10 +183,12 @@ class Client:
         }
         async with self.__session.get(url, params=params) as resp:
             json = await resp.json()
-        return json
+            if resp.status != 200:
+                raise APIException(resp.status, json.get("error", ""))
+            return json
 
     @rate_limited
-    async def get_replay(self, **kwargs: Any) -> Any:
+    async def get_replay(self, **kwargs: Any) -> Replay:
         url = f"{self.base_url}/get_replay"
         params = {"k": self.token}
         params["m"] = int(Gamemode(kwargs.pop("mode", 0)))  # type: ignore
@@ -184,7 +205,10 @@ class Client:
                 "Either score_id or beatmap_id + user_id must be specified.",
             )
         if "mods" in kwargs:
-            params["mods"] = kwargs.pop("mods")
+            mods = Mods(kwargs.pop("mods"))
+            params["mode"] = str(mods)
         async with self.__session.get(url, params=params) as resp:
             json = await resp.json()
-        return json
+            if resp.status != 200:
+                raise APIException(resp.status, json.get("error", ""))
+            return Replay.parse_obj(json)
