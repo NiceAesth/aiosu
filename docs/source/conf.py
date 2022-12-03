@@ -7,25 +7,19 @@
 from __future__ import annotations
 
 import os
-import re
 import sys
 from datetime import date
 
-sys.path.insert(0, os.path.abspath("../../aiosu/"))
+import toml
 
-version = ""
-with open("../../aiosu/__init__.py") as f:
-    if search := re.search(
-        r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]',
-        f.read(),
-        re.MULTILINE,
-    ):
-        version = search.group(1)
+sys.path.insert(0, os.path.abspath("../../aiosu/"))
 
 project = "aiosu"
 author = "Nice Aesthetics"
 copyright = f"{date.today().year}, {author}"
-release = version
+release = toml.load(os.path.abspath("../../pyproject.toml"))["tool"]["poetry"][
+    "version"
+]
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
