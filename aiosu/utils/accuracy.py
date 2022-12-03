@@ -1,3 +1,6 @@
+"""
+This module contains accuracy calculators for osu! gamemodes.
+"""
 from __future__ import annotations
 
 import abc

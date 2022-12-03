@@ -1,3 +1,8 @@
+"""
+This module handles API requests for API v2 (OAuth).
+
+You can read more about it here: https://osu.ppy.sh/docs/index.html
+"""
 from __future__ import annotations
 
 import datetime

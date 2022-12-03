@@ -1,3 +1,6 @@
+"""
+This module contains models for mods.
+"""
 from __future__ import annotations
 
 from collections import UserList

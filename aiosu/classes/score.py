@@ -1,3 +1,6 @@
+"""
+This module contains models for Score objects.
+"""
 from __future__ import annotations
 
 import datetime

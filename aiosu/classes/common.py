@@ -1,3 +1,6 @@
+"""
+This module contains models for miscellaneous objects.
+"""
 from __future__ import annotations
 
 import datetime
