@@ -1,7 +1,8 @@
-# To release a new version `make version v=<args>`
+# To release a new version `make release ver=<args>`
+# https://python-poetry.org/docs/cli/#version
 
-version:
-    @poetry version $(v)
+release:
+    @poetry version $(ver)
     @git add pyproject.toml
     @git commit -m "v$$(poetry version -s)"
     @git tag v$$(poetry version -s)
