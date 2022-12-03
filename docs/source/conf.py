@@ -11,7 +11,10 @@ import re
 import sys
 from datetime import date
 
-with open("../aiosu/__init__.py") as f:
+sys.path.insert(0, os.path.abspath("../../aiosu/"))
+
+version = ""
+with open("../../aiosu/__init__.py") as f:
     if search := re.search(
         r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]',
         f.read(),
@@ -24,11 +27,8 @@ author = "Nice Aesthetics"
 copyright = f"{date.today().year}, {author}"
 release = version
 
-
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
-
-sys.path.insert(0, os.path.abspath("../aiosu"))
 
 extensions = ["sphinx.ext.autodoc"]
 
@@ -41,3 +41,7 @@ exclude_patterns = []
 
 html_theme = "sphinx_rtd_theme"
 html_static_path = ["_static"]
+html_theme_options = {
+    "collapse_navigation": False,
+    "prev_next_buttons_location": None,
+}
