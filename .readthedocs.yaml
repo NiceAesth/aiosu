@@ -6,7 +6,7 @@ version: 2
 formats: []
 
 build:
-  image: latest
+  image: testing
 
 sphinx:
    configuration: docs/source/conf.py
