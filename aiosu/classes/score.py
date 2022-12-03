@@ -67,6 +67,7 @@ class Score(BaseModel):
     mode: Gamemode
     replay: bool
     id: Optional[int] = None
+    """Always present except for API v1 recent scores."""
     pp: Optional[float] = 0
     best_id: Optional[int] = None
     beatmap: Optional[Beatmap] = None
@@ -78,6 +79,13 @@ class Score(BaseModel):
 
     @property
     def completion(self) -> float:  # Should probably move to utils
+        """Beatmap completion.
+
+        :raises ValueError: If beatmap is None
+        :raises ValueError: If mode is unknown
+        :return: Beatmap completion of a score (%). 100% for passes
+        :rtype: float
+        """
         if not self.beatmap:
             raise ValueError("Beatmap object is not set.")
 
@@ -126,6 +134,11 @@ class Score(BaseModel):
     @property
     def score_url(self) -> Optional[str]:
         # score.id has undefined behaviour, best_id is the one you should use as it returns None if the URL does not exist
+        """Link to the score.
+
+        :return: Link to the score on the osu! website
+        :rtype: Optional[str]
+        """
         return (
             f"https://osu.ppy.sh/scores/{self.mode.name_api}/{self.best_id}"
             if self.best_id
@@ -135,6 +148,11 @@ class Score(BaseModel):
     @property
     def replay_url(self) -> Optional[str]:
         # score.id has undefined behaviour, best_id is the one you should use as it returns None if the URL does not exist
+        """Link to the replay.
+
+        :return: Link to download the replay on the osu! website
+        :rtype: Optional[str]
+        """
         return (
             f"https://osu.ppy.sh/scores/{self.mode.name_api}/{self.best_id}/download"
             if self.best_id

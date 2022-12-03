@@ -41,6 +41,14 @@ class Gamemode(Enum):
 
     @classmethod
     def from_type(cls, __o: object) -> Gamemode:
+        """Gets a gamemode.
+
+        :param __o: Object to search for
+        :type __o: object
+        :raises ValueError: If object cannot be converted to Gamemode
+        :return: A Gamemode object. Will search by name_api, name_short, id
+        :rtype: aiosu.classes.gamemode.Gamemode
+        """
         if isinstance(__o, cls):
             return __o
         for mode in list(Gamemode):

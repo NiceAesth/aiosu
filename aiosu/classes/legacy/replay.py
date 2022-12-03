@@ -4,5 +4,9 @@ from ..models import BaseModel
 
 
 class Replay(BaseModel):
-    content: str
+    """Replay API object."""
+
+    content: str  # test
+    """Encoded LZMA data of the replay"""
     encoding: str
+    """The encoding used"""

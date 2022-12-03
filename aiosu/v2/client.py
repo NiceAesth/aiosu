@@ -91,16 +91,17 @@ class Client:
         await self.close()
 
     async def close(self) -> None:
+        """Closes the client session."""
         await self.__session.close()
 
     @rate_limited
     @check_token
     async def get_me(self) -> User:
-        """Gets the user who owns the current token
+        r"""Gets the user who owns the current token
 
         :raises APIException: Contains status code and error message
         :return: Requested user
-        :rtype: User
+        :rtype: aiosu.classes.user.User
         """
         url = f"{self.base_url}/me"
         async with self.__session.get(url) as resp:
@@ -112,13 +113,22 @@ class Client:
     @rate_limited
     @check_token
     async def get_user(self, user_query: Union[str, int], **kwargs: Any) -> User:
-        """Gets a user by a query.
+        r"""Gets a user by a query.
 
         :param user_query: Username or ID to search by
         :type user_query: Union[str, int]
+        :param \**kwargs:
+            See below
+
+        :Keyword Arguments:
+            * *mode* (``aiosu.classes.gamemode.Gamemode``) --
+                Optional, gamemode to search for
+            * *qtype* (``str``) --
+                Optional, \"string\" or \"id\". Type of the user_query
+
         :raises APIException: Contains status code and error message
         :return: Requested user
-        :rtype: User
+        :rtype: aiosu.classes.user.User
         """
         url = f"{self.base_url}/{user_query}"
         params = {}
@@ -139,17 +149,30 @@ class Client:
     async def __get_type_scores(
         self, user_id: int, request_type: str, **kwargs: Any
     ) -> list[Score]:
-        """INTERNAL: Get a user's scores by type
+        r"""INTERNAL: Get a user's scores by type
 
         :param user_id: User ID to search by
         :type user_id: int
         :param request_type: "recent", "best" or "firsts"
         :type request_type: str
+        :param \**kwargs:
+            See below
+
+        :Keyword Arguments:
+            * *mode* (``aiosu.classes.gamemode.Gamemode``) --
+                Optional, gamemode to search for
+            * *limit* (``int``) --
+                Optional, number of scores to get. Min: 1, Max: 100, defaults to 100
+            * *include_fails* (``bool``) --
+                Optional, whether to include failed scores, defaults to ``False``
+            * *offset* (``int``) --
+                Optional, page offset to start from, defaults to 0
+
         :raises ValueError: If limit is not between 1 and 100
         :raises ValueError: If type is invalid
         :raises APIException: Contains status code and error message
         :return: List of requested scores
-        :rtype: list[Score]
+        :rtype: list[aiosu.classes.score.Score]
         """
         if not 1 <= kwargs.get("limit", 100) <= 100:
             raise ValueError("Invalid limit specified. Limit must be between 1 and 100")
@@ -175,35 +198,74 @@ class Client:
             return helpers.from_list(Score.parse_obj, json)
 
     async def get_user_recents(self, user_id: int, **kwargs: Any) -> list[Score]:
-        """Get a user's recent scores.
+        r"""Get a user's recent scores.
 
         :param user_id: User ID to search by
         :type user_id: int
+        :param \**kwargs:
+            See below
+
+        :Keyword Arguments:
+            * *mode* (``aiosu.classes.gamemode.Gamemode``) --
+                Optional, gamemode to search for
+            * *limit* (``int``) --
+                Optional, number of scores to get. Min: 1, Max: 100, defaults to 100
+            * *include_fails* (``bool``) --
+                Optional, whether to include failed scores, defaults to ``False``
+            * *offset* (``int``) --
+                Optional, page offset to start from, defaults to 0
+
         :raises APIException: Contains status code and error message
         :return: List of requested scores
-        :rtype: list[Score]
+        :rtype: list[aiosu.classes.score.Score]
         """
         return await self.__get_type_scores(user_id, "recent", **kwargs)
 
     async def get_user_bests(self, user_id: int, **kwargs: Any) -> list[Score]:
-        """Get a user's top scores.
+        r"""Get a user's top scores.
 
         :param user_id: User ID to search by
         :type user_id: int
+        :param \**kwargs:
+            See below
+
+        :Keyword Arguments:
+            * *mode* (``aiosu.classes.gamemode.Gamemode``) --
+                Optional, gamemode to search for
+            * *limit* (``int``) --
+                Optional, number of scores to get. Min: 1, Max: 100, defaults to 100
+            * *include_fails* (``bool``) --
+                Optional, whether to include failed scores, defaults to ``False``
+            * *offset* (``int``) --
+                Optional, page offset to start from, defaults to 0
+
         :raises APIException: Contains status code and error message
         :return: List of requested scores
-        :rtype: list[Score]
+        :rtype: list[aiosu.classes.score.Score]
         """
         return await self.__get_type_scores(user_id, "best", **kwargs)
 
     async def get_user_firsts(self, user_id: int, **kwargs: Any) -> list[Score]:
-        """Get a user's first place scores.
+        r"""Get a user's first place scores.
 
         :param user_id: User ID to search by
         :type user_id: int
+        :param \**kwargs:
+            See below
+
+        :Keyword Arguments:
+            * *mode* (``aiosu.classes.gamemode.Gamemode``) --
+                Optional, gamemode to search for
+            * *limit* (``int``) --
+                Optional, number of scores to get. Min: 1, Max: 100, defaults to 100
+            * *include_fails* (``bool``) --
+                Optional, whether to include failed scores, defaults to ``False``
+            * *offset* (``int``) --
+                Optional, page offset to start from, defaults to 0
+
         :raises APIException: Contains status code and error message
         :return: List of requested scores
-        :rtype: list[Score]
+        :rtype: list[aiosu.classes.score.Score]
         """
         return await self.__get_type_scores(user_id, "firsts", **kwargs)
 
@@ -212,15 +274,22 @@ class Client:
     async def get_user_beatmap_scores(
         self, user_id: int, beatmap_id: int, **kwargs: Any
     ) -> list[Score]:
-        """Get a user's scores on a specific beatmap.
+        r"""Get a user's scores on a specific beatmap.
 
         :param user_id: User ID to search by
         :type user_id: int
         :param beatmap_id: Beatmap ID to search by
         :type beatmap_id: int
+        :param \**kwargs:
+            See below
+
+        :Keyword Arguments:
+            * *mode* (``aiosu.classes.gamemode.Gamemode``) --
+                Optional, gamemode to search for
+
         :raises APIException: Contains status code and error message
         :return: List of requested scores
-        :rtype: list[Score]
+        :rtype: list[aiosu.classes.score.Score]
         """
         url = f"{self.base_url}/beatmaps/{beatmap_id}/scores/users/{user_id}/all"
         params = {}
@@ -236,13 +305,24 @@ class Client:
     @rate_limited
     @check_token
     async def get_beatmap_scores(self, beatmap_id: int, **kwargs: Any) -> list[Score]:
-        """Get scores submitted on a specific beatmap.
+        r"""Get scores submitted on a specific beatmap.
 
         :param beatmap_id: Beatmap ID to search by
         :type beatmap_id: int
+        :param \**kwargs:
+            See below
+
+        :Keyword Arguments:
+            * *mode* (``aiosu.classes.gamemode.Gamemode``) --
+                Optional, gamemode to search for
+            * *mods* (``aiosu.classes.mods.Mods``) --
+                Optional, mods to search for
+            * *type* (``str``) --
+                Optional, beatmap score ranking type
+
         :raises APIException: Contains status code and error message
         :return: List of requested scores
-        :rtype: list[Score]
+        :rtype: list[aiosu.classes.score.Score]
         """
         url = f"{self.base_url}/beatmaps/{beatmap_id}/scores"
         params = {}
@@ -263,6 +343,14 @@ class Client:
     @rate_limited
     @check_token
     async def get_beatmap(self, beatmap_id: int) -> Beatmap:
+        r"""Get beatmap data.
+
+        :param beatmap_id: The ID of the beatmap
+        :type beatmap_id: int
+        :raises APIException: Contains status code and error message
+        :return: Beatmap data object
+        :rtype: aiosu.classes.beatmap.Beatmap
+        """
         url = f"{self.base_url}/beatmaps/{beatmap_id}"
         async with self.__session.get(url) as resp:
             json = await resp.json()
@@ -275,16 +363,31 @@ class Client:
     async def get_beatmap_attributes(
         self, beatmap_id: int, **kwargs: Any
     ) -> BeatmapDifficultyAttributes:
+        r"""Gets difficulty attributes for a beatmap.
+
+        :param beatmap_id: The ID of the beatmap
+        :type beatmap_id: int
+        :param \**kwargs:
+            See below
+
+        :Keyword Arguments:
+            * *mode* (``aiosu.classes.gamemode.Gamemode``) --
+                Optional, gamemode to search for
+            * *mods* (``aiosu.classes.mods.Mods``) --
+                Optional, mods to apply to the result
+
+        :raises APIException: Contains status code and error message
+        :return: Difficulty attributes for a beatmap
+        :rtype: aiosu.classes.beatmap.BeatmapDifficultyAttributes
+        """
         url = f"{self.base_url}/beatmaps/{beatmap_id}/attributes"
-        params = {}
+        params: dict[str, Any] = {}
         if "mode" in kwargs:
             mode = Gamemode(kwargs.pop("mode"))  # type: ignore
-            params["mode"] = str(mode)
+            params["ruleset_id"] = int(mode)
         if "mods" in kwargs:
             mods = Mods(kwargs.pop("mods"))
-            params["mode"] = str(mods)
-        if "type" in kwargs:
-            params["type"] = kwargs.pop("type")
+            params["mods"] = str(mods)
         async with self.__session.post(url, data=params) as resp:
             json = await resp.json()
             if resp.status != 200:

@@ -59,6 +59,11 @@ class UserRankHistoryElement(BaseModel):
 
     @property
     def average_gain(self) -> float:
+        """Average rank gain.
+
+        :return: Average rank gain for a user
+        :rtype: float
+        """
         return (self.data[1] - self.data[-1]) / len(self.data)
 
 
@@ -82,19 +87,24 @@ class UserBadge(BaseModel):
 
 
 class UserAccountHistory(BaseModel):
-    description: str
     id: int
+    description: str
     length: int
     timestamp: datetime.datetime
     type: str
 
 
 class UserGradeCounts(BaseModel):
-    ss: int
     ssh: int
-    s: int
+    """Number of Silver SS ranks achieved."""
+    ss: int
+    """Number of SS ranks achieved."""
     sh: int
+    """Number of Silver S ranks achieved."""
+    s: int
+    """Number of S ranks achieved."""
     a: int
+    """Number of A ranks achieved."""
 
     @classmethod
     def _from_api_v1(cls, data: Any) -> UserGradeCounts:

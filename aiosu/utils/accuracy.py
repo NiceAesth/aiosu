@@ -32,6 +32,13 @@ class AbstractAccuracyCalculator(abc.ABC):
 class OsuAccuracyCalculator(AbstractAccuracyCalculator):
     @staticmethod
     def calculate(score: Score) -> float:
+        """Calculates accuracy for an osu!std score.
+
+        :param score: The score to calculate accuracy for
+        :type score: aiosu.classes.score.Score
+        :return: Accuracy for the given score
+        :rtype: float
+        """
         total_hits = (
             score.statistics.count_300
             + score.statistics.count_100
@@ -55,6 +62,15 @@ class OsuAccuracyCalculator(AbstractAccuracyCalculator):
 
     @staticmethod
     def calculate_weighted(score: Score) -> float:
+        """Calculates weighted accuracy for an osu!std score.
+
+        :param score: The score to calculate accuracy for
+        :type score: aiosu.classes.score.Score
+        :raises ValueError: If score does not have an associated beatmap
+        :raises ValueError: If the associated beatmap does not have object counts
+        :return: Weighted accuracy to be used in pp calculation
+        :rtype: float
+        """
         if score.beatmap is None:
             raise ValueError("Given score does not have a beatmap.")
 
@@ -90,6 +106,13 @@ class OsuAccuracyCalculator(AbstractAccuracyCalculator):
 class TaikoAccuracyCalculator(AbstractAccuracyCalculator):
     @staticmethod
     def calculate(score: Score) -> float:
+        """Calculates accuracy for an osu!taiko score.
+
+        :param score: The score to calculate accuracy for
+        :type score: aiosu.classes.score.Score
+        :return: Accuracy for the given score
+        :rtype: float
+        """
         total_hits = (
             score.statistics.count_300
             + score.statistics.count_100
@@ -107,12 +130,26 @@ class TaikoAccuracyCalculator(AbstractAccuracyCalculator):
 
     @classmethod
     def calculate_weighted(cls, score: Score) -> float:
+        """Calculates weighted accuracy for an osu!taiko score.
+
+        :param score: The score to calculate accuracy for
+        :type score: aiosu.classes.score.Score
+        :return: Weighted accuracy to be used in pp calculation
+        :rtype: float
+        """
         return cls.calculate(score)
 
 
 class ManiaAccuracyCalculator(AbstractAccuracyCalculator):
     @staticmethod
     def calculate(score: Score) -> float:
+        """Calculates accuracy for an osu!mania score.
+
+        :param score: The score to calculate accuracy for
+        :type score: aiosu.classes.score.Score
+        :return: Accuracy for the given score
+        :rtype: float
+        """
         count_perfect = score.statistics.count_geki
         count_great = score.statistics.count_300
         count_good = score.statistics.count_katu
@@ -137,6 +174,13 @@ class ManiaAccuracyCalculator(AbstractAccuracyCalculator):
 
     @staticmethod
     def calculate_weighted(score: Score) -> float:
+        """Calculates weighted accuracy for an osu!mania score.
+
+        :param score: The score to calculate accuracy for
+        :type score: aiosu.classes.score.Score
+        :return: Weighted accuracy to be used in pp calculation
+        :rtype: float
+        """
         count_perfect = score.statistics.count_geki
         count_great = score.statistics.count_300
         count_good = score.statistics.count_katu
@@ -164,6 +208,13 @@ class ManiaAccuracyCalculator(AbstractAccuracyCalculator):
 class CatchAccuracyCalculator(AbstractAccuracyCalculator):
     @staticmethod
     def calculate(score: Score) -> float:
+        """Calculates accuracy for an osu!catch score.
+
+        :param score: The score to calculate accuracy for
+        :type score: aiosu.classes.score.Score
+        :return: Accuracy for the given score
+        :rtype: float
+        """
         fruits_hit = score.statistics.count_300
         ticks_hit = score.statistics.count_100
         tiny_ticks_hit = score.statistics.count_50
@@ -184,4 +235,11 @@ class CatchAccuracyCalculator(AbstractAccuracyCalculator):
 
     @classmethod
     def calculate_weighted(cls, score: Score) -> float:
+        """Calculates weighted accuracy for an osu!catch score.
+
+        :param score: The score to calculate accuracy for
+        :type score: aiosu.classes.score.Score
+        :return: Weighted accuracy to be used in pp calculation
+        :rtype: float
+        """
         return cls.calculate(score)
