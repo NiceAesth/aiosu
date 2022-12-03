@@ -29,6 +29,39 @@ from ..classes import User
 from ..classes import UserQueryType
 
 
+def check_token(func: Callable) -> Callable:
+    """
+    A decorator that checks the current token, to be used as:
+    @check_token
+    """
+
+    @functools.wraps(func)
+    async def _check_token(*args: Any, **kwargs: Any) -> Any:
+        self = args[0]
+        if datetime.datetime.now() > self.token.expires_on:
+            self.__session.headers[
+                "Authorization"
+            ] = f"Bearer {self.token.access_token}"
+        return await func(*args, **kwargs)
+
+    return _check_token
+
+
+def rate_limited(func: Callable) -> Callable:
+    """
+    A decorator that enforces rate limiting, to be used as:
+    @rate_limited
+    """
+
+    @functools.wraps(func)
+    async def _rate_limited(*args: Any, **kwargs: Any) -> Any:
+        self = args[0]
+        async with self._limiter:
+            return await func(*args, **kwargs)
+
+    return _rate_limited
+
+
 class Client:
     """osu! API v2 Client"""
 
@@ -59,39 +92,6 @@ class Client:
 
     async def close(self) -> None:
         await self.__session.close()
-
-    @staticmethod
-    def check_token(func: Callable) -> Callable:
-        """
-        A decorator that checks the current token, to be used as:
-        @check_token
-        """
-
-        @functools.wraps(func)
-        async def _check_token(*args: Any, **kwargs: Any) -> Any:
-            self = args[0]
-            if datetime.datetime.now() > self.token.expires_on:
-                self.__session.headers[
-                    "Authorization"
-                ] = f"Bearer {self.token.access_token}"
-            return await func(*args, **kwargs)
-
-        return _check_token
-
-    @staticmethod
-    def rate_limited(func: Callable) -> Callable:
-        """
-        A decorator that enforces rate limiting, to be used as:
-        @rate_limited
-        """
-
-        @functools.wraps(func)
-        async def _rate_limited(*args: Any, **kwargs: Any) -> Any:
-            self = args[0]
-            async with self._limiter:
-                return await func(*args, **kwargs)
-
-        return _rate_limited
 
     @rate_limited
     @check_token

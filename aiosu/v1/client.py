@@ -27,6 +27,15 @@ from ..classes import UserQueryType
 from ..classes.legacy import Replay
 
 
+def rate_limited(func: Callable) -> Callable:
+    async def _rate_limited(*args: Any, **kwargs: Any) -> Any:
+        self = args[0]
+        async with self._limiter:
+            return await func(*args, **kwargs)
+
+    return _rate_limited
+
+
 class Client:
     def __init__(self, token: str, **kwargs: Any) -> None:
         self.token: str = token
@@ -47,15 +56,6 @@ class Client:
 
     async def close(self) -> None:
         await self.__session.close()
-
-    @staticmethod
-    def rate_limited(func: Callable) -> Callable:
-        async def _rate_limited(*args: Any, **kwargs: Any) -> Any:
-            self = args[0]
-            async with self._limiter:
-                return await func(*args, **kwargs)
-
-        return _rate_limited
 
     @rate_limited
     async def get_user(self, user_query: Union[str, int], **kwargs: Any) -> list[User]:
