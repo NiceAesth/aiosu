@@ -35,7 +35,6 @@ jobs:
         artifacts: "dist/*"
         token: ${{ secrets.GITHUB_TOKEN }}
         draft: false
-        prerelease: steps.check-version.outputs.prerelease == 'true'
 
     - name: Publish
         run: poetry publish --username ${{ secrets.PYPI_USERNAME }} --password ${{ secrets.PYPI_PASSWORD }}
