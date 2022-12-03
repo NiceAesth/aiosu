@@ -1,10 +1,48 @@
 [tool.mypy]
 plugins = ["pydantic.mypy"]
 mypy_path = "./"
-files = ["aiosu", "setup.py"]
+files = ["aiosu"]
 disallow_untyped_defs = true
 disallow_any_unimported = true
 show_error_codes = true
 
 [tools.pytest.ini_options]
 testpaths = ["tests"]
+
+[tool.poetry]
+name = "aiosu"
+version = "0.0.1"
+description = "Simple and fast osu! API v1 and v2 library"
+authors = ["Nice Aesthetics <nice@aesth.dev>"]
+license = "GPLv3+"
+readme = "README.rst"
+repository = "https://github.com/NiceAesth/aiosu"
+documentation = "https://aiosu.readthedocs.io/"
+keywords = ["osu!", "osu", "api"]
+classifiers = [
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+    "Programming Language :: Python :: 3.9"
+]
+include = ["py.typed"]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+aiohttp = "^3.8.3"
+aiolimiter = "^1.0.0"
+emojiflags = "^0.1.1"
+orjson = "^3.8.3"
+pydantic = "^1.10.2"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.2.0"
+pytest-asyncio = "^0.20.2"
+pytest-mock = "^3.10.0"
+types-toml = "^0.10.8.1"
+
+[tool.poetry.extras]
+docs = ["Sphinx", "sphinx-rtd-theme"]
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
