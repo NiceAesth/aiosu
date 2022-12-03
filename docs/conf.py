@@ -11,7 +11,7 @@ import re
 import sys
 from datetime import date
 
-with open("../../aiosu/__init__.py") as f:
+with open("../aiosu/__init__.py") as f:
     if search := re.search(
         r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]',
         f.read(),
@@ -28,7 +28,7 @@ release = version
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
-sys.path.insert(0, os.path.abspath("../../<PROJECT_NAME>"))
+sys.path.insert(0, os.path.abspath("../aiosu"))
 
 extensions = ["sphinx.ext.autodoc"]
 
