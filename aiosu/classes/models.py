@@ -18,6 +18,7 @@ def orjson_dumps(v: object, *, default: Any) -> str:
 
 class BaseModel(pydantic.BaseModel):
     class Config:
+        allow_population_by_field_name = True
         json_loads = orjson.loads
         json_dumps = orjson_dumps
         json_encoders = {

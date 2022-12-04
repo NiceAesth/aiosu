@@ -25,6 +25,7 @@ from ..classes import Mods
 from ..classes import Score
 from ..classes import User
 from ..classes import UserQueryType
+from ..classes.legacy import Match
 from ..classes.legacy import Replay
 
 
@@ -44,7 +45,19 @@ def rate_limited(func: Callable) -> Callable:
 
 
 class Client:
-    """osu! API v1 Client"""
+    """osu! API v1 Client
+
+    :param token: The API key
+    :type token: str
+    :param \\**kwargs:
+    See below
+
+    :Keyword Arguments:
+        * *base_url* (``str``) --
+            Optional, base API URL, defaults to \"https://osu.ppy.sh/api/v2/\"
+        * *limiter* (``aiolimiter.AsyncLimiter``) --
+            Optional, custom AsyncLimiter, defaults to AsyncLimiter(1200, 60)
+    """
 
     def __init__(self, token: str, **kwargs: Any) -> None:
         self.token: str = token
@@ -328,7 +341,7 @@ class Client:
             return helpers.from_list(score_conv, json)
 
     @rate_limited
-    async def get_match(self, match_id: int) -> Any:
+    async def get_match(self, match_id: int) -> Match:
         r"""Gets a multiplayer match. (WIP, currently returns raw JSON)
 
         :param match_id: The ID of the match
@@ -346,7 +359,7 @@ class Client:
             json = await resp.json()
             if resp.status != 200:
                 raise APIException(resp.status, json.get("error", ""))
-            return json
+            return Match.parse_obj(json)
 
     @rate_limited
     async def get_replay(self, **kwargs: Any) -> Replay:

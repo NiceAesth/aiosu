@@ -8,6 +8,8 @@ from enum import Enum
 from typing import Any
 from typing import Optional
 
+from pydantic import Field
+
 from .gamemode import Gamemode
 from .models import BaseModel
 
@@ -138,7 +140,7 @@ class Beatmap(BaseModel):
     is_scoreable: Optional[bool] = None
     last_updated: Optional[datetime.datetime] = None
     passcount: Optional[int] = None
-    playcount: Optional[int] = None
+    play_count: Optional[int] = Field(None, alias="playcount")
     url: Optional[str] = None
     checksum: Optional[str] = None
     max_combo: Optional[int] = None
@@ -160,20 +162,6 @@ class Beatmap(BaseModel):
         ):
             raise ValueError("Beatmap contains no object count information.")
         return self.count_spinners + self.count_circles + self.count_sliders
-
-    # Support both since API decided to name them differently for Beatmap and Beatmapset
-    @property
-    def play_count(self) -> Optional[int]:
-        """Alias for playcount.
-
-        :return: Playcount of the beatmap
-        :rtype: Optional[int]
-        """
-        return self.playcount
-
-    @play_count.setter
-    def play_count(self, new_value: int) -> None:
-        self.playcount = new_value
 
     @classmethod
     def _from_api_v1(cls, data: Any) -> Beatmap:
@@ -213,7 +201,7 @@ class Beatmapset(BaseModel):
     creator: str
     favourite_count: int
     id: int
-    play_count: int
+    play_count: int = Field(alias="playcount")
     preview_url: str
     source: str
     status: BeatmapRankStatus
@@ -239,19 +227,6 @@ class Beatmapset(BaseModel):
     ratings: Optional[list[int]] = None
     has_favourited: Optional[bool] = None
     beatmaps: Optional[list[Beatmap]] = None
-
-    @property
-    def playcount(self) -> int:
-        """Alias for play_count
-
-        :return: Playcount of the beatmap
-        :rtype: int
-        """
-        return self.playcount
-
-    @playcount.setter
-    def playcount(self, new_value: int) -> None:
-        self.playcount = new_value
 
     @classmethod
     def _from_api_v1(cls, data: Any) -> Beatmapset:
