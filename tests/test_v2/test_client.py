@@ -72,6 +72,7 @@ class TestClient:
             mocker.patch("aiohttp.ClientSession.get", return_value=resp)
             data = await client.get_me()
             assert isinstance(data, aiosu.classes.User)
+        await client.close()
 
     @pytest.mark.asyncio
     async def test_get_user(self, mocker, token, user):
@@ -81,6 +82,7 @@ class TestClient:
             mocker.patch("aiohttp.ClientSession.get", return_value=resp)
             data = await client.get_user(7782553)
             assert isinstance(data, aiosu.classes.User)
+        await client.close()
 
     @pytest.mark.asyncio
     async def test_get_user_recents(self, mocker, token, scores):
@@ -92,6 +94,7 @@ class TestClient:
             assert isinstance(data, list) and all(
                 isinstance(x, aiosu.classes.Score) for x in data
             )
+        await client.close()
 
     @pytest.mark.asyncio
     async def test_get_user_recents_missing(self, mocker, token):
@@ -102,6 +105,7 @@ class TestClient:
         assert isinstance(data, list) and all(
             isinstance(x, aiosu.classes.Score) for x in data
         )
+        await client.close()
 
     @pytest.mark.asyncio
     async def test_get_user_bests(self, mocker, token, scores):
@@ -113,6 +117,7 @@ class TestClient:
             assert isinstance(data, list) and all(
                 isinstance(x, aiosu.classes.Score) for x in data
             )
+        await client.close()
 
     @pytest.mark.asyncio
     async def test_get_user_bests_missing(self, mocker, token):
@@ -123,6 +128,7 @@ class TestClient:
         assert isinstance(data, list) and all(
             isinstance(x, aiosu.classes.Score) for x in data
         )
+        await client.close()
 
     @pytest.mark.asyncio
     async def test_get_user_firsts(self, mocker, token, scores):
@@ -134,6 +140,7 @@ class TestClient:
             assert isinstance(data, list) and all(
                 isinstance(x, aiosu.classes.Score) for x in data
             )
+        await client.close()
 
     @pytest.mark.asyncio
     async def test_get_user_firsts_missing(self, mocker, token):
@@ -144,6 +151,7 @@ class TestClient:
         assert isinstance(data, list) and all(
             isinstance(x, aiosu.classes.Score) for x in data
         )
+        await client.close()
 
     @pytest.mark.asyncio
     async def test_get_user_beatmap_scores(self, mocker, token, scores):
@@ -155,6 +163,7 @@ class TestClient:
             assert isinstance(data, list) and all(
                 isinstance(x, aiosu.classes.Score) for x in data
             )
+        await client.close()
 
     @pytest.mark.asyncio
     async def test_get_user_beatmap_scores_missing(self, mocker, token):
@@ -165,6 +174,7 @@ class TestClient:
         assert isinstance(data, list) and all(
             isinstance(x, aiosu.classes.Score) for x in data
         )
+        await client.close()
 
     @pytest.mark.asyncio
     async def test_get_beatmap_scores(self, mocker, token, scores):
@@ -176,6 +186,7 @@ class TestClient:
             assert isinstance(data, list) and all(
                 isinstance(x, aiosu.classes.Score) for x in data
             )
+        await client.close()
 
     @pytest.mark.asyncio
     async def test_get_beatmap_scores_missing(self, mocker, token):
@@ -186,6 +197,7 @@ class TestClient:
         assert isinstance(data, list) and all(
             isinstance(x, aiosu.classes.Score) for x in data
         )
+        await client.close()
 
     @pytest.mark.asyncio
     async def test_get_beatmap(self, mocker, token, beatmap):
@@ -195,6 +207,7 @@ class TestClient:
             mocker.patch("aiohttp.ClientSession.get", return_value=resp)
             data = await client.get_beatmap(2354779)
             assert isinstance(data, aiosu.classes.Beatmap)
+        await client.close()
 
     @pytest.mark.asyncio
     async def test_get_beatmap_attributes(
@@ -210,3 +223,5 @@ class TestClient:
             resp = MockResponse(diffatrib, 200)
             mocker.patch("aiohttp.ClientSession.post", return_value=resp)
             data = await client.get_beatmap_attributes("2354779")
+            assert isinstance(data, aiosu.classes.BeatmapDifficultyAttributes)
+        await client.close()
