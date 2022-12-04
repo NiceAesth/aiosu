@@ -172,10 +172,10 @@ class TestClient:
     @pytest.mark.asyncio
     async def test_get_match(self, mocker, match):
         client = aiosu.v1.Client("")
-        resp = MockResponse([], 200)
+        resp = MockResponse(match, 200)
         mocker.patch("aiohttp.ClientSession.get", return_value=resp)
         data = await client.get_match(105019274)
-        # assert isinstance(data, aiosu.classes.Match)
+        assert isinstance(data, aiosu.classes.legacy.Match)
 
     @pytest.mark.asyncio
     async def test_get_replay(self, mocker, replay):

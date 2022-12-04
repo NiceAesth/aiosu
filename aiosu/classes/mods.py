@@ -7,6 +7,7 @@ from collections import UserList
 from collections.abc import Generator
 from enum import Enum
 from functools import reduce
+from typing import Any
 from typing import Union
 
 
@@ -56,6 +57,9 @@ class Mod(Enum):
     def __and__(self, __o: int) -> int:
         return int(self) & __o
 
+    def __or__(self, __o: int) -> int:
+        return int(self) | __o
+
     @classmethod
     def from_type(cls, __o: object) -> Mod:
         if isinstance(__o, cls):
@@ -63,7 +67,7 @@ class Mod(Enum):
         for mod in list(Mod):
             if __o in mod.value:
                 return mod
-        raise ValueError(f"Mod {__o} does not exist.")
+        raise ValueError(f"Mod {__o!r} does not exist.")
 
     @classmethod
     def _missing_(cls, query: object) -> Mod:
@@ -109,8 +113,23 @@ class Mods(UserList):
     def __int__(self) -> int:
         return self.bitwise
 
-    def __and__(self, __o: int) -> int:
-        return int(self) & __o
+    def __and__(self, __o: Any) -> int:
+        if isinstance(__o, int):
+            return int(self) & __o
+        if isinstance(__o, Mod):
+            return int(self) & int(__o)
+        if isinstance(__o, Mods):
+            return int(self) & int(__o)
+        raise ValueError(f"Object {__o!r} is of invalid type.")
+
+    def __or__(self, __o: Any) -> int:
+        if isinstance(__o, int):
+            return int(self) | __o
+        if isinstance(__o, Mod):
+            return int(self) | int(__o)
+        if isinstance(__o, Mods):
+            return int(self) | int(__o)
+        raise ValueError(f"Object {__o!r} is of invalid type.")
 
     @classmethod
     def __get_validators__(cls) -> Generator:
