@@ -4,19 +4,22 @@ This module handles multiple API v2 Client sessions.
 from __future__ import annotations
 
 import functools
-from types import TracebackType
-from typing import Any
-from typing import Callable
-from typing import Optional
-from typing import Type
-from typing import Union
+from typing import TYPE_CHECKING
 
 from . import Client
 from ..classes import OAuthToken
-from ..classes.events import BaseEvent
 from ..classes.events import ClientAddEvent
 from ..classes.events import ClientUpdateEvent
 from ..classes.events import Eventable
+
+if TYPE_CHECKING:
+    from types import TracebackType
+    from typing import Any
+    from typing import Callable
+    from typing import Optional
+    from typing import Type
+    from typing import Union
+    from ..classes.events import BaseEvent
 
 
 class ClientStorage(Eventable):

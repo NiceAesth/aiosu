@@ -4,11 +4,15 @@ This module contains models for mods.
 from __future__ import annotations
 
 from collections import UserList
-from collections.abc import Generator
 from enum import Enum
 from functools import reduce
-from typing import Any
-from typing import Union
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from collections.abc import Generator
+
+    from typing import Any
+    from typing import Union
 
 
 class Mod(Enum):

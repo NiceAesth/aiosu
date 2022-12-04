@@ -6,12 +6,7 @@ You can read more about it here: https://github.com/ppy/osu-api/wiki
 from __future__ import annotations
 
 import functools
-from types import TracebackType
-from typing import Any
-from typing import Callable
-from typing import Optional
-from typing import Type
-from typing import Union
+from typing import TYPE_CHECKING
 
 import aiohttp
 from aiolimiter import AsyncLimiter
@@ -27,6 +22,14 @@ from ..classes import User
 from ..classes import UserQueryType
 from ..classes.legacy import Match
 from ..classes.legacy import Replay
+
+if TYPE_CHECKING:
+    from types import TracebackType
+    from typing import Any
+    from typing import Callable
+    from typing import Optional
+    from typing import Type
+    from typing import Union
 
 
 def rate_limited(func: Callable) -> Callable:
