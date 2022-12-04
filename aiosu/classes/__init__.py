@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from . import events
 from .beatmap import Beatmap
 from .beatmap import BeatmapAvailability
 from .beatmap import BeatmapCovers

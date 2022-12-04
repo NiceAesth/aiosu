@@ -22,6 +22,13 @@ Exceptions
     :members:
     :undoc-members:
 
+Events
+----------
+
+.. automodule:: aiosu.classes.events
+    :members:
+    :undoc-members:
+
 Gamemode
 --------
 

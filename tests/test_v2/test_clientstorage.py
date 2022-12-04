@@ -40,3 +40,4 @@ class TestClientStorage:
         client_2 = await client_storage.get_client(id=client_1_user.id)
 
         assert client_1 == client_2
+        await client_storage.close()
