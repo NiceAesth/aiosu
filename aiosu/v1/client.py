@@ -54,7 +54,7 @@ class Client:
 
     :Keyword Arguments:
         * *base_url* (``str``) --
-            Optional, base API URL, defaults to \"https://osu.ppy.sh/api/v2/\"
+            Optional, base API URL, defaults to \"https://osu.ppy.sh/api\"
         * *limiter* (``aiolimiter.AsyncLimiter``) --
             Optional, custom AsyncLimiter, defaults to AsyncLimiter(1200, 60)
     """
@@ -63,7 +63,7 @@ class Client:
         self.token: str = token
         self.base_url: str = kwargs.pop("base_url", "https://osu.ppy.sh/api")
         self._limiter: AsyncLimiter = kwargs.pop("limiter", AsyncLimiter(1200, 60))
-        self.__session: aiohttp.ClientSession = aiohttp.ClientSession()
+        self._session: aiohttp.ClientSession = aiohttp.ClientSession()
 
     async def __aenter__(self) -> Client:
         return self
@@ -75,10 +75,6 @@ class Client:
         traceback: Optional[TracebackType],
     ) -> None:
         await self.close()
-
-    async def close(self) -> None:
-        """Closes the client session."""
-        await self.__session.close()
 
     @rate_limited
     async def get_user(self, user_query: Union[str, int], **kwargs: Any) -> list[User]:
@@ -111,7 +107,7 @@ class Client:
         if "qtype" in kwargs:
             qtype = UserQueryType(kwargs.pop("qtype"))  # type: ignore
             params["type"] = qtype.old_api_name
-        async with self.__session.get(url, params=params) as resp:
+        async with self._session.get(url, params=params) as resp:
             json = await resp.json()
             if resp.status != 200:
                 raise APIException(resp.status, json.get("error", ""))
@@ -158,7 +154,7 @@ class Client:
         if "qtype" in kwargs:
             qtype = UserQueryType(kwargs.pop("qtype"))  # type: ignore
             params["type"] = qtype.old_api_name
-        async with self.__session.get(url, params=params) as resp:
+        async with self._session.get(url, params=params) as resp:
             json = await resp.json()
             if resp.status != 200:
                 raise APIException(resp.status, json.get("error", ""))
@@ -283,7 +279,7 @@ class Client:
             raise ValueError(
                 "Either hash, since, user_query, beatmap_id or beatmapset_id must be specified.",
             )
-        async with self.__session.get(url, params=params) as resp:
+        async with self._session.get(url, params=params) as resp:
             json = await resp.json()
             if resp.status != 200:
                 raise APIException(resp.status, json.get("error", ""))
@@ -333,7 +329,7 @@ class Client:
         if "mods" in kwargs:
             mods = Mods(kwargs.pop("mods"))
             params["mode"] = str(mods)
-        async with self.__session.get(url, params=params) as resp:
+        async with self._session.get(url, params=params) as resp:
             json = await resp.json()
             if resp.status != 200:
                 raise APIException(resp.status, json.get("error", ""))
@@ -355,7 +351,7 @@ class Client:
             "k": self.token,
             "mp": match_id,
         }
-        async with self.__session.get(url, params=params) as resp:
+        async with self._session.get(url, params=params) as resp:
             json = await resp.json()
             if resp.status != 200:
                 raise APIException(resp.status, json.get("error", ""))
@@ -405,8 +401,12 @@ class Client:
         if "mods" in kwargs:
             mods = Mods(kwargs.pop("mods"))
             params["mode"] = str(mods)
-        async with self.__session.get(url, params=params) as resp:
+        async with self._session.get(url, params=params) as resp:
             json = await resp.json()
             if resp.status != 200:
                 raise APIException(resp.status, json.get("error", ""))
             return Replay.parse_obj(json)
+
+    async def close(self) -> None:
+        """Closes the client session."""
+        await self._session.close()

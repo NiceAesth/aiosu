@@ -27,6 +27,9 @@ from ..classes import OAuthToken
 from ..classes import Score
 from ..classes import User
 from ..classes import UserQueryType
+from ..classes.events import BaseEvent
+from ..classes.events import ClientUpdateEvent
+from ..classes.events import Eventable
 
 
 def check_token(func: Callable) -> Callable:
@@ -36,13 +39,10 @@ def check_token(func: Callable) -> Callable:
     """
 
     @functools.wraps(func)
-    async def _check_token(*args: Any, **kwargs: Any) -> Any:
-        self = args[0]
+    async def _check_token(self: Client, *args: Any, **kwargs: Any) -> Any:
         if datetime.datetime.now() > self.token.expires_on:
-            self.__session.headers[
-                "Authorization"
-            ] = f"Bearer {self.token.access_token}"
-        return await func(*args, **kwargs)
+            await self._refresh()
+        return await func(self, *args, **kwargs)
 
     return _check_token
 
@@ -54,15 +54,14 @@ def rate_limited(func: Callable) -> Callable:
     """
 
     @functools.wraps(func)
-    async def _rate_limited(*args: Any, **kwargs: Any) -> Any:
-        self = args[0]
+    async def _rate_limited(self: Client, *args: Any, **kwargs: Any) -> Any:
         async with self._limiter:
-            return await func(*args, **kwargs)
+            return await func(self, *args, **kwargs)
 
     return _rate_limited
 
 
-class Client:
+class Client(Eventable):
     r"""osu! API v2 Client
 
     :param \**kwargs:
@@ -72,19 +71,20 @@ class Client:
         * *client_secret* (``str``)
         * *client_id* (``int``)
         * *base_url* (``str``) --
-            Optional, base API URL, defaults to \"https://osu.ppy.sh/api/v2/\"
+            Optional, base API URL, defaults to \"https://osu.ppy.sh\"
         * *token* (``aiosu.classes.token.OAuthToken``)
         * *limiter* (``aiolimiter.AsyncLimiter``) --
             Optional, custom AsyncLimiter, defaults to AsyncLimiter(1200, 60)
     """
 
     def __init__(self, **kwargs: Any) -> None:
+        super().__init__()
         self.client_secret: str = kwargs.pop("client_secret", None)
         self.client_id: int = kwargs.pop("client_id", None)
         self.token: OAuthToken = kwargs.pop("token", OAuthToken())
-        self.base_url: str = kwargs.pop("base_url", "https://osu.ppy.sh/api/v2")
+        self.base_url: str = kwargs.pop("base_url", "https://osu.ppy.sh")
         self._limiter: AsyncLimiter = kwargs.pop("limiter", AsyncLimiter(1200, 60))
-        self.__session: aiohttp.ClientSession = aiohttp.ClientSession(
+        self._session: aiohttp.ClientSession = aiohttp.ClientSession(
             headers={
                 "Authorization": f"Bearer {self.token.access_token}",
                 "Content-Type": "application/json",
@@ -103,9 +103,54 @@ class Client:
     ) -> None:
         await self.close()
 
-    async def close(self) -> None:
-        """Closes the client session."""
-        await self.__session.close()
+    def on_client_update(self, func: Callable) -> Callable:
+        """
+        A decorator that is called whenever a client is updated, to be used as:
+
+            @client.on_client_update
+
+            async def func(event: ClientUpdateEvent)
+        """
+        self._listeners.append(func)
+
+        @functools.wraps(func)
+        async def _on_client_update(*args: Any, **kwargs: Any) -> Any:
+            return await func(*args, **kwargs)
+
+        return _on_client_update
+
+    async def _process_event(self, event: BaseEvent) -> None:
+        if isinstance(event, ClientUpdateEvent):
+            for func in event.client._listeners:
+                await func(event)
+            return
+        raise NotImplementedError(f"{event!r}")
+
+    @rate_limited
+    async def _refresh(self) -> None:
+        """INTERNAL: Refreshes the client's token
+
+        :raises APIException: Contains status code and error message
+        """
+        old_token = self.token
+        url = f"{self.base_url}/oauth/token"
+        data = {
+            "client_id": self.client_id,
+            "client_secret": self.client_secret,
+            "grant_type": "refresh_token",
+            "refresh_token": old_token.refresh_token,
+        }
+        headers = {"Content-Type": "application/x-www-form-urlencoded"}
+
+        async with self._session.post(url, data=data, headers=headers) as resp:
+            json = await resp.json()
+            if resp.status != 200:
+                raise APIException(resp.status, json.get("error", ""))
+            self.token = OAuthToken.parse_obj(json)
+
+        await self._process_event(
+            ClientUpdateEvent(client=self, old_token=old_token, new_token=self.token),
+        )
 
     @rate_limited
     @check_token
@@ -116,8 +161,8 @@ class Client:
         :return: Requested user
         :rtype: aiosu.classes.user.User
         """
-        url = f"{self.base_url}/me"
-        async with self.__session.get(url) as resp:
+        url = f"{self.base_url}/api/v2/me"
+        async with self._session.get(url) as resp:
             json = await resp.json()
             if resp.status != 200:
                 raise APIException(resp.status, json.get("error", ""))
@@ -143,7 +188,7 @@ class Client:
         :return: Requested user
         :rtype: aiosu.classes.user.User
         """
-        url = f"{self.base_url}/{user_query}"
+        url = f"{self.base_url}/api/v2/users/{user_query}"
         params = {}
         if "mode" in kwargs:
             mode = Gamemode(kwargs.pop("mode"))  # type: ignore
@@ -151,7 +196,7 @@ class Client:
         if "qtype" in kwargs:
             qtype = UserQueryType(kwargs.pop("qtype"))  # type: ignore
             params["type"] = qtype.new_api_name
-        async with self.__session.get(url, params=params) as resp:
+        async with self._session.get(url, params=params) as resp:
             json = await resp.json()
             if resp.status != 200:
                 raise APIException(resp.status, json.get("error", ""))
@@ -193,7 +238,7 @@ class Client:
             raise ValueError(
                 f'"{request_type}" is not a valid request_type. Valid options are: "recent", "best", "firsts"',
             )
-        url = f"{self.base_url}/users/{user_id}/scores/{request_type}"
+        url = f"{self.base_url}/api/v2/users/{user_id}/scores/{request_type}"
         params = {
             "include_fails": kwargs.pop("include_fails", False),
             "offset": kwargs.pop("offset", 0),
@@ -204,7 +249,7 @@ class Client:
             params["mode"] = str(mode)
         if "limit" in kwargs:
             params["limit"] = kwargs.pop("limit")
-        async with self.__session.get(url, params=params) as resp:
+        async with self._session.get(url, params=params) as resp:
             json = await resp.json()
             if resp.status != 200:
                 raise APIException(resp.status, json.get("error", ""))
@@ -304,12 +349,12 @@ class Client:
         :return: List of requested scores
         :rtype: list[aiosu.classes.score.Score]
         """
-        url = f"{self.base_url}/beatmaps/{beatmap_id}/scores/users/{user_id}/all"
+        url = f"{self.base_url}/api/v2/beatmaps/{beatmap_id}/scores/users/{user_id}/all"
         params = {}
         if "mode" in kwargs:
             mode = Gamemode(kwargs.pop("mode"))  # type: ignore
             params["mode"] = str(mode)
-        async with self.__session.get(url) as resp:
+        async with self._session.get(url) as resp:
             json = await resp.json()
             if resp.status != 200:
                 raise APIException(resp.status, json.get("error", ""))
@@ -337,7 +382,7 @@ class Client:
         :return: List of requested scores
         :rtype: list[aiosu.classes.score.Score]
         """
-        url = f"{self.base_url}/beatmaps/{beatmap_id}/scores"
+        url = f"{self.base_url}/api/v2/beatmaps/{beatmap_id}/scores"
         params = {}
         if "mode" in kwargs:
             mode = Gamemode(kwargs.pop("mode"))  # type: ignore
@@ -347,7 +392,7 @@ class Client:
             params["mode"] = str(mods)
         if "type" in kwargs:
             params["type"] = kwargs.pop("type")
-        async with self.__session.get(url) as resp:
+        async with self._session.get(url) as resp:
             json = await resp.json()
             if resp.status != 200:
                 raise APIException(resp.status, json.get("error", ""))
@@ -364,8 +409,8 @@ class Client:
         :return: Beatmap data object
         :rtype: aiosu.classes.beatmap.Beatmap
         """
-        url = f"{self.base_url}/beatmaps/{beatmap_id}"
-        async with self.__session.get(url) as resp:
+        url = f"{self.base_url}/api/v2/beatmaps/{beatmap_id}"
+        async with self._session.get(url) as resp:
             json = await resp.json()
             if resp.status != 200:
                 raise APIException(resp.status, json.get("error", ""))
@@ -393,7 +438,7 @@ class Client:
         :return: Difficulty attributes for a beatmap
         :rtype: aiosu.classes.beatmap.BeatmapDifficultyAttributes
         """
-        url = f"{self.base_url}/beatmaps/{beatmap_id}/attributes"
+        url = f"{self.base_url}/api/v2/beatmaps/{beatmap_id}/attributes"
         params: dict[str, Any] = {}
         if "mode" in kwargs:
             mode = Gamemode(kwargs.pop("mode"))  # type: ignore
@@ -401,8 +446,12 @@ class Client:
         if "mods" in kwargs:
             mods = Mods(kwargs.pop("mods"))
             params["mods"] = str(mods)
-        async with self.__session.post(url, data=params) as resp:
+        async with self._session.post(url, data=params) as resp:
             json = await resp.json()
             if resp.status != 200:
                 raise APIException(resp.status, json.get("error", ""))
             return BeatmapDifficultyAttributes.parse_obj(json.get("attributes"))
+
+    async def close(self) -> None:
+        """Closes the client session."""
+        await self._session.close()
