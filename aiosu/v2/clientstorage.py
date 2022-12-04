@@ -3,7 +3,10 @@ This module handles multiple API v2 Client sessions.
 """
 from __future__ import annotations
 
+from types import TracebackType
 from typing import Any
+from typing import Optional
+from typing import Type
 from typing import Union
 
 from . import Client
@@ -34,6 +37,17 @@ class ClientStorage:
         self.__create_app_client: bool = kwargs.pop("create_app_client", False)
         self.__app_client: Client = kwargs.pop("app_client", None)
         self.clients: dict[int, Client] = {}
+
+    async def __aenter__(self) -> ClientStorage:
+        return self
+
+    async def __aexit__(
+        self,
+        exc_type: Optional[Type[BaseException]],
+        exc: Optional[BaseException],
+        traceback: Optional[TracebackType],
+    ) -> None:
+        await self.close()
 
     @property
     async def app_client(self) -> Client:
