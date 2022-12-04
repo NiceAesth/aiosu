@@ -38,4 +38,4 @@ jobs:
         draft: false
 
     - name: Publish
-        run: poetry publish
+      run: poetry publish
