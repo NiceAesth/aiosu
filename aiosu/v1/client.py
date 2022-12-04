@@ -45,12 +45,12 @@ def rate_limited(func: Callable) -> Callable:
 
 
 class Client:
-    """osu! API v1 Client
+    r"""osu! API v1 Client
 
     :param token: The API key
     :type token: str
     :param \\**kwargs:
-    See below
+        See below
 
     :Keyword Arguments:
         * *base_url* (``str``) --

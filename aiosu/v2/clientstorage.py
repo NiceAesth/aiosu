@@ -18,7 +18,7 @@ class ClientStorage:
 
     :Keyword Arguments:
         * *client_secret* (``str``)
-        * *client_secret* (``int``)
+        * *client_id* (``int``)
         * *base_url* (``str``) --
             Optional, base API URL, defaults to \"https://osu.ppy.sh/api/v2/\"
         * *create_app_client* (``bool``) --
@@ -87,7 +87,7 @@ class ClientStorage:
         :Keyword Arguments:
             * *id* (``int``) --
                 Optional, whether to automatically create guest clients, defaults False
-            * *token* (``str``) --
+            * *token* (``aiosu.classes.token.OAuthToken``) --
                 Optional, token of client to add, defaults to None
 
         :raises ValueError: If neither id nor token are specified

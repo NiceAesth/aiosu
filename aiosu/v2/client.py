@@ -63,7 +63,20 @@ def rate_limited(func: Callable) -> Callable:
 
 
 class Client:
-    """osu! API v2 Client"""
+    r"""osu! API v2 Client
+
+    :param \**kwargs:
+        See below
+
+    :Keyword Arguments:
+        * *client_secret* (``str``)
+        * *client_id* (``int``)
+        * *base_url* (``str``) --
+            Optional, base API URL, defaults to \"https://osu.ppy.sh/api/v2/\"
+        * *token* (``aiosu.classes.token.OAuthToken``)
+        * *limiter* (``aiolimiter.AsyncLimiter``) --
+            Optional, custom AsyncLimiter, defaults to AsyncLimiter(1200, 60)
+    """
 
     def __init__(self, **kwargs: Any) -> None:
         self.client_secret: str = kwargs.pop("client_secret", None)
