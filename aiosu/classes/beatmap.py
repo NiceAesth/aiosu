@@ -140,7 +140,7 @@ class Beatmap(BaseModel):
     is_scoreable: Optional[bool] = None
     last_updated: Optional[datetime.datetime] = None
     passcount: Optional[int] = None
-    playcount: Optional[int] = Field(None, alias="play_count")
+    play_count: Optional[int] = Field(None, alias="playcount")
     url: Optional[str] = None
     checksum: Optional[str] = None
     max_combo: Optional[int] = None
