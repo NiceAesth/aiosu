@@ -88,7 +88,7 @@ class Client(Eventable):
             headers=self.__get_headers(),
         )
 
-    def __get_headers(self):
+    def __get_headers(self) -> dict[str, str]:
         return {
             "Authorization": f"Bearer {self.token.access_token}",
             "Content-Type": "application/json",
