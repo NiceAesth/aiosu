@@ -4,11 +4,14 @@ This module contains models for API v2 token objects.
 from __future__ import annotations
 
 import datetime
-from typing import Any
+from typing import TYPE_CHECKING
 
 from pydantic import root_validator
 
 from .models import BaseModel
+
+if TYPE_CHECKING:
+    from typing import Any
 
 
 class OAuthToken(BaseModel):

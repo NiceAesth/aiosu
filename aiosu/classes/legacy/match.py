@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import datetime
 from enum import Enum
-from typing import Any
 from typing import Optional
+from typing import TYPE_CHECKING
 
 from pydantic import Field
 from pydantic import root_validator
@@ -13,6 +13,9 @@ from ..gamemode import Gamemode
 from ..models import BaseModel
 from ..mods import Mods
 from ..score import ScoreStatistics
+
+if TYPE_CHECKING:
+    from typing import Any
 
 
 class MatchTeam(Enum):

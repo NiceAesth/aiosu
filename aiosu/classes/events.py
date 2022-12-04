@@ -2,9 +2,11 @@ from __future__ import annotations
 
 import abc
 import dataclasses
-from typing import Callable
+from typing import TYPE_CHECKING
 
-from .token import OAuthToken
+if TYPE_CHECKING:
+    from typing import Callable
+    from .token import OAuthToken
 
 
 class Eventable(abc.ABC):
