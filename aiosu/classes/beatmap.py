@@ -5,13 +5,16 @@ from __future__ import annotations
 
 import datetime
 from enum import Enum
-from typing import Any
 from typing import Optional
+from typing import TYPE_CHECKING
 
 from pydantic import Field
 
 from .gamemode import Gamemode
 from .models import BaseModel
+
+if TYPE_CHECKING:
+    from typing import Any
 
 
 class BeatmapRankStatus(Enum):

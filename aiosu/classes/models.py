@@ -3,12 +3,15 @@ This module contains base models for objects.
 """
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING
 
 import orjson
 import pydantic
 
 from .mods import Mods
+
+if TYPE_CHECKING:
+    from typing import Any
 
 
 def orjson_dumps(v: object, *, default: Any) -> str:

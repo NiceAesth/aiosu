@@ -7,28 +7,31 @@ from __future__ import annotations
 
 import datetime
 import functools
-from types import TracebackType
-from typing import Any
-from typing import Callable
-from typing import Optional
-from typing import Type
-from typing import Union
+from typing import TYPE_CHECKING
 
-import aiohttp
-from aiolimiter import AsyncLimiter
+if TYPE_CHECKING:
+    from types import TracebackType
+    from typing import Any
+    from typing import Callable
+    from typing import Optional
+    from typing import Type
+    from typing import Union
 
-from .. import helpers
+    from ..classes.events import BaseEvent
+
 from ..classes import APIException
 from ..classes import Beatmap
-from ..classes import BeatmapDifficultyAttributes
-from ..classes import Gamemode
-from ..classes import Mods
-from ..classes import OAuthToken
 from ..classes import Score
-from ..classes import User
+from ..classes import Mods
+from ..classes import Gamemode
 from ..classes import UserQueryType
-from ..classes.events import BaseEvent
+from ..classes import BeatmapDifficultyAttributes
 from ..classes.events import ClientUpdateEvent
+from .. import helpers
+from ..classes import User
+import aiohttp
+from aiolimiter import AsyncLimiter
+from ..classes import OAuthToken
 from ..classes.events import Eventable
 
 

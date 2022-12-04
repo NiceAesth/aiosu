@@ -4,8 +4,8 @@ This module contains models for Score objects.
 from __future__ import annotations
 
 import datetime
-from typing import Any
 from typing import Optional
+from typing import TYPE_CHECKING
 
 from ..utils.accuracy import CatchAccuracyCalculator
 from ..utils.accuracy import ManiaAccuracyCalculator
@@ -17,6 +17,9 @@ from .gamemode import Gamemode
 from .models import BaseModel
 from .mods import Mods
 from .user import User
+
+if TYPE_CHECKING:
+    from typing import Any
 
 accuracy_calculators = {
     "osu": OsuAccuracyCalculator(),

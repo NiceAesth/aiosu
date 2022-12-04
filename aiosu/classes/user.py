@@ -197,7 +197,7 @@ class User(BaseModel):
     country: Optional[Country] = None
     cover: Optional[UserProfileCover] = None
     is_restricted: Optional[bool] = None
-    account_history: Optional[list[Any]] = None
+    account_history: Optional[list[Any]] = None  # Unsure what this is
     active_tournament_banner: Optional[UserProfileTournamentBanner] = None
     badges: Optional[list[UserBadge]] = None
     beatmap_playcounts_count: Optional[int] = None
@@ -209,7 +209,7 @@ class User(BaseModel):
     monthly_playcounts: Optional[list[TimestampedCount]] = None
     page: Optional[Userpage] = None
     pending_beatmapset_count: Optional[int] = None
-    previous_usernames: Optional[list[Any]] = None
+    previous_usernames: Optional[list[str]] = None
     ranked_beatmapset_count: Optional[int] = None
     replays_watched_counts: Optional[list[TimestampedCount]] = None
     scores_best_count: Optional[int] = None

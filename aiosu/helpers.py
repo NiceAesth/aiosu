@@ -3,11 +3,14 @@ This module contains miscellaneous helper functions.
 """
 from __future__ import annotations
 
-from typing import Any
-from typing import Callable
-from typing import TypeVar
+from typing import TYPE_CHECKING
 
-T = TypeVar("T")
+if TYPE_CHECKING:
+    from typing import Any
+    from typing import Callable
+    from typing import TypeVar
+
+    T = TypeVar("T")
 
 
 def from_list(f: Callable[[Any], T], x: Any) -> list[T]:

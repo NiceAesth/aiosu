@@ -18,6 +18,8 @@ Code style
 
 ``aiosu`` uses `black`_ formatting. It is recommended that you use the provided `pre-commit`_ hook to aid you in maintaining proper styling.
 
+Imports that are only used for typing must be put in an `if TYPE_CHECKING` statement. They also must be the last imports in the file.
+
 
 Local development environment
 -----------------------------
