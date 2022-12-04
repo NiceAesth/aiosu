@@ -3,6 +3,8 @@ name: pytest
 on:
   push:
     branches: [ "master" ]
+    paths:
+    - 'aiosu/**.py'
   pull_request:
     branches: [ "master" ]
 
