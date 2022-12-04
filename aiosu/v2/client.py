@@ -9,6 +9,8 @@ import datetime
 import functools
 from typing import TYPE_CHECKING
 
+import orjson
+
 if TYPE_CHECKING:
     from types import TracebackType
     from typing import Any
@@ -151,7 +153,8 @@ class Client(Eventable):
         async with aiohttp.ClientSession(headers=headers) as temp_session:
             async with temp_session.post(url, data=data) as resp:
                 try:
-                    json = await resp.json()
+                    body = await resp.read()
+                    json = orjson.loads(body)
                     if resp.status != 200:
                         raise APIException(resp.status, json.get("error", ""))
                     self.token = OAuthToken.parse_obj(json)
@@ -185,7 +188,8 @@ class Client(Eventable):
             mode = Gamemode(kwargs.pop("mode"))  # type: ignore
             url += f"/{mode}"
         async with self._session.get(url) as resp:
-            json = await resp.json()
+            body = await resp.read()
+            json = orjson.loads(body)
             if resp.status != 200:
                 raise APIException(resp.status, json.get("error", ""))
             return User.parse_obj(json)
@@ -219,7 +223,8 @@ class Client(Eventable):
             qtype = UserQueryType(kwargs.pop("qtype"))  # type: ignore
             params["type"] = qtype.new_api_name
         async with self._session.get(url, params=params) as resp:
-            json = await resp.json()
+            body = await resp.read()
+            json = orjson.loads(body)
             if resp.status != 200:
                 raise APIException(resp.status, json.get("error", ""))
             return User.parse_obj(json)
@@ -272,7 +277,8 @@ class Client(Eventable):
         if "limit" in kwargs:
             params["limit"] = kwargs.pop("limit")
         async with self._session.get(url, params=params) as resp:
-            json = await resp.json()
+            body = await resp.read()
+            json = orjson.loads(body)
             if resp.status != 200:
                 raise APIException(resp.status, json.get("error", ""))
             return helpers.from_list(Score.parse_obj, json)
@@ -377,7 +383,8 @@ class Client(Eventable):
             mode = Gamemode(kwargs.pop("mode"))  # type: ignore
             params["mode"] = str(mode)
         async with self._session.get(url) as resp:
-            json = await resp.json()
+            body = await resp.read()
+            json = orjson.loads(body)
             if resp.status != 200:
                 raise APIException(resp.status, json.get("error", ""))
             return helpers.from_list(Score.parse_obj, json.get("scores", []))
@@ -415,7 +422,8 @@ class Client(Eventable):
         if "type" in kwargs:
             params["type"] = kwargs.pop("type")
         async with self._session.get(url) as resp:
-            json = await resp.json()
+            body = await resp.read()
+            json = orjson.loads(body)
             if resp.status != 200:
                 raise APIException(resp.status, json.get("error", ""))
             return helpers.from_list(Score.parse_obj, json.get("scores", []))
@@ -433,7 +441,8 @@ class Client(Eventable):
         """
         url = f"{self.base_url}/api/v2/beatmaps/{beatmap_id}"
         async with self._session.get(url) as resp:
-            json = await resp.json()
+            body = await resp.read()
+            json = orjson.loads(body)
             if resp.status != 200:
                 raise APIException(resp.status, json.get("error", ""))
             return Beatmap.parse_obj(json)
@@ -469,7 +478,8 @@ class Client(Eventable):
             mods = Mods(kwargs.pop("mods"))
             params["mods"] = str(mods)
         async with self._session.post(url, data=params) as resp:
-            json = await resp.json()
+            body = await resp.read()
+            json = orjson.loads(body)
             if resp.status != 200:
                 raise APIException(resp.status, json.get("error", ""))
             return BeatmapDifficultyAttributes.parse_obj(json.get("attributes"))

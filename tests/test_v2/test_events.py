@@ -9,6 +9,10 @@ import aiosu
 from ..classes import MockResponse
 
 
+def to_bytes(obj):
+    return orjson.dumps(obj)
+
+
 @pytest.fixture
 def token():
     token = aiosu.classes.OAuthToken(
@@ -29,7 +33,7 @@ def token_expired():
 def user():
     def _user(mode="osu"):
         with open(f"tests/data/v2/single_user_{mode}.json", "rb") as f:
-            data = orjson.loads(f.read())
+            data = f.read()
         f.close()
         return data
 
@@ -69,7 +73,7 @@ class TestEvents:
 
         resp = MockResponse(user(), 200)
         mocker.patch("aiohttp.ClientSession.get", return_value=resp)
-        resp_token = MockResponse(token.dict(), 200)
+        resp_token = MockResponse(to_bytes(token.dict()), 200)
         mocker.patch("aiohttp.ClientSession.post", return_value=resp_token)
 
         client = await client_storage.add_client(token=token_expired)
@@ -91,7 +95,7 @@ class TestEvents:
 
         resp = MockResponse(user(), 200)
         mocker.patch("aiohttp.ClientSession.get", return_value=resp)
-        resp_token = MockResponse(token.dict(), 200)
+        resp_token = MockResponse(to_bytes(token.dict()), 200)
         mocker.patch("aiohttp.ClientSession.post", return_value=resp_token)
 
         user = await client.get_me()

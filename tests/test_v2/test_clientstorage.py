@@ -21,7 +21,7 @@ def token():
 def user():
     def _user(mode="osu"):
         with open(f"tests/data/v2/single_user_{mode}.json", "rb") as f:
-            data = orjson.loads(f.read())
+            data = f.read()
         f.close()
         return data
 

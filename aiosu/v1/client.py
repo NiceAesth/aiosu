@@ -9,6 +9,7 @@ import functools
 from typing import TYPE_CHECKING
 
 import aiohttp
+import orjson
 from aiolimiter import AsyncLimiter
 
 from .. import helpers
@@ -111,7 +112,8 @@ class Client:
             qtype = UserQueryType(kwargs.pop("qtype"))  # type: ignore
             params["type"] = qtype.old_api_name
         async with self._session.get(url, params=params) as resp:
-            json = await resp.json()
+            body = await resp.read()
+            json = orjson.loads(body)
             if resp.status != 200:
                 raise APIException(resp.status, json.get("error", ""))
             return helpers.from_list(User._from_api_v1, json)
@@ -158,7 +160,8 @@ class Client:
             qtype = UserQueryType(kwargs.pop("qtype"))  # type: ignore
             params["type"] = qtype.old_api_name
         async with self._session.get(url, params=params) as resp:
-            json = await resp.json()
+            body = await resp.read()
+            json = orjson.loads(body)
             if resp.status != 200:
                 raise APIException(resp.status, json.get("error", ""))
             score_conv = lambda x: Score._from_api_v1(x, mode)
@@ -283,7 +286,8 @@ class Client:
                 "Either hash, since, user_query, beatmap_id or beatmapset_id must be specified.",
             )
         async with self._session.get(url, params=params) as resp:
-            json = await resp.json()
+            body = await resp.read()
+            json = orjson.loads(body)
             if resp.status != 200:
                 raise APIException(resp.status, json.get("error", ""))
             return helpers.from_list(Beatmapset._from_api_v1, json)
@@ -333,7 +337,8 @@ class Client:
             mods = Mods(kwargs.pop("mods"))
             params["mode"] = str(mods)
         async with self._session.get(url, params=params) as resp:
-            json = await resp.json()
+            body = await resp.read()
+            json = orjson.loads(body)
             if resp.status != 200:
                 raise APIException(resp.status, json.get("error", ""))
             score_conv = lambda x: Score._from_api_v1(x, mode)
@@ -355,7 +360,8 @@ class Client:
             "mp": match_id,
         }
         async with self._session.get(url, params=params) as resp:
-            json = await resp.json()
+            body = await resp.read()
+            json = orjson.loads(body)
             if resp.status != 200:
                 raise APIException(resp.status, json.get("error", ""))
             return Match.parse_obj(json)
@@ -405,7 +411,8 @@ class Client:
             mods = Mods(kwargs.pop("mods"))
             params["mode"] = str(mods)
         async with self._session.get(url, params=params) as resp:
-            json = await resp.json()
+            body = await resp.read()
+            json = orjson.loads(body)
             if resp.status != 200:
                 raise APIException(resp.status, json.get("error", ""))
             return Replay.parse_obj(json)

@@ -10,10 +10,15 @@ modes = ["osu", "mania", "fruits", "taiko"]
 
 
 @pytest.fixture
+def empty():
+    return b"[]"
+
+
+@pytest.fixture
 def user():
     def _user(mode="osu"):
         with open(f"tests/data/v1/single_user_{mode}.json", "rb") as f:
-            data = orjson.loads(f.read())
+            data = f.read()
         f.close()
         return data
 
@@ -24,7 +29,7 @@ def user():
 def scores():
     def _scores(mode="osu", type="recents"):
         with open(f"tests/data/v1/multiple_score_{mode}_{type}.json", "rb") as f:
-            data = orjson.loads(f.read())
+            data = f.read()
         f.close()
         return data
 
@@ -35,7 +40,7 @@ def scores():
 def beatmap():
     def _beatmap(mode="osu"):
         with open(f"tests/data/v1/multiple_beatmap_{mode}.json", "rb") as f:
-            data = orjson.loads(f.read())
+            data = f.read()
         f.close()
         return data
 
@@ -45,7 +50,7 @@ def beatmap():
 @pytest.fixture
 def match():
     with open(f"tests/data/v1/match.json", "rb") as f:
-        data = orjson.loads(f.read())
+        data = f.read()
     f.close()
     return data
 
@@ -53,7 +58,7 @@ def match():
 @pytest.fixture
 def replay():
     with open(f"tests/data/v1/replay.json", "rb") as f:
-        data = orjson.loads(f.read())
+        data = f.read()
     f.close()
     return data
 
@@ -69,6 +74,7 @@ class TestClient:
             assert isinstance(data, list) and all(
                 isinstance(x, aiosu.classes.User) for x in data
             )
+        await client.close()
 
     @pytest.mark.asyncio
     async def test_get_user_recents(self, mocker, scores):
@@ -80,16 +86,18 @@ class TestClient:
             assert isinstance(data, list) and all(
                 isinstance(x, aiosu.classes.Score) for x in data
             )
+        await client.close()
 
     @pytest.mark.asyncio
-    async def test_get_user_recents_missing(self, mocker):
+    async def test_get_user_recents_missing(self, mocker, empty):
         client = aiosu.v1.Client("")
-        resp = MockResponse([], 200)
+        resp = MockResponse(empty, 200)
         mocker.patch("aiohttp.ClientSession.get", return_value=resp)
         data = await client.get_user_recents(7782553)
         assert isinstance(data, list) and all(
             isinstance(x, aiosu.classes.Score) for x in data
         )
+        await client.close()
 
     @pytest.mark.asyncio
     async def test_get_user_bests(self, mocker, scores):
@@ -101,16 +109,18 @@ class TestClient:
             assert isinstance(data, list) and all(
                 isinstance(x, aiosu.classes.Score) for x in data
             )
+        await client.close()
 
     @pytest.mark.asyncio
-    async def test_get_user_bests_missing(self, mocker):
+    async def test_get_user_bests_missing(self, mocker, empty):
         client = aiosu.v1.Client("")
-        resp = MockResponse([], 200)
+        resp = MockResponse(empty, 200)
         mocker.patch("aiohttp.ClientSession.get", return_value=resp)
         data = await client.get_user_bests(7782553)
         assert isinstance(data, list) and all(
             isinstance(x, aiosu.classes.Score) for x in data
         )
+        await client.close()
 
     @pytest.mark.asyncio
     async def test_get_beatmap(self, mocker, beatmap):
@@ -122,6 +132,7 @@ class TestClient:
             assert isinstance(data, list) and all(
                 isinstance(x, aiosu.classes.Beatmapset) for x in data
             )
+        await client.close()
 
     @pytest.mark.asyncio
     async def test_get_user_beatmap_scores(self, mocker, scores):
@@ -137,16 +148,18 @@ class TestClient:
             assert isinstance(data, list) and all(
                 isinstance(x, aiosu.classes.Score) for x in data
             )
+        await client.close()
 
     @pytest.mark.asyncio
-    async def test_get_user_beatmap_scores_missing(self, mocker):
+    async def test_get_user_beatmap_scores_missing(self, mocker, empty):
         client = aiosu.v1.Client("")
-        resp = MockResponse([], 200)
+        resp = MockResponse(empty, 200)
         mocker.patch("aiohttp.ClientSession.get", return_value=resp)
         data = await client.get_beatmap_scores(2095393, user_query=7782553)
         assert isinstance(data, list) and all(
             isinstance(x, aiosu.classes.Score) for x in data
         )
+        await client.close()
 
     @pytest.mark.asyncio
     async def test_get_beatmap_scores(self, mocker, scores):
@@ -158,16 +171,18 @@ class TestClient:
             assert isinstance(data, list) and all(
                 isinstance(x, aiosu.classes.Score) for x in data
             )
+        await client.close()
 
     @pytest.mark.asyncio
-    async def test_get_beatmap_scores_missing(self, mocker):
+    async def test_get_beatmap_scores_missing(self, mocker, empty):
         client = aiosu.v1.Client("")
-        resp = MockResponse([], 200)
+        resp = MockResponse(empty, 200)
         mocker.patch("aiohttp.ClientSession.get", return_value=resp)
         data = await client.get_beatmap_scores(2095393)
         assert isinstance(data, list) and all(
             isinstance(x, aiosu.classes.Score) for x in data
         )
+        await client.close()
 
     @pytest.mark.asyncio
     async def test_get_match(self, mocker, match):
@@ -176,6 +191,7 @@ class TestClient:
         mocker.patch("aiohttp.ClientSession.get", return_value=resp)
         data = await client.get_match(105019274)
         assert isinstance(data, aiosu.classes.legacy.Match)
+        await client.close()
 
     @pytest.mark.asyncio
     async def test_get_replay(self, mocker, replay):
@@ -184,3 +200,4 @@ class TestClient:
         mocker.patch("aiohttp.ClientSession.get", return_value=resp)
         data = await client.get_replay(beatmap_id=2271666, user_query=9703390)
         assert isinstance(data, aiosu.classes.legacy.Replay)
+        await client.close()
