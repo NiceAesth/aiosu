@@ -44,6 +44,7 @@ API v1 Example
    import aiosu
    import asyncio
 
+
    async def main():
        # async with syntax
        async with aiosu.v1.Client("osu api token") as client:
@@ -53,6 +54,7 @@ API v1 Example
        client = aiosu.v1.Client("osu api token")
        user = await client.get_user(7782553)
        client.close()
+
 
    if __name__ == "__main__":
        asyncio.run(main())

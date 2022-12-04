@@ -21,7 +21,7 @@ Getting started
 If you are new to this library, you should familiarize yourself with the following pages:
 
 - **First steps:** :doc:`quickstart`
-- **Examples:** WIP
+- **Examples:** Examples can be found in the `repository <https://github.com/NiceAesth/aiosu/tree/master/examples>`__
 
 Getting help
 ------------
