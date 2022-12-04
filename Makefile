@@ -9,3 +9,13 @@ release:
 	@git push
 	@git push --tags
 	@poetry version
+
+test:
+	@pytest -s
+	@mypy
+
+serve-docs:
+	@cd docs;\
+	make html;\
+	cd build/html;\
+	python -m http.server;\
