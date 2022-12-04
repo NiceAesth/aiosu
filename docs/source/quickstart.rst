@@ -67,6 +67,8 @@ API v2 Example
 
 
     async def main():
+        token = aiosu.classes.OAuthToken.parse_obj(json_token_from_api)
+
         token = aiosu.classes.OAuthToken(
             access_token="access token",
             refresh_token="refresh token",
