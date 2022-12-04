@@ -49,7 +49,7 @@ class Client:
 
     :param token: The API key
     :type token: str
-    :param \\**kwargs:
+    :param \**kwargs:
         See below
 
     :Keyword Arguments:
