@@ -1,9 +1,10 @@
 aiosu
 =====
 
-|Python| |pre-commit.ci status| |pytest| |rtd|
+|Python| |pypi| |pre-commit.ci status| |rtd| |pytest| |mypy|
 
 Simple and fast osu! API v1 and v2 library
+
 
 Features
 --------
@@ -12,6 +13,7 @@ Features
 - Rate limit handling
 - Utilities for osu! related calculations
 - Easy to use
+
 
 Installing
 ----------
@@ -36,6 +38,7 @@ To install the development version, do the following:
     $ cd aiosu
     $ python3 -m pip install -U .
 
+
 API v1 Example
 --------------
 
@@ -58,6 +61,7 @@ API v1 Example
 
    if __name__ == "__main__":
        asyncio.run(main())
+
 
 API v2 Example
 --------------
@@ -99,10 +103,12 @@ API v2 Example
 
 You can find more examples in the examples directory.
 
+
 Contributing
 ------------
 
 Please read the `CONTRIBUTING.rst <.github/CONTRIBUTING.rst>`__ to learn how to contribute to aiosu!
+
 
 Acknowledgments
 ---------------
@@ -112,10 +118,22 @@ Acknowledgments
 -  `osu!Akatsuki <https://github.com/osuAkatsuki/performance-calculator>`__
    for performance and accuracy utils
 
-.. |Python| image:: https://img.shields.io/badge/Python-3.9%2B-brightgreen.svg
+
+.. |Python| image:: https://img.shields.io/pypi/pyversions/aiosu.svg
+    :target: https://pypi.python.org/pypi/aiosu
+    :alt: Python version info
+.. |pypi| image:: https://img.shields.io/pypi/v/aiosu.svg
+    :target: https://pypi.python.org/pypi/aiosu
+    :alt: PyPI version info
 .. |pre-commit.ci status| image:: https://results.pre-commit.ci/badge/github/NiceAesth/aiosu/master.svg
     :target: https://results.pre-commit.ci/latest/github/NiceAesth/aiosu/master
+    :alt: pre-commit.ci status
 .. |pytest| image:: https://github.com/NiceAesth/aiosu/actions/workflows/pytest.yml/badge.svg
+    :target: https://github.com/NiceAesth/aiosu/actions/workflows/pytest.yml
+    :alt: pytest Status
+.. |mypy| image:: https://github.com/NiceAesth/aiosu/actions/workflows/mypy.yml/badge.svg
+    :target: https://github.com/NiceAesth/aiosu/actions/workflows/mypy.yml
+    :alt: mypy Status
 .. |rtd| image:: https://readthedocs.org/projects/aiosu/badge/?version=latest
     :target: https://aiosu.readthedocs.io/en/latest/?badge=latest
     :alt: Documentation Status
