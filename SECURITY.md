@@ -11,6 +11,7 @@ It is the responsibility of the user to remain up-to-date.
 
 ## Reporting a Vulnerability
 
-If you notice any vulnerabilities, pleae contact me urgently at nice@aesth.dev.
+If you notice any vulnerabilities, pleae contact me urgently at nice@aesth.dev or
+via security advisories in the repository.
 
 Depending on the issue, a resolution will be attempted in up to a week.
