@@ -68,8 +68,8 @@ class Client(Eventable):
         See below
 
     :Keyword Arguments:
-        * *client_secret* (``str``)
         * *client_id* (``int``)
+        * *client_secret* (``str``)
         * *base_url* (``str``) --
             Optional, base API URL, defaults to \"https://osu.ppy.sh\"
         * *token* (``aiosu.classes.token.OAuthToken``)
@@ -79,18 +79,21 @@ class Client(Eventable):
 
     def __init__(self, **kwargs: Any) -> None:
         super().__init__()
-        self.client_secret: str = kwargs.pop("client_secret", None)
         self.client_id: int = kwargs.pop("client_id", None)
+        self.client_secret: str = kwargs.pop("client_secret", None)
         self.token: OAuthToken = kwargs.pop("token", OAuthToken())
         self.base_url: str = kwargs.pop("base_url", "https://osu.ppy.sh")
         self._limiter: AsyncLimiter = kwargs.pop("limiter", AsyncLimiter(1200, 60))
         self._session: aiohttp.ClientSession = aiohttp.ClientSession(
-            headers={
-                "Authorization": f"Bearer {self.token.access_token}",
-                "Content-Type": "application/json",
-                "Accept": "application/json",
-            },
+            headers=self.__get_headers(),
         )
+
+    def __get_headers(self):
+        return {
+            "Authorization": f"Bearer {self.token.access_token}",
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+        }
 
     async def __aenter__(self) -> Client:
         return self
@@ -134,19 +137,25 @@ class Client(Eventable):
         """
         old_token = self.token
         url = f"{self.base_url}/oauth/token"
+        headers = {"Content-Type": "application/x-www-form-urlencoded"}
         data = {
             "client_id": self.client_id,
             "client_secret": self.client_secret,
             "grant_type": "refresh_token",
             "refresh_token": old_token.refresh_token,
         }
-        headers = {"Content-Type": "application/x-www-form-urlencoded"}
 
-        async with self._session.post(url, data=data, headers=headers) as resp:
-            json = await resp.json()
-            if resp.status != 200:
-                raise APIException(resp.status, json.get("error", ""))
-            self.token = OAuthToken.parse_obj(json)
+        async with aiohttp.ClientSession(headers=headers) as temp_session:
+            async with temp_session.post(url, data=data) as resp:
+                try:
+                    json = await resp.json()
+                    if resp.status != 200:
+                        raise APIException(resp.status, json.get("error", ""))
+                    self.token = OAuthToken.parse_obj(json)
+                    await self._session.close()
+                    self._session = aiohttp.ClientSession(headers=self.__get_headers())
+                except aiohttp.client_exceptions.ContentTypeError:
+                    raise APIException(403, "Invalid token specified.")
 
         await self._process_event(
             ClientUpdateEvent(client=self, old_token=old_token, new_token=self.token),
@@ -154,14 +163,24 @@ class Client(Eventable):
 
     @rate_limited
     @check_token
-    async def get_me(self) -> User:
+    async def get_me(self, **kwargs: Any) -> User:
         r"""Gets the user who owns the current token
+
+        :param \**kwargs:
+            See below
+
+        :Keyword Arguments:
+            * *mode* (``aiosu.classes.gamemode.Gamemode``) --
+                Optional, gamemode to search for
 
         :raises APIException: Contains status code and error message
         :return: Requested user
         :rtype: aiosu.classes.user.User
         """
         url = f"{self.base_url}/api/v2/me"
+        if "mode" in kwargs:
+            mode = Gamemode(kwargs.pop("mode"))  # type: ignore
+            url += f"/{mode}"
         async with self._session.get(url) as resp:
             json = await resp.json()
             if resp.status != 200:
