@@ -60,6 +60,11 @@ def rate_limited(func: Callable) -> Callable:
 
     @functools.wraps(func)
     async def _rate_limited(self: Client, *args: Any, **kwargs: Any) -> Any:
+        if self._session is None:
+            self._session = aiohttp.ClientSession(
+                headers=self._get_headers(),
+            )
+
         async with self._limiter:
             return await func(self, *args, **kwargs)
 
@@ -89,11 +94,9 @@ class Client(Eventable):
         self.token: OAuthToken = kwargs.pop("token", OAuthToken())
         self.base_url: str = kwargs.pop("base_url", "https://osu.ppy.sh")
         self._limiter: AsyncLimiter = kwargs.pop("limiter", AsyncLimiter(1200, 60))
-        self._session: aiohttp.ClientSession = aiohttp.ClientSession(
-            headers=self.__get_headers(),
-        )
+        self._session: aiohttp.ClientSession = None  # type: ignore
 
-    def __get_headers(self) -> dict[str, str]:
+    def _get_headers(self) -> dict[str, str]:
         return {
             "Authorization": f"Bearer {self.token.access_token}",
             "Content-Type": "application/json",
@@ -159,7 +162,7 @@ class Client(Eventable):
                         raise APIException(resp.status, json.get("error", ""))
                     self.token = OAuthToken.parse_obj(json)
                     await self._session.close()
-                    self._session = aiohttp.ClientSession(headers=self.__get_headers())
+                    self._session = aiohttp.ClientSession(headers=self._get_headers())
                 except aiohttp.client_exceptions.ContentTypeError:
                     raise APIException(403, "Invalid token specified.")
 
@@ -486,4 +489,5 @@ class Client(Eventable):
 
     async def close(self) -> None:
         """Closes the client session."""
-        await self._session.close()
+        if self._session:
+            await self._session.close()

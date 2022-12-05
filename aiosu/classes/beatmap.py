@@ -9,6 +9,7 @@ from typing import Optional
 from typing import TYPE_CHECKING
 
 from pydantic import Field
+from pydantic import root_validator
 
 from .gamemode import Gamemode
 from .models import BaseModel
@@ -122,6 +123,7 @@ class BeatmapDifficultyAttributes(BaseModel):
 
 class Beatmap(BaseModel):
     id: int
+    url: str
     mode: Gamemode
     beatmapset_id: int
     difficulty_rating: float
@@ -144,11 +146,21 @@ class Beatmap(BaseModel):
     last_updated: Optional[datetime.datetime] = None
     passcount: Optional[int] = None
     play_count: Optional[int] = Field(None, alias="playcount")
-    url: Optional[str] = None
     checksum: Optional[str] = None
     max_combo: Optional[int] = None
     beatmapset: Optional[Beatmapset] = None
     failtimes: Optional[BeatmapFailtimes] = None
+
+    @root_validator(pre=True)
+    def _set_url(cls, values: dict[str, Any]) -> dict[str, Any]:
+        if values["url"] is None:
+            id = values["id"]
+            beatmapset_id = values["beatmapset_id"]
+            mode = Gamemode(values["mode"])  # type: ignore
+            values[
+                "url"
+            ] = f"https://osu.ppy.sh/beatmapsets/{beatmapset_id}#{mode}/{id}"
+        return values
 
     @property
     def count_objects(self) -> int:
@@ -198,12 +210,12 @@ class Beatmap(BaseModel):
 
 
 class Beatmapset(BaseModel):
+    id: int
     artist: str
     artist_unicode: str
     covers: BeatmapCovers
     creator: str
     favourite_count: int
-    id: int
     play_count: int = Field(alias="playcount")
     preview_url: str
     source: str
@@ -231,15 +243,19 @@ class Beatmapset(BaseModel):
     has_favourited: Optional[bool] = None
     beatmaps: Optional[list[Beatmap]] = None
 
+    @property
+    def url(self) -> str:
+        return f"https://osu.ppy.sh/beatmapsets/{self.id}"
+
     @classmethod
     def _from_api_v1(cls, data: Any) -> Beatmapset:
         return cls.parse_obj(
             {
+                "id": data["beatmapset_id"],
                 "artist": data["artist"],
                 "artist_unicode": data["artist"],
                 "covers": BeatmapCovers._from_api_v1(data),
                 "favourite_count": data["favourite_count"],
-                "id": data["beatmapset_id"],
                 "creator": data["creator"],
                 "play_count": data["playcount"],
                 "preview_url": f"https://b.ppy.sh/preview/{data['beatmapset_id']}.mp3",

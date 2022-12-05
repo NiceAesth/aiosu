@@ -40,10 +40,12 @@ def rate_limited(func: Callable) -> Callable:
     """
 
     @functools.wraps(func)
-    async def _rate_limited(*args: Any, **kwargs: Any) -> Any:
-        self = args[0]
+    async def _rate_limited(self: Client, *args: Any, **kwargs: Any) -> Any:
+        if self._session is None:
+            self._session = aiohttp.ClientSession()
+
         async with self._limiter:
-            return await func(*args, **kwargs)
+            return await func(self, *args, **kwargs)
 
     return _rate_limited
 
@@ -67,7 +69,7 @@ class Client:
         self.token: str = token
         self.base_url: str = kwargs.pop("base_url", "https://osu.ppy.sh/api")
         self._limiter: AsyncLimiter = kwargs.pop("limiter", AsyncLimiter(1200, 60))
-        self._session: aiohttp.ClientSession = aiohttp.ClientSession()
+        self._session: aiohttp.ClientSession = None  # type: ignore
 
     async def __aenter__(self) -> Client:
         return self
@@ -81,7 +83,7 @@ class Client:
         await self.close()
 
     @rate_limited
-    async def get_user(self, user_query: Union[str, int], **kwargs: Any) -> list[User]:
+    async def get_user(self, user_query: Union[str, int], **kwargs: Any) -> User:
         r"""Gets a user by a query.
 
         :param user_query: Username or ID to search by
@@ -116,7 +118,9 @@ class Client:
             json = orjson.loads(body)
             if resp.status != 200:
                 raise APIException(resp.status, json.get("error", ""))
-            return helpers.from_list(User._from_api_v1, json)
+            if not json:
+                raise APIException(404, "User not found")
+            return User._from_api_v1(json[0])
 
     @rate_limited
     async def __get_type_scores(
@@ -419,4 +423,5 @@ class Client:
 
     async def close(self) -> None:
         """Closes the client session."""
-        await self._session.close()
+        if self._session:
+            await self._session.close()
