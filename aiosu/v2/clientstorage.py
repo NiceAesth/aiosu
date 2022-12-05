@@ -65,7 +65,7 @@ class ClientStorage(Eventable):
         """
         A decorator that is called whenever a client is added, to be used as:
 
-            @clientsession.on_client_add
+            @client_storage.on_client_add
 
             async def func(event: ClientAddEvent)
         """
@@ -81,7 +81,7 @@ class ClientStorage(Eventable):
         """
         A decorator that is called whenever any stored client is updated, to be used as:
 
-            @clientsession.on_client_update
+            @client_storage.on_client_update
 
             async def func(event: ClientUpdateEvent)
         """
@@ -110,7 +110,7 @@ class ClientStorage(Eventable):
 
         :raises NotImplementedError: If no app client is provided and creation is disabled
         :return: Client credentials guest client session
-        :rtype: aiosu.v1.client.Client
+        :rtype: aiosu.v2.client.Client
         """
         if not (_app_client := self.clients.get(0)):
             raise NotImplementedError("Client credential grant creation is still WIP")
@@ -143,7 +143,7 @@ class ClientStorage(Eventable):
         :param token: Token object for the client
         :type token: aiosu.classes.token.OAuthToken
         :return: The added client
-        :rtype: aiosu.v1.client.Client
+        :rtype: aiosu.v2.client.Client
         """
         client = Client(token=token, **self._get_client_args())
         client._listeners.append(self._process_event)
@@ -168,7 +168,7 @@ class ClientStorage(Eventable):
 
         :raises ValueError: If neither id nor token are specified
         :return: The requested client
-        :rtype: aiosu.v1.client.Client
+        :rtype: aiosu.v2.client.Client
         """
         client_uid: int = kwargs.pop("id", None)
         token: OAuthToken = kwargs.pop("token", None)
