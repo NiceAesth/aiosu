@@ -33,6 +33,11 @@ if TYPE_CHECKING:
     from typing import Union
 
 
+def _beatmap_score_conv(data: Any, mode: Gamemode, beatmap_id: int) -> Score:
+    data["beatmap_id"] = beatmap_id
+    return Score._from_api_v1(data, mode)
+
+
 def rate_limited(func: Callable) -> Callable:
     """
     A decorator that enforces rate limiting, to be used as:
@@ -347,7 +352,7 @@ class Client:
             json = orjson.loads(body)
             if resp.status != 200:
                 raise APIException(resp.status, json.get("error", ""))
-            score_conv = lambda x: Score._from_api_v1(x, mode)
+            score_conv = lambda x: _beatmap_score_conv(x, mode, beatmap_id)
             return helpers.from_list(score_conv, json)
 
     @rate_limited

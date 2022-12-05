@@ -18,8 +18,8 @@ from .models import BaseModel
 if TYPE_CHECKING:
     from typing import Callable
 
-cast_int: Callable[Any, int] = lambda x: int(x or 0)
-cast_float: Callable[Any, float] = lambda x: float(x or 0)
+cast_int: Callable[..., int] = lambda x: int(x or 0)
+cast_float: Callable[..., float] = lambda x: float(x or 0)
 
 
 class UserQueryType(Enum):

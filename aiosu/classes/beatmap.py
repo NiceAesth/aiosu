@@ -153,7 +153,7 @@ class Beatmap(BaseModel):
 
     @root_validator(pre=True)
     def _set_url(cls, values: dict[str, Any]) -> dict[str, Any]:
-        if values["url"] is None:
+        if values.get("url") is None:
             id = values["id"]
             beatmapset_id = values["beatmapset_id"]
             mode = Gamemode(values["mode"])  # type: ignore
@@ -198,7 +198,6 @@ class Beatmap(BaseModel):
                 "last_updated": data["last_update"],
                 "bpm": data["bpm"],
                 "checksum": data["file_md5"],
-                "mode": int(data["mode"]),
                 "playcount": data["playcount"],
                 "passcount": data["passcount"],
                 "count_circles": data["count_normal"],
