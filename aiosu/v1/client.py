@@ -194,9 +194,10 @@ class Client:
         :return: List of requested scores
         :rtype: list[aiosu.classes.score.Score]
         """
-        if not 1 <= kwargs.get("limit", 50) <= 50:
+        limit = kwargs.get("limit", 50)
+        if not 1 <= limit <= 50:
             raise ValueError("Invalid limit specified. Limit must be between 1 and 50")
-        return await self.__get_type_scores(user_query, "recent", **kwargs)
+        return await self.__get_type_scores(user_query, "recent", limit=limit, **kwargs)
 
     async def get_user_bests(
         self, user_query: Union[str, int], **kwargs: Any
@@ -221,9 +222,10 @@ class Client:
         :return: List of requested scores
         :rtype: list[aiosu.classes.score.Score]
         """
-        if not 1 <= kwargs.get("limit", 100) <= 100:
+        limit = kwargs.get("limit", 50)
+        if not 1 <= limit <= 50:
             raise ValueError("Invalid limit specified. Limit must be between 1 and 100")
-        return await self.__get_type_scores(user_query, "best", **kwargs)
+        return await self.__get_type_scores(user_query, "best", limit=limit, **kwargs)
 
     @rate_limited
     async def get_beatmap(self, **kwargs: Any) -> list[Beatmapset]:
