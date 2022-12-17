@@ -195,7 +195,7 @@ class Score(BaseModel):
                 "accuracy": 0.0,
                 "mods": int(data["enabled_mods"]),
                 "score": data["score"],
-                "pp": data.get("pp", 0),
+                "pp": data.get("pp", 0.0),
                 "max_combo": data["maxcombo"],
                 "passed": data["rank"] != "F",
                 "perfect": data["perfect"],
