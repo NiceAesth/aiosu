@@ -133,12 +133,12 @@ class Beatmap(BaseModel):
     version: str
     accuracy: Optional[float] = None
     ar: Optional[float] = None
+    cs: Optional[float] = None
     bpm: Optional[float] = None
     convert: Optional[bool] = None
     count_circles: Optional[int] = None
     count_sliders: Optional[int] = None
     count_spinners: Optional[int] = None
-    cs: Optional[float] = None
     deleted_at: Optional[datetime.datetime] = None
     drain: Optional[float] = None
     hit_length: Optional[int] = None
@@ -161,6 +161,10 @@ class Beatmap(BaseModel):
                 "url"
             ] = f"https://osu.ppy.sh/beatmapsets/{beatmapset_id}#{mode}/{id}"
         return values
+
+    @property
+    def discussion_url(self) -> str:
+        return f"https://osu.ppy.sh/beatmapsets/{self.beatmapset_id}/discussion/{self.id}/general"
 
     @property
     def count_objects(self) -> int:
@@ -245,6 +249,10 @@ class Beatmapset(BaseModel):
     @property
     def url(self) -> str:
         return f"https://osu.ppy.sh/beatmapsets/{self.id}"
+
+    @property
+    def discussion_url(self) -> str:
+        return f"https://osu.ppy.sh/beatmapsets/{self.id}/discussion"
 
     @classmethod
     def _from_api_v1(cls, data: Any) -> Beatmapset:
