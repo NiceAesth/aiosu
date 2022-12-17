@@ -33,6 +33,11 @@ if TYPE_CHECKING:
     from typing import Union
 
 
+def _beatmap_score_conv(data: Any, mode: Gamemode, beatmap_id: int) -> Score:
+    data["beatmap_id"] = beatmap_id
+    return Score._from_api_v1(data, mode)
+
+
 def rate_limited(func: Callable) -> Callable:
     """
     A decorator that enforces rate limiting, to be used as:
@@ -40,10 +45,12 @@ def rate_limited(func: Callable) -> Callable:
     """
 
     @functools.wraps(func)
-    async def _rate_limited(*args: Any, **kwargs: Any) -> Any:
-        self = args[0]
+    async def _rate_limited(self: Client, *args: Any, **kwargs: Any) -> Any:
+        if self._session is None:
+            self._session = aiohttp.ClientSession()
+
         async with self._limiter:
-            return await func(*args, **kwargs)
+            return await func(self, *args, **kwargs)
 
     return _rate_limited
 
@@ -67,7 +74,7 @@ class Client:
         self.token: str = token
         self.base_url: str = kwargs.pop("base_url", "https://osu.ppy.sh/api")
         self._limiter: AsyncLimiter = kwargs.pop("limiter", AsyncLimiter(1200, 60))
-        self._session: aiohttp.ClientSession = aiohttp.ClientSession()
+        self._session: aiohttp.ClientSession = None  # type: ignore
 
     async def __aenter__(self) -> Client:
         return self
@@ -81,7 +88,7 @@ class Client:
         await self.close()
 
     @rate_limited
-    async def get_user(self, user_query: Union[str, int], **kwargs: Any) -> list[User]:
+    async def get_user(self, user_query: Union[str, int], **kwargs: Any) -> User:
         r"""Gets a user by a query.
 
         :param user_query: Username or ID to search by
@@ -116,7 +123,9 @@ class Client:
             json = orjson.loads(body)
             if resp.status != 200:
                 raise APIException(resp.status, json.get("error", ""))
-            return helpers.from_list(User._from_api_v1, json)
+            if not json:
+                raise APIException(404, "User not found")
+            return User._from_api_v1(json[0])
 
     @rate_limited
     async def __get_type_scores(
@@ -190,9 +199,10 @@ class Client:
         :return: List of requested scores
         :rtype: list[aiosu.classes.score.Score]
         """
-        if not 1 <= kwargs.get("limit", 50) <= 50:
+        limit = kwargs.pop("limit", 50)
+        if not 1 <= limit <= 50:
             raise ValueError("Invalid limit specified. Limit must be between 1 and 50")
-        return await self.__get_type_scores(user_query, "recent", **kwargs)
+        return await self.__get_type_scores(user_query, "recent", limit=limit, **kwargs)
 
     async def get_user_bests(
         self, user_query: Union[str, int], **kwargs: Any
@@ -217,9 +227,10 @@ class Client:
         :return: List of requested scores
         :rtype: list[aiosu.classes.score.Score]
         """
-        if not 1 <= kwargs.get("limit", 100) <= 100:
+        limit = kwargs.pop("limit", 100)
+        if not 1 <= limit <= 100:
             raise ValueError("Invalid limit specified. Limit must be between 1 and 100")
-        return await self.__get_type_scores(user_query, "best", **kwargs)
+        return await self.__get_type_scores(user_query, "best", limit=limit, **kwargs)
 
     @rate_limited
     async def get_beatmap(self, **kwargs: Any) -> list[Beatmapset]:
@@ -341,7 +352,7 @@ class Client:
             json = orjson.loads(body)
             if resp.status != 200:
                 raise APIException(resp.status, json.get("error", ""))
-            score_conv = lambda x: Score._from_api_v1(x, mode)
+            score_conv = lambda x: _beatmap_score_conv(x, mode, beatmap_id)
             return helpers.from_list(score_conv, json)
 
     @rate_limited
@@ -419,4 +430,5 @@ class Client:
 
     async def close(self) -> None:
         """Closes the client session."""
-        await self._session.close()
+        if self._session:
+            await self._session.close()

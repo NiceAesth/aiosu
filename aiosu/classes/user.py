@@ -7,12 +7,19 @@ import datetime
 from enum import Enum
 from typing import Any
 from typing import Optional
+from typing import TYPE_CHECKING
 
 from .common import Achievement
 from .common import Country
 from .common import TimestampedCount
 from .gamemode import Gamemode
 from .models import BaseModel
+
+if TYPE_CHECKING:
+    from typing import Callable
+
+cast_int: Callable[..., int] = lambda x: int(x or 0)
+cast_float: Callable[..., float] = lambda x: float(x or 0)
 
 
 class UserQueryType(Enum):
@@ -38,11 +45,11 @@ class Userpage(BaseModel):
 
 class UserLevel(BaseModel):
     current: int
-    progress: int
+    progress: float
 
     @classmethod
     def _from_api_v1(cls, data: Any) -> UserLevel:
-        level = float(data["level"])
+        level = cast_float(data["level"])
         current = int(level)
         progress = (level - current) * 100
         return cls.parse_obj({"current": current, "progress": progress})
@@ -110,11 +117,11 @@ class UserGradeCounts(BaseModel):
     def _from_api_v1(cls, data: Any) -> UserGradeCounts:
         return cls.parse_obj(
             {
-                "ss": data["count_rank_ss"],
-                "ssh": data["count_rank_ssh"],
-                "s": data["count_rank_s"],
-                "sh": data["count_rank_sh"],
-                "a": data["count_rank_a"],
+                "ss": cast_int(data["count_rank_ss"]),
+                "ssh": cast_int(data["count_rank_ssh"]),
+                "s": cast_int(data["count_rank_s"]),
+                "sh": cast_int(data["count_rank_sh"]),
+                "a": cast_int(data["count_rank_a"]),
             },
         )
 
@@ -148,17 +155,22 @@ class UserStats(BaseModel):
 
     @classmethod
     def _from_api_v1(cls, data: Any) -> UserStats:
+        """Some fields can be None, we want to force them to cast to a value."""
         return cls.parse_obj(
             {
                 "level": UserLevel._from_api_v1(data),
-                "pp": data["pp_raw"],
-                "ranked_score": data["ranked_score"],
-                "hit_accuracy": data["accuracy"],
-                "play_count": data["playcount"],
-                "play_time": data["total_seconds_played"],
-                "total_score": data["total_score"],
-                "total_hits": data["count300"] + data["count100"] + data["count50"],
-                "is_ranked": data["pp_raw"] != "0",
+                "pp": cast_float(data["pp_raw"]),
+                "global_rank": cast_int(data["pp_rank"]),
+                "country_rank": cast_int(data["pp_country_rank"]),
+                "ranked_score": cast_int(data["ranked_score"]),
+                "hit_accuracy": cast_float(data["accuracy"]),
+                "play_count": cast_int(data["playcount"]),
+                "play_time": cast_int(data["total_seconds_played"]),
+                "total_score": cast_int(data["total_score"]),
+                "total_hits": cast_int(data["count300"])
+                + cast_int(data["count100"])
+                + cast_int(data["count50"]),
+                "is_ranked": cast_float(data["pp_raw"]) != 0,
                 "grade_counts": UserGradeCounts._from_api_v1(data),
             },
         )
@@ -219,6 +231,10 @@ class User(BaseModel):
     support_level: Optional[int] = None
     user_achievements: Optional[list[Achievement]] = None
     rank_history: Optional[UserRankHistoryElement] = None
+
+    @property
+    def url(self) -> str:
+        return f"https://osu.ppy.sh/users/{self.id}"
 
     @classmethod
     def _from_api_v1(cls, data: Any) -> User:

@@ -71,9 +71,7 @@ class TestClient:
             resp = MockResponse(user(mode), 200)
             mocker.patch("aiohttp.ClientSession.get", return_value=resp)
             data = await client.get_user(7782553, mode=mode)
-            assert isinstance(data, list) and all(
-                isinstance(x, aiosu.classes.User) for x in data
-            )
+            assert isinstance(data, aiosu.classes.User)
         await client.close()
 
     @pytest.mark.asyncio
