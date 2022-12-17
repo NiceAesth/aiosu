@@ -199,7 +199,7 @@ class Client:
         :return: List of requested scores
         :rtype: list[aiosu.classes.score.Score]
         """
-        limit = kwargs.get("limit", 50)
+        limit = kwargs.pop("limit", 50)
         if not 1 <= limit <= 50:
             raise ValueError("Invalid limit specified. Limit must be between 1 and 50")
         return await self.__get_type_scores(user_query, "recent", limit=limit, **kwargs)
@@ -227,7 +227,7 @@ class Client:
         :return: List of requested scores
         :rtype: list[aiosu.classes.score.Score]
         """
-        limit = kwargs.get("limit", 100)
+        limit = kwargs.pop("limit", 100)
         if not 1 <= limit <= 100:
             raise ValueError("Invalid limit specified. Limit must be between 1 and 100")
         return await self.__get_type_scores(user_query, "best", limit=limit, **kwargs)
