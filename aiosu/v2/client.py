@@ -19,8 +19,6 @@ if TYPE_CHECKING:
     from typing import Type
     from typing import Union
 
-    from ..classes.events import BaseEvent
-
 from ..classes import APIException
 from ..classes import Beatmap
 from ..classes import Score
