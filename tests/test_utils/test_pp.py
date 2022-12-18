@@ -1,23 +1,16 @@
 from __future__ import annotations
 
-from typing import Any
-from typing import Callable
 from typing import TypeVar
 
 import orjson
 import pytest
 
 import aiosu
+from aiosu.helpers import from_list
 
 types = ["recents", "bests", "firsts"]
 
 T = TypeVar("T")
-
-
-def from_list(f: Callable[[Any], T], x: Any) -> list[T]:
-    if not isinstance(x, list):
-        raise TypeError("Wrong type received. Expected list.")
-    return [f(y) for y in x]
 
 
 @pytest.fixture

@@ -89,6 +89,7 @@ class Client(Eventable):
 
     def __init__(self, **kwargs: Any) -> None:
         super().__init__()
+        self._register_event(ClientUpdateEvent)
         self.client_id: int = kwargs.pop("client_id", None)
         self.client_secret: str = kwargs.pop("client_secret", None)
         self.token: OAuthToken = kwargs.pop("token", OAuthToken())
@@ -122,20 +123,13 @@ class Client(Eventable):
 
             async def func(event: ClientUpdateEvent)
         """
-        self._listeners.append(func)
+        self._register_listener(func, ClientUpdateEvent)
 
         @functools.wraps(func)
         async def _on_client_update(*args: Any, **kwargs: Any) -> Any:
             return await func(*args, **kwargs)
 
         return _on_client_update
-
-    async def _process_event(self, event: BaseEvent) -> None:
-        if isinstance(event, ClientUpdateEvent):
-            for func in event.client._listeners:
-                await func(event)
-            return
-        raise NotImplementedError(f"{event!r}")
 
     @rate_limited
     async def _refresh(self) -> None:

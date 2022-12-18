@@ -41,6 +41,8 @@ class ClientStorage(Eventable):
 
     def __init__(self, **kwargs: Any) -> None:
         super().__init__()
+        self._register_event(ClientAddEvent)
+        self._register_event(ClientUpdateEvent)
         self.client_secret: str = kwargs.pop("client_secret", None)
         self.client_id: int = kwargs.pop("client_id", None)
         self.base_url: str = kwargs.pop("base_url", "https://osu.ppy.sh/api/v2")
@@ -48,7 +50,6 @@ class ClientStorage(Eventable):
         self.clients: dict[int, Client] = {}
         if _app_client := kwargs.pop("app_client", None):
             self.clients[0] = _app_client
-        self._redirected_listeners: list[Callable] = []
 
     async def __aenter__(self) -> ClientStorage:
         return self
@@ -69,7 +70,7 @@ class ClientStorage(Eventable):
 
             async def func(event: ClientAddEvent)
         """
-        self._listeners.append(func)
+        self._register_listener(func, ClientAddEvent)
 
         @functools.wraps(func)
         async def _on_client_add(*args: Any, **kwargs: Any) -> Any:
@@ -85,24 +86,13 @@ class ClientStorage(Eventable):
 
             async def func(event: ClientUpdateEvent)
         """
-        self._redirected_listeners.append(func)
+        self._register_listener(func, ClientUpdateEvent)
 
         @functools.wraps(func)
         async def _on_client_update(*args: Any, **kwargs: Any) -> Any:
             return await func(*args, **kwargs)
 
         return _on_client_update
-
-    async def _process_event(self, event: BaseEvent) -> None:
-        if isinstance(event, ClientAddEvent):
-            for func in self._listeners:
-                await func(event)
-            return
-        if isinstance(event, ClientUpdateEvent):
-            for func in self._redirected_listeners:
-                await func(event)
-            return
-        raise NotImplementedError(f"{event!r}")
 
     @property
     async def app_client(self) -> Client:
@@ -146,7 +136,7 @@ class ClientStorage(Eventable):
         :rtype: aiosu.v2.client.Client
         """
         client = Client(token=token, **self._get_client_args())
-        client._listeners.append(self._process_event)
+        client._register_listener(self._process_event, ClientUpdateEvent)
         client_user = await client.get_me()
         self.clients[client_user.id] = client
         await self._process_event(
