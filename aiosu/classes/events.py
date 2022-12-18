@@ -5,6 +5,7 @@ import dataclasses
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from typing import Type
     from typing import Callable
     from .token import OAuthToken
 
@@ -13,20 +14,56 @@ class Eventable(abc.ABC):
     """Abstract for classes that handle events"""
 
     def __init__(self) -> None:
-        self._listeners: list[Callable] = []
+        self._listeners: dict[str, list[Callable]] = {}
 
-    @abc.abstractmethod
+    def _register_event(self, event: Type[BaseEvent]) -> None:
+        """Registers an event
+
+        :param event: Event type to register
+        :type event: Type[BaseEvent]
+        """
+        self._listeners[event._name] = []
+
+    def _register_listener(self, func: Callable, event: Type[BaseEvent]) -> None:
+        """Registers an event listener
+
+        :param func: Function to call when event is emitted
+        :type func: Callable
+        :param event: Event type to listen for
+        :type event: Type[BaseEvent]
+
+        :raises NotImplementedError: If event is not implemented
+        """
+        if event._name not in self._listeners:
+            raise NotImplementedError(f"{event!r}")
+        self._listeners[event._name].append(func)
+
     async def _process_event(self, event: BaseEvent) -> None:
-        ...
+        """Processes an event
+
+        :param event: Event to process
+        :type event: BaseEvent
+
+        :raises NotImplementedError: If event is not implemented
+        """
+        if event._name not in self._listeners:
+            raise NotImplementedError(f"{event!r}")
+        for listener in self._listeners[event._name]:
+            await listener(event)
 
 
 @dataclasses.dataclass
 class BaseEvent(abc.ABC):
     """Abstract for event classes"""
 
+    _name = "BaseEvent"
+
 
 @dataclasses.dataclass
 class ClientAddEvent(BaseEvent):
+    """Event for when a client is added"""
+
+    _name = "ClientAddEvent"
     client_id: int
     """0 if app client"""
     client: Eventable
@@ -35,6 +72,9 @@ class ClientAddEvent(BaseEvent):
 
 @dataclasses.dataclass
 class ClientUpdateEvent(BaseEvent):
+    """Event for when a client is updated"""
+
+    _name = "ClientUpdateEvent"
     client: Eventable
     old_token: OAuthToken
     new_token: OAuthToken
