@@ -6,11 +6,11 @@ from __future__ import annotations
 import aiohttp
 import orjson
 
+from ..classes.exceptions import APIException
 from ..classes.token import OAuthToken
 
 
 async def process_code(
-    self,
     client_id: int,
     client_secret: str,
     redirect_uri: str,
