@@ -12,3 +12,9 @@ Performance
 .. automodule:: aiosu.utils.performance
     :members:
     :undoc-members:
+
+Authorization
+-------------
+.. automodule:: aiosu.utils.auth
+    :members:
+    :undoc-members:
