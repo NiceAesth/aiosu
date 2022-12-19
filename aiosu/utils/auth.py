@@ -1,5 +1,5 @@
 """
-This module contains functions to process authorization codes.
+This module contains authorization functions.
 """
 from __future__ import annotations
 
@@ -26,9 +26,8 @@ async def process_code(
     :type redirect_uri: str
     :param code: Code returned from the API
     :type code: str
-
     :return: The OAuth token
-    :rtype: aiosu.v2.token.OAuthToken
+    :rtype: aiosu.classes.token.OAuthToken
     """
     url = "https://osu.ppy.sh/oauth/token"
     headers = {"Content-Type": "application/x-www-form-urlencoded"}
