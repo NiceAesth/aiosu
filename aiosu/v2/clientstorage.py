@@ -126,16 +126,26 @@ class ClientStorage(Eventable):
         """
         return client_uid in self.clients
 
-    async def add_client(self, token: OAuthToken, client_id: int = None) -> Client:
+    async def add_client(
+        self,
+        token: OAuthToken,
+        **kwargs: Any,
+    ) -> Client:
         r"""Adds a client to storage.
 
         :param token: Token object for the client
         :type token: aiosu.classes.token.OAuthToken
-        :param client_id: Custom ID to use instead of the osu! UID
-        :type client_id: int
+        :param \**kwargs:
+            See below
+
+        :Keyword Arguments:
+            * *id* (``int``) --
+                Optional, the ID of the client, defaults to None
+
         :return: The added client
         :rtype: aiosu.v2.client.Client
         """
+        client_id: int = kwargs.get("id", None)
         client = Client(token=token, **self._get_client_args())
         client._register_listener(self._process_event, ClientUpdateEvent)
         if client_id is None:
@@ -155,7 +165,7 @@ class ClientStorage(Eventable):
 
         :Keyword Arguments:
             * *id* (``int``) --
-                Optional, whether to automatically create guest clients, defaults False
+                Optional, the ID of the client, defaults to None
             * *token* (``aiosu.classes.token.OAuthToken``) --
                 Optional, token of client to add, defaults to None
 
