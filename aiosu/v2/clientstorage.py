@@ -126,20 +126,24 @@ class ClientStorage(Eventable):
         """
         return client_uid in self.clients
 
-    async def add_client(self, token: OAuthToken) -> Client:
+    async def add_client(self, token: OAuthToken, client_id: int = None) -> Client:
         r"""Adds a client to storage.
 
         :param token: Token object for the client
         :type token: aiosu.classes.token.OAuthToken
+        :param client_id: Custom ID to use instead of the osu! UID
+        :type client_id: int
         :return: The added client
         :rtype: aiosu.v2.client.Client
         """
         client = Client(token=token, **self._get_client_args())
         client._register_listener(self._process_event, ClientUpdateEvent)
-        client_user = await client.get_me()
-        self.clients[client_user.id] = client
+        if client_id is None:
+            client_user = await client.get_me()
+            client_id = client_user.id
+        self.clients[client_id] = client
         await self._process_event(
-            ClientAddEvent(client_id=client_user.id, client=client),
+            ClientAddEvent(client_id=client_id, client=client),
         )
         return client
 
@@ -159,10 +163,10 @@ class ClientStorage(Eventable):
         :return: The requested client
         :rtype: aiosu.v2.client.Client
         """
-        client_uid: int = kwargs.pop("id", None)
+        client_id: int = kwargs.pop("id", None)
         token: OAuthToken = kwargs.pop("token", None)
-        if self.client_exists(client_uid):
-            return self.clients[client_uid]
+        if self.client_exists(client_id):
+            return self.clients[client_id]
         if token is not None:
             return await self.add_client(token)
         raise ValueError("Either id or token must be specified.")
