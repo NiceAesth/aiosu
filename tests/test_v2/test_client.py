@@ -40,7 +40,6 @@ def user():
     def _user(mode="osu"):
         with open(f"tests/data/v2/single_user_{mode}.json", "rb") as f:
             data = f.read()
-        f.close()
         return data
 
     return _user
@@ -51,7 +50,6 @@ def score():
     def _score(mode="osu"):
         with open(f"tests/data/v2/single_score_{mode}.json", "rb") as f:
             data = f.read()
-        f.close()
         return data
 
     return _score
@@ -62,7 +60,6 @@ def scores():
     def _scores(mode="osu", type="recents"):
         with open(f"tests/data/v2/multiple_score_{mode}_{type}.json", "rb") as f:
             data = f.read()
-        f.close()
         return data
 
     return _scores
@@ -73,7 +70,6 @@ def beatmap():
     def _beatmap(mode="osu"):
         with open(f"tests/data/v2/single_beatmap_{mode}.json", "rb") as f:
             data = f.read()
-        f.close()
         return data
 
     return _beatmap
@@ -84,10 +80,16 @@ def replay():
     def _replay(mode="osu"):
         with open(f"tests/data/replay_{mode}.osr", "rb") as f:
             data = f.read()
-        f.close()
         return data
 
     return _replay
+
+
+@pytest.fixture
+def seasonal_bgs():
+    with open(f"tests/data/v2/seasonal_backgrounds.json", "rb") as f:
+        data = f.read()
+    return data
 
 
 @pytest.fixture
@@ -95,18 +97,9 @@ def difficulty_attributes():
     def _difficulty_attributes(mode="osu"):
         with open(f"tests/data/v2/difficulty_attributes_{mode}.json", "rb") as f:
             data = orjson.loads(f.read())
-        f.close()
         return data
 
     return _difficulty_attributes
-
-
-@pytest.fixture
-def seasonal_bgs():
-    with open(f"tests/data/v2/seasonal_backgrounds.json", "rb") as f:
-        data = orjson.loads(f.read())
-    f.close()
-    return data
 
 
 class TestClient:
@@ -114,6 +107,7 @@ class TestClient:
     async def test_get_seasonal_backgrounds(self, mocker, token, seasonal_bgs):
         client = aiosu.v2.Client(token=token)
         resp = MockResponse(seasonal_bgs, 200)
+        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
         data = await client.get_seasonal_backgrounds()
         assert isinstance(data, aiosu.classes.SeasonalBackgroundSet)
         await client.close()
