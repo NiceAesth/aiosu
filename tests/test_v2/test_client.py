@@ -86,6 +86,13 @@ def beatmapset():
 
 
 @pytest.fixture
+def beatmapsets():
+    with open("tests/data/v2/multiple_beatmapset.json", "rb") as f:
+        data = f.read()
+    return data
+
+
+@pytest.fixture
 def replay():
     def _replay(mode="osu"):
         with open(f"tests/data/replay_{mode}.osr", "rb") as f:
@@ -312,6 +319,17 @@ class TestClient:
             mocker.patch("aiohttp.ClientSession.get", return_value=resp)
             data = await client.lookup_beatmapset(2354779)
             assert isinstance(data, aiosu.classes.Beatmapset)
+        await client.close()
+
+    @pytest.mark.asyncio
+    async def test_search_beatmaps(self, mocker, token, beatmapsets):
+        client = aiosu.v2.Client(token=token)
+        resp = MockResponse(beatmapsets, 200)
+        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
+        data = await client.search_beatmapsets()
+        assert isinstance(data, list) and all(
+            isinstance(x, aiosu.classes.Beatmapset) for x in data
+        )
         await client.close()
 
     @pytest.mark.asyncio

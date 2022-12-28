@@ -573,7 +573,7 @@ class Client(Eventable):
     @check_token
     async def search_beatmapsets(
         self,
-        search_filter: Optional[str],
+        search_filter: Optional[str] = "",
     ) -> list[Beatmapset]:
         r"""Search beatmapset by filter.
 
@@ -585,10 +585,7 @@ class Client(Eventable):
         :rtype: list[aiosu.classes.beatmap.Beatmapset]
         """
         url = f"{self.base_url}/api/v2/beatmapsets/search/{search_filter}"
-        params = {
-            "beatmap_id": beatmap_id,
-        }
-        json = await self._request("GET", url, params=params)
+        json = await self._request("GET", url)
         return helpers.from_list(Beatmapset.parse_obj, json.get("beatmapsets", []))
 
     @check_token
