@@ -480,6 +480,43 @@ class Client(Eventable):
 
     @rate_limited
     @check_token
+    async def lookup_beatmap(self, **kwargs: Any) -> Beatmap:
+        r"""Lookup beatmap data.
+        :param \**kwargs:
+            See below
+
+        :Keyword Arguments:
+            * *checksum* (``str``) --
+                Optional, the MD5 checksum of the beatmap
+            * *filename* (``str``) --
+                Optional, the filename of the beatmap
+            * *id* (``int``) --
+                Optional, the ID of the beatmap
+
+        :raises ValueError: If no arguments are specified
+        :raises APIException: Contains status code and error message
+        :return: Beatmap data object
+        :rtype: aiosu.classes.beatmap.Beatmap
+        """
+        url = f"{self.base_url}/api/v2/beatmaps/lookup"
+        data = {}
+        if "checksum" in kwargs:
+            data["checksum"] = kwargs.pop("checksum")
+        if "filename" in kwargs:
+            data["filename"] = kwargs.pop("filename")
+        if "bmap_id" in kwargs:
+            data["id"] = kwargs.pop("id")
+        if not data:
+            raise ValueError("One of checksum, filename or id must be provided.")
+        async with self._session.get(url, data=data) as resp:
+            body = await resp.read()
+            json = orjson.loads(body)
+            if resp.status != 200:
+                raise APIException(resp.status, json.get("error", ""))
+            return Beatmap.parse_obj(json)
+
+    @rate_limited
+    @check_token
     async def get_beatmap_attributes(
         self, beatmap_id: int, **kwargs: Any
     ) -> BeatmapDifficultyAttributes:
