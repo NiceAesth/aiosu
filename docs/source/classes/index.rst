@@ -8,6 +8,13 @@ Beatmap
     :members:
     :undoc-members:
 
+Backgrounds
+-----------
+
+.. automodule:: aiosu.classes.backgrounds
+    :members:
+    :undoc-members:
+
 Common
 ------
 
