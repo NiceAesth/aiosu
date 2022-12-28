@@ -23,6 +23,7 @@ if TYPE_CHECKING:
 from ..classes import APIException
 from ..classes import Beatmap
 from ..classes import Score
+from ..classes import SeasonalBackgroundSet
 from ..classes import Mods
 from ..classes import Gamemode
 from ..classes import UserQueryType
@@ -201,6 +202,22 @@ class Client(Eventable):
         await self._process_event(
             ClientUpdateEvent(client=self, old_token=old_token, new_token=self.token),
         )
+
+    @rate_limited
+    async def get_seasonal_backgrounds(self) -> SeasonalBackgroundSet:
+        r"""Gets the current seasonal background set.
+
+        :raises APIException: Contains status code and error message
+        :return: Seasonal background set object
+        :rtype: aiosu.classes.backgrounds.SeasonalBackgroundSet
+        """
+        url = f"{self.base_url}/api/v2/seasonal-backgrounds"
+        async with self._session.get(url) as resp:
+            body = await resp.read()
+            json = orjson.loads(body)
+            if resp.status != 200:
+                raise APIException(resp.status, json.get("error", ""))
+            return SeasonalBackgroundSet.parse_obj(json)
 
     @rate_limited
     @check_token
