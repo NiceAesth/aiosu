@@ -24,6 +24,7 @@ from .performance import ManiaPerformanceAttributes
 from .performance import OsuPerformanceAttributes
 from .performance import PerformanceAttributes
 from .performance import TaikoPerformanceAttributes
+from .scopes import Scopes
 from .score import Score
 from .score import ScoreStatistics
 from .score import ScoreWeight

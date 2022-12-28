@@ -12,6 +12,7 @@ from ..classes import MockResponse
 @pytest.fixture
 def token():
     token = aiosu.classes.OAuthToken(
+        refresh_token="hi",
         expires_on=datetime.datetime.utcnow() + datetime.timedelta(days=1),
     )
     return token
