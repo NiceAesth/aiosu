@@ -115,13 +115,6 @@ class Client(Eventable):
         self._limiter: AsyncLimiter = kwargs.pop("limiter", AsyncLimiter(1200, 60))
         self._session: aiohttp.ClientSession = None  # type: ignore
 
-    def _get_headers(self) -> dict[str, str]:
-        return {
-            "Authorization": f"Bearer {self.token.access_token}",
-            "Content-Type": "application/json",
-            "Accept": "application/json",
-        }
-
     async def __aenter__(self) -> Client:
         return self
 
@@ -149,6 +142,28 @@ class Client(Eventable):
 
         return _on_client_update
 
+    def _get_headers(self) -> dict[str, str]:
+        return {
+            "Authorization": f"Bearer {self.token.access_token}",
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+        }
+
+    def _refresh_guest_data(self) -> dict[str, Union[str, int]]:
+        return {
+            "client_id": self.client_id,
+            "client_secret": self.client_secret,
+            "grant_type": "client_credentials",
+        }
+
+    def _refresh_auth_data(self) -> dict[str, Union[str, int]]:
+        return {
+            "client_id": self.client_id,
+            "client_secret": self.client_secret,
+            "grant_type": "refresh_token",
+            "refresh_token": self.token.refresh_token,
+        }
+
     @rate_limited
     async def _refresh(self) -> None:
         """INTERNAL: Refreshes the client's token
@@ -158,12 +173,12 @@ class Client(Eventable):
         old_token = self.token
         url = f"{self.base_url}/oauth/token"
         headers = {"Content-Type": "application/x-www-form-urlencoded"}
-        data = {
-            "client_id": self.client_id,
-            "client_secret": self.client_secret,
-            "grant_type": "refresh_token",
-            "refresh_token": old_token.refresh_token,
-        }
+
+        data = {}
+        if self.token.can_refresh:
+            data = self._refresh_auth_data()
+        else:
+            data = self._refresh_guest_data()
 
         async with aiohttp.ClientSession(headers=headers) as temp_session:
             async with temp_session.post(url, data=data) as resp:
@@ -172,8 +187,8 @@ class Client(Eventable):
                     json = orjson.loads(body)
                     if resp.status != 200:
                         raise APIException(resp.status, json.get("error", ""))
-                    self.token = OAuthToken.parse_obj(json)
                     await self._session.close()
+                    self.token = OAuthToken.parse_obj(json)
                     self._session = aiohttp.ClientSession(headers=self._get_headers())
                 except aiohttp.client_exceptions.ContentTypeError:
                     raise APIException(403, "Invalid token specified.")

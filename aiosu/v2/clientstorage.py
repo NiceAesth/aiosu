@@ -93,7 +93,7 @@ class ClientStorage(Eventable):
     async def app_client(self) -> Client:
         r"""Client credentials guest client.
 
-        :raises NotImplementedError: If no app client is provided and creation is disabled
+        :raises ValueError: If no app client is provided and creation is disabled
         :return: Client credentials guest client session
         :rtype: aiosu.v2.client.Client
         """
