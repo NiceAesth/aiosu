@@ -33,7 +33,7 @@ class OAuthToken(BaseModel):
         return values
 
     @root_validator
-    def check_scopes(cls, values: dict[str, Any]) -> dict[str, Any]:
+    def _check_scopes(cls, values: dict[str, Any]) -> dict[str, Any]:
         if not bool(values["refresh_token"]):
             values["scopes"] = Scopes.PUBLIC
         return values
