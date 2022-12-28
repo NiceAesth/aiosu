@@ -179,7 +179,7 @@ class Score(BaseModel):
                 beatmap_id=self.beatmap_id,
             )
             self.beatmapset = sets[0]
-            self.beatmap = sets[0].beatmaps[0]
+            self.beatmap = sets[0].beatmaps[0]  # type: ignore
 
     @classmethod
     def _from_api_v1(

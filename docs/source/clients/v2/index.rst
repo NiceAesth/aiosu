@@ -6,7 +6,6 @@ Client Storage
 
 .. automodule:: aiosu.v2.clientstorage
     :members:
-    :exclude-members: check_token, rate_limited
     :undoc-members:
 
 Client
@@ -14,5 +13,5 @@ Client
 
 .. automodule:: aiosu.v2.client
     :members:
-    :exclude-members: check_token, rate_limited
+    :exclude-members: check_token, requires_scope
     :undoc-members:

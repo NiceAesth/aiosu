@@ -19,6 +19,7 @@ if TYPE_CHECKING:
     from typing import Optional
     from typing import Type
     from typing import Union
+    from typing import Literal
 
 from ..classes import APIException
 from ..classes import Beatmap, Beatmapset
@@ -51,25 +52,6 @@ def check_token(func: Callable) -> Callable:
         return await func(self, *args, **kwargs)
 
     return _check_token
-
-
-def rate_limited(func: Callable) -> Callable:
-    """
-    A decorator that enforces rate limiting, to be used as:
-    @rate_limited
-    """
-
-    @functools.wraps(func)
-    async def _rate_limited(self: Client, *args: Any, **kwargs: Any) -> Any:
-        if self._session is None:
-            self._session = aiohttp.ClientSession(
-                headers=self._get_headers(),
-            )
-
-        async with self._limiter:
-            return await func(self, *args, **kwargs)
-
-    return _rate_limited
 
 
 def requires_scope(required_scopes: Scopes, any_scope: bool = False) -> Callable:
@@ -170,7 +152,32 @@ class Client(Eventable):
             "refresh_token": self.token.refresh_token,
         }
 
-    @rate_limited
+    async def _request(
+        self, request_type: Literal["GET", "POST", "DELETE"], *args: Any, **kwargs: Any
+    ) -> Any:
+        if self._session is None:
+            self._session = aiohttp.ClientSession(
+                headers=self._get_headers(),
+            )
+
+        req: dict[str, Callable] = {
+            "GET": self._session.get,
+            "POST": self._session.post,
+            "DELETE": self._session.delete,
+        }
+
+        async with self._limiter:
+            async with req[request_type](*args, **kwargs) as resp:
+                body = await resp.read()
+                content_type = resp.headers.get("content-type", "")
+                if resp.status != 200:
+                    json = orjson.loads(body)
+                    raise APIException(resp.status, json.get("error", ""))
+                if content_type == "application/json":
+                    return orjson.loads(body)
+                if content_type == "application/octet-stream":
+                    return BytesIO(body)
+
     async def _refresh(self) -> None:
         """INTERNAL: Refreshes the client's token
 
@@ -193,7 +200,8 @@ class Client(Eventable):
                     json = orjson.loads(body)
                     if resp.status != 200:
                         raise APIException(resp.status, json.get("error", ""))
-                    await self._session.close()
+                    if self._session:
+                        await self._session.close()
                     self.token = OAuthToken.parse_obj(json)
                     self._session = aiohttp.ClientSession(headers=self._get_headers())
                 except aiohttp.client_exceptions.ContentTypeError:
@@ -203,7 +211,6 @@ class Client(Eventable):
             ClientUpdateEvent(client=self, old_token=old_token, new_token=self.token),
         )
 
-    @rate_limited
     async def get_seasonal_backgrounds(self) -> SeasonalBackgroundSet:
         r"""Gets the current seasonal background set.
 
@@ -212,14 +219,9 @@ class Client(Eventable):
         :rtype: aiosu.classes.backgrounds.SeasonalBackgroundSet
         """
         url = f"{self.base_url}/api/v2/seasonal-backgrounds"
-        async with self._session.get(url) as resp:
-            body = await resp.read()
-            json = orjson.loads(body)
-            if resp.status != 200:
-                raise APIException(resp.status, json.get("error", ""))
-            return SeasonalBackgroundSet.parse_obj(json)
+        json = await self._request("GET", url)
+        return SeasonalBackgroundSet.parse_obj(json)
 
-    @rate_limited
     @check_token
     @requires_scope(Scopes.IDENTIFY)
     async def get_me(self, **kwargs: Any) -> User:
@@ -240,14 +242,9 @@ class Client(Eventable):
         if "mode" in kwargs:
             mode = Gamemode(kwargs.pop("mode"))  # type: ignore
             url += f"/{mode}"
-        async with self._session.get(url) as resp:
-            body = await resp.read()
-            json = orjson.loads(body)
-            if resp.status != 200:
-                raise APIException(resp.status, json.get("error", ""))
-            return User.parse_obj(json)
+        json = await self._request("GET", url)
+        return User.parse_obj(json)
 
-    @rate_limited
     @check_token
     async def get_user(self, user_query: Union[str, int], **kwargs: Any) -> User:
         r"""Gets a user by a query.
@@ -275,14 +272,9 @@ class Client(Eventable):
         if "qtype" in kwargs:
             qtype = UserQueryType(kwargs.pop("qtype"))  # type: ignore
             params["type"] = qtype.new_api_name
-        async with self._session.get(url, params=params) as resp:
-            body = await resp.read()
-            json = orjson.loads(body)
-            if resp.status != 200:
-                raise APIException(resp.status, json.get("error", ""))
-            return User.parse_obj(json)
+        json = await self._request("GET", url, params=params)
+        return User.parse_obj(json)
 
-    @rate_limited
     @check_token
     async def __get_type_scores(
         self, user_id: int, request_type: str, **kwargs: Any
@@ -329,12 +321,8 @@ class Client(Eventable):
             params["mode"] = str(mode)
         if "limit" in kwargs:
             params["limit"] = kwargs.pop("limit")
-        async with self._session.get(url, params=params) as resp:
-            body = await resp.read()
-            json = orjson.loads(body)
-            if resp.status != 200:
-                raise APIException(resp.status, json.get("error", ""))
-            return helpers.from_list(Score.parse_obj, json)
+        json = await self._request("GET", url, params=params)
+        return helpers.from_list(Score.parse_obj, json)
 
     async def get_user_recents(self, user_id: int, **kwargs: Any) -> list[Score]:
         r"""Get a user's recent scores.
@@ -408,7 +396,6 @@ class Client(Eventable):
         """
         return await self.__get_type_scores(user_id, "firsts", **kwargs)
 
-    @rate_limited
     @check_token
     async def get_user_beatmap_scores(
         self, user_id: int, beatmap_id: int, **kwargs: Any
@@ -435,14 +422,9 @@ class Client(Eventable):
         if "mode" in kwargs:
             mode = Gamemode(kwargs.pop("mode"))  # type: ignore
             params["mode"] = str(mode)
-        async with self._session.get(url, params=params) as resp:
-            body = await resp.read()
-            json = orjson.loads(body)
-            if resp.status != 200:
-                raise APIException(resp.status, json.get("error", ""))
-            return helpers.from_list(Score.parse_obj, json.get("scores", []))
+        json = await self._request("GET", url, params=params)
+        return helpers.from_list(Score.parse_obj, json.get("scores", []))
 
-    @rate_limited
     @check_token
     async def get_beatmap_scores(self, beatmap_id: int, **kwargs: Any) -> list[Score]:
         r"""Get scores submitted on a specific beatmap.
@@ -474,14 +456,9 @@ class Client(Eventable):
             params["mode"] = str(mods)
         if "type" in kwargs:
             params["type"] = kwargs.pop("type")
-        async with self._session.get(url, params=params) as resp:
-            body = await resp.read()
-            json = orjson.loads(body)
-            if resp.status != 200:
-                raise APIException(resp.status, json.get("error", ""))
-            return helpers.from_list(Score.parse_obj, json.get("scores", []))
+        json = await self._request("GET", url, params=params)
+        return helpers.from_list(Score.parse_obj, json.get("scores", []))
 
-    @rate_limited
     @check_token
     async def get_beatmap(self, beatmap_id: int) -> Beatmap:
         r"""Get beatmap data.
@@ -493,17 +470,13 @@ class Client(Eventable):
         :rtype: aiosu.classes.beatmap.Beatmap
         """
         url = f"{self.base_url}/api/v2/beatmaps/{beatmap_id}"
-        async with self._session.get(url) as resp:
-            body = await resp.read()
-            json = orjson.loads(body)
-            if resp.status != 200:
-                raise APIException(resp.status, json.get("error", ""))
-            return Beatmap.parse_obj(json)
+        json = await self._request("GET", url)
+        return Beatmap.parse_obj(json)
 
-    @rate_limited
     @check_token
     async def lookup_beatmap(self, **kwargs: Any) -> Beatmap:
         r"""Lookup beatmap data.
+
         :param \**kwargs:
             See below
 
@@ -530,14 +503,9 @@ class Client(Eventable):
             params["id"] = kwargs.pop("id")
         if not params:
             raise ValueError("One of checksum, filename or id must be provided.")
-        async with self._session.get(url, params=params) as resp:
-            body = await resp.read()
-            json = orjson.loads(body)
-            if resp.status != 200:
-                raise APIException(resp.status, json.get("error", ""))
-            return Beatmap.parse_obj(json)
+        json = await self._request("GET", url, params=params)
+        return Beatmap.parse_obj(json)
 
-    @rate_limited
     @check_token
     async def get_beatmap_attributes(
         self, beatmap_id: int, **kwargs: Any
@@ -560,21 +528,16 @@ class Client(Eventable):
         :rtype: aiosu.classes.beatmap.BeatmapDifficultyAttributes
         """
         url = f"{self.base_url}/api/v2/beatmaps/{beatmap_id}/attributes"
-        params: dict[str, Any] = {}
+        data: dict[str, Any] = {}
         if "mode" in kwargs:
             mode = Gamemode(kwargs.pop("mode"))  # type: ignore
-            params["ruleset_id"] = int(mode)
+            data["ruleset_id"] = int(mode)
         if "mods" in kwargs:
             mods = Mods(kwargs.pop("mods"))
-            params["mods"] = str(mods)
-        async with self._session.post(url, data=params) as resp:
-            body = await resp.read()
-            json = orjson.loads(body)
-            if resp.status != 200:
-                raise APIException(resp.status, json.get("error", ""))
-            return BeatmapDifficultyAttributes.parse_obj(json.get("attributes"))
+            data["mods"] = str(mods)
+        json = await self._request("POST", url, data=data)
+        return BeatmapDifficultyAttributes.parse_obj(json.get("attributes"))
 
-    @rate_limited
     @check_token
     async def get_beatmapset(self, beatmapset_id: int) -> Beatmapset:
         r"""Get beatmapset data.
@@ -586,14 +549,9 @@ class Client(Eventable):
         :rtype: aiosu.classes.beatmap.Beatmapset
         """
         url = f"{self.base_url}/api/v2/beatmapsets/{beatmapset_id}"
-        async with self._session.get(url) as resp:
-            body = await resp.read()
-            json = orjson.loads(body)
-            if resp.status != 200:
-                raise APIException(resp.status, json.get("error", ""))
-            return Beatmapset.parse_obj(json)
+        json = await self._request("GET", url)
+        return Beatmapset.parse_obj(json)
 
-    @rate_limited
     @check_token
     async def get_score(
         self,
@@ -612,14 +570,9 @@ class Client(Eventable):
         :rtype: aiosu.classes.score.Score
         """
         url = f"{self.base_url}/api/v2/scores/{mode}/{score_id}"
-        async with self._session.get(url) as resp:
-            body = await resp.read()
-            json = orjson.loads(body)
-            if resp.status != 200:
-                raise APIException(resp.status, json.get("error", ""))
-            return Score.parse_obj(json)
+        json = await self._request("GET", url)
+        return Score.parse_obj(json)
 
-    @rate_limited
     @check_token
     @requires_scope(Scopes.IDENTIFY | Scopes.DELEGATE, any_scope=True)
     async def get_score_replay(
@@ -639,12 +592,7 @@ class Client(Eventable):
         :rtype: io.BytesIO
         """
         url = f"{self.base_url}/api/v2/scores/{mode}/{score_id}/download"
-        async with self._session.get(url) as resp:
-            body = await resp.read()
-            if resp.status != 200:
-                json = orjson.loads(body)
-                raise APIException(resp.status, json.get("error", ""))
-            return BytesIO(body)
+        return await self._request("GET", url)
 
     async def close(self) -> None:
         """Closes the client session."""
