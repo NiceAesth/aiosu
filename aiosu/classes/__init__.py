@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from . import events
+from .backgrounds import Background
+from .backgrounds import SeasonalBackgroundSet
 from .beatmap import Beatmap
 from .beatmap import BeatmapAvailability
 from .beatmap import BeatmapCovers
