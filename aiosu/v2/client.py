@@ -211,7 +211,7 @@ class Client(Eventable):
         :return: Seasonal background set object
         :rtype: aiosu.classes.backgrounds.SeasonalBackgroundSet
         """
-        url = f"{self.base_url}/api/v2/me"
+        url = f"{self.base_url}/api/v2/seasonal-backgrounds"
         async with self._session.get(url) as resp:
             body = await resp.read()
             json = orjson.loads(body)
