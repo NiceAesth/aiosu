@@ -328,7 +328,7 @@ class TestClient:
     ):
         client = aiosu.v2.Client(token=token)
         for mode in modes:
-            resp = MockResponse(replay(mode), 200)
+            resp = MockResponse(replay(mode), 200, "application/octet-stream")
             mocker.patch("aiohttp.ClientSession.get", return_value=resp)
             data = await client.get_score_replay(4220635589, mode)
             assert isinstance(data, BytesIO)

@@ -4,9 +4,10 @@ import orjson
 
 
 class MockResponse:
-    def __init__(self, text, status):
+    def __init__(self, text, status, content_type="application/json"):
         self._text = text
         self.status = status
+        self.headers = {"content-type": content_type}
 
     async def text(self):
         return self._text.decode("utf-8")

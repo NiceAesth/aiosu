@@ -5,7 +5,6 @@ You can read more about it here: https://github.com/ppy/osu-api/wiki
 """
 from __future__ import annotations
 
-import functools
 from typing import TYPE_CHECKING
 
 import aiohttp
@@ -27,7 +26,6 @@ from ..classes.legacy import Replay
 if TYPE_CHECKING:
     from types import TracebackType
     from typing import Any
-    from typing import Callable
     from typing import Optional
     from typing import Type
     from typing import Union
@@ -36,23 +34,6 @@ if TYPE_CHECKING:
 def _beatmap_score_conv(data: Any, mode: Gamemode, beatmap_id: int) -> Score:
     data["beatmap_id"] = beatmap_id
     return Score._from_api_v1(data, mode)
-
-
-def rate_limited(func: Callable) -> Callable:
-    """
-    A decorator that enforces rate limiting, to be used as:
-    @rate_limited
-    """
-
-    @functools.wraps(func)
-    async def _rate_limited(self: Client, *args: Any, **kwargs: Any) -> Any:
-        if self._session is None:
-            self._session = aiohttp.ClientSession()
-
-        async with self._limiter:
-            return await func(self, *args, **kwargs)
-
-    return _rate_limited
 
 
 class Client:
@@ -87,7 +68,30 @@ class Client:
     ) -> None:
         await self.close()
 
-    @rate_limited
+    async def _request(
+        self, request_type: Literal["GET", "POST", "DELETE"], *args, **kwargs
+    ) -> None:
+        if self._session is None:
+            self._session = aiohttp.ClientSession()
+
+        req = {
+            "GET": self._session.get,
+            "POST": self._session.post,
+            "DELETE": self._session.delete,
+        }
+
+        async with self._limiter:
+            async with req[request_type](*args, **kwargs) as resp:
+                body = await resp.read()
+                content_type = resp.headers.get("content-type", "")
+                if resp.status != 200:
+                    json = orjson.loads(body)
+                    raise APIException(resp.status, json.get("error", ""))
+                if content_type == "application/json":
+                    return orjson.loads(body)
+                if content_type == "application/octet-stream":
+                    return BytesIO(body)
+
     async def get_user(self, user_query: Union[str, int], **kwargs: Any) -> User:
         r"""Gets a user by a query.
 
@@ -118,16 +122,11 @@ class Client:
         if "qtype" in kwargs:
             qtype = UserQueryType(kwargs.pop("qtype"))  # type: ignore
             params["type"] = qtype.old_api_name
-        async with self._session.get(url, params=params) as resp:
-            body = await resp.read()
-            json = orjson.loads(body)
-            if resp.status != 200:
-                raise APIException(resp.status, json.get("error", ""))
-            if not json:
-                raise APIException(404, "User not found")
-            return User._from_api_v1(json[0])
+        json = await self._request("GET", url, params=params)
+        if not json:
+            raise APIException(404, "User not found")
+        return User._from_api_v1(json[0])
 
-    @rate_limited
     async def __get_type_scores(
         self, user_query: Union[str, int], request_type: str, **kwargs: Any
     ) -> list[Score]:
@@ -168,13 +167,9 @@ class Client:
         if "qtype" in kwargs:
             qtype = UserQueryType(kwargs.pop("qtype"))  # type: ignore
             params["type"] = qtype.old_api_name
-        async with self._session.get(url, params=params) as resp:
-            body = await resp.read()
-            json = orjson.loads(body)
-            if resp.status != 200:
-                raise APIException(resp.status, json.get("error", ""))
-            score_conv = lambda x: Score._from_api_v1(x, mode)
-            return helpers.from_list(score_conv, json)
+        json = await self._request("GET", url, params=params)
+        score_conv = lambda x: Score._from_api_v1(x, mode)
+        return helpers.from_list(score_conv, json)
 
     async def get_user_recents(
         self, user_query: Union[str, int], **kwargs: Any
@@ -232,7 +227,6 @@ class Client:
             raise ValueError("Invalid limit specified. Limit must be between 1 and 100")
         return await self.__get_type_scores(user_query, "best", limit=limit, **kwargs)
 
-    @rate_limited
     async def get_beatmap(self, **kwargs: Any) -> list[Beatmapset]:
         r"""Get beatmap data.
 
@@ -296,14 +290,9 @@ class Client:
             raise ValueError(
                 "Either hash, since, user_query, beatmap_id or beatmapset_id must be specified.",
             )
-        async with self._session.get(url, params=params) as resp:
-            body = await resp.read()
-            json = orjson.loads(body)
-            if resp.status != 200:
-                raise APIException(resp.status, json.get("error", ""))
-            return helpers.from_list(Beatmapset._from_api_v1, json)
+        json = await self._request("GET", url, params=params)
+        return helpers.from_list(Beatmapset._from_api_v1, json)
 
-    @rate_limited
     async def get_beatmap_scores(self, beatmap_id: int, **kwargs: Any) -> list[Score]:
         r"""Get a user's best scores.
 
@@ -347,15 +336,10 @@ class Client:
         if "mods" in kwargs:
             mods = Mods(kwargs.pop("mods"))
             params["mode"] = str(mods)
-        async with self._session.get(url, params=params) as resp:
-            body = await resp.read()
-            json = orjson.loads(body)
-            if resp.status != 200:
-                raise APIException(resp.status, json.get("error", ""))
-            score_conv = lambda x: _beatmap_score_conv(x, mode, beatmap_id)
-            return helpers.from_list(score_conv, json)
+        json = await self._request("GET", url, params=params)
+        score_conv = lambda x: _beatmap_score_conv(x, mode, beatmap_id)
+        return helpers.from_list(score_conv, json)
 
-    @rate_limited
     async def get_match(self, match_id: int) -> Match:
         r"""Gets a multiplayer match. (WIP, currently returns raw JSON)
 
@@ -370,14 +354,9 @@ class Client:
             "k": self.token,
             "mp": match_id,
         }
-        async with self._session.get(url, params=params) as resp:
-            body = await resp.read()
-            json = orjson.loads(body)
-            if resp.status != 200:
-                raise APIException(resp.status, json.get("error", ""))
-            return Match.parse_obj(json)
+        json = await self._request("GET", url, params=params)
+        return Match.parse_obj(json)
 
-    @rate_limited
     async def get_replay(self, **kwargs: Any) -> Replay:
         r"""Gets data for a replay.
 
@@ -421,12 +400,8 @@ class Client:
         if "mods" in kwargs:
             mods = Mods(kwargs.pop("mods"))
             params["mode"] = str(mods)
-        async with self._session.get(url, params=params) as resp:
-            body = await resp.read()
-            json = orjson.loads(body)
-            if resp.status != 200:
-                raise APIException(resp.status, json.get("error", ""))
-            return Replay.parse_obj(json)
+        json = await self._request("GET", url, params=params)
+        return Replay.parse_obj(json)
 
     async def close(self) -> None:
         """Closes the client session."""
