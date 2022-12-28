@@ -46,6 +46,13 @@ def user():
 
 
 @pytest.fixture
+def users():
+    with open("tests/data/v2/multiple_user.json", "rb") as f:
+        data = f.read()
+    return data
+
+
+@pytest.fixture
 def score():
     def _score(mode="osu"):
         with open(f"tests/data/v2/single_score_{mode}.json", "rb") as f:
@@ -154,6 +161,17 @@ class TestClient:
             mocker.patch("aiohttp.ClientSession.get", return_value=resp)
             data = await client.get_user(7782553)
             assert isinstance(data, aiosu.classes.User)
+        await client.close()
+
+    @pytest.mark.asyncio
+    async def test_get_users(self, mocker, token, users):
+        client = aiosu.v2.Client(token=token)
+        resp = MockResponse(users, 200)
+        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
+        data = await client.get_users([7782553, 15118934])
+        assert isinstance(data, list) and all(
+            isinstance(x, aiosu.classes.User) for x in data
+        )
         await client.close()
 
     @pytest.mark.asyncio
