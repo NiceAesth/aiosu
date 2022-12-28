@@ -305,6 +305,16 @@ class TestClient:
         await client.close()
 
     @pytest.mark.asyncio
+    async def test_lookup_beatmapset(self, mocker, token, beatmapset):
+        client = aiosu.v2.Client(token=token)
+        for mode in modes:
+            resp = MockResponse(beatmapset(mode), 200)
+            mocker.patch("aiohttp.ClientSession.get", return_value=resp)
+            data = await client.lookup_beatmapset(2354779)
+            assert isinstance(data, aiosu.classes.Beatmapset)
+        await client.close()
+
+    @pytest.mark.asyncio
     async def test_get_score(
         self,
         mocker,
