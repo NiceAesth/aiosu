@@ -5,6 +5,7 @@ You can read more about it here: https://github.com/ppy/osu-api/wiki
 """
 from __future__ import annotations
 
+from io import BytesIO
 from typing import TYPE_CHECKING
 
 import aiohttp
@@ -29,6 +30,8 @@ if TYPE_CHECKING:
     from typing import Optional
     from typing import Type
     from typing import Union
+    from typing import Literal
+    from typing import Callable
 
 
 def _beatmap_score_conv(data: Any, mode: Gamemode, beatmap_id: int) -> Score:
@@ -69,12 +72,12 @@ class Client:
         await self.close()
 
     async def _request(
-        self, request_type: Literal["GET", "POST", "DELETE"], *args, **kwargs
-    ) -> None:
+        self, request_type: Literal["GET", "POST", "DELETE"], *args: Any, **kwargs: Any
+    ) -> Any:
         if self._session is None:
             self._session = aiohttp.ClientSession()
 
-        req = {
+        req: dict[str, Callable] = {
             "GET": self._session.get,
             "POST": self._session.post,
             "DELETE": self._session.delete,

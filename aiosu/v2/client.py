@@ -19,6 +19,7 @@ if TYPE_CHECKING:
     from typing import Optional
     from typing import Type
     from typing import Union
+    from typing import Literal
 
 from ..classes import APIException
 from ..classes import Beatmap, Beatmapset
@@ -152,14 +153,14 @@ class Client(Eventable):
         }
 
     async def _request(
-        self, request_type: Literal["GET", "POST", "DELETE"], *args, **kwargs
-    ) -> None:
+        self, request_type: Literal["GET", "POST", "DELETE"], *args: Any, **kwargs: Any
+    ) -> Any:
         if self._session is None:
             self._session = aiohttp.ClientSession(
                 headers=self._get_headers(),
             )
 
-        req = {
+        req: dict[str, Callable] = {
             "GET": self._session.get,
             "POST": self._session.post,
             "DELETE": self._session.delete,
@@ -475,6 +476,7 @@ class Client(Eventable):
     @check_token
     async def lookup_beatmap(self, **kwargs: Any) -> Beatmap:
         r"""Lookup beatmap data.
+
         :param \**kwargs:
             See below
 
