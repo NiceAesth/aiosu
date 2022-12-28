@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import datetime
+from io import BytesIO
 
 import orjson
 import pytest
@@ -65,6 +66,17 @@ def beatmap():
         return data
 
     return _beatmap
+
+
+@pytest.fixture
+def replay():
+    def _replay(mode="osu"):
+        with open(f"tests/data/replay_{mode}.osr", "rb") as f:
+            data = f.read()
+        f.close()
+        return data
+
+    return _replay
 
 
 @pytest.fixture
@@ -249,4 +261,19 @@ class TestClient:
             mocker.patch("aiohttp.ClientSession.post", return_value=resp)
             data = await client.get_beatmap_attributes("2354779")
             assert isinstance(data, aiosu.classes.BeatmapDifficultyAttributes)
+        await client.close()
+
+    @pytest.mark.asyncio
+    async def test_get_score_replay(
+        self,
+        mocker,
+        token,
+        replay,
+    ):
+        client = aiosu.v2.Client(token=token)
+        for mode in modes:
+            resp = MockResponse(replay(mode), 200)
+            mocker.patch("aiohttp.ClientSession.get", return_value=resp)
+            data = await client.get_score_replay(4220635589, mode)
+            assert isinstance(data, BytesIO)
         await client.close()
