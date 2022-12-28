@@ -23,7 +23,6 @@ def user():
     def _user(mode="osu"):
         with open(f"tests/data/v2/single_user_{mode}.json", "rb") as f:
             data = f.read()
-        f.close()
         return data
 
     return _user

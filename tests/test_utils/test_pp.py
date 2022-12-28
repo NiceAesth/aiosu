@@ -18,7 +18,6 @@ def difficulty_attributes():
     def _difficulty_attributes(mode="osu"):
         with open(f"tests/data/v2/difficulty_attributes_{mode}.json", "rb") as f:
             data = orjson.loads(f.read())
-        f.close()
         return data
 
     return _difficulty_attributes
@@ -29,7 +28,6 @@ def scores():
     def _scores(mode="osu", type="recents"):
         with open(f"tests/data/v2/multiple_score_{mode}_{type}.json", "rb") as f:
             data = orjson.loads(f.read())
-        f.close()
         return data
 
     return _scores

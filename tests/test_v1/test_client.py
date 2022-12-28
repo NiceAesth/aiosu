@@ -19,7 +19,6 @@ def user():
     def _user(mode="osu"):
         with open(f"tests/data/v1/single_user_{mode}.json", "rb") as f:
             data = f.read()
-        f.close()
         return data
 
     return _user
@@ -30,7 +29,6 @@ def scores():
     def _scores(mode="osu", type="recents"):
         with open(f"tests/data/v1/multiple_score_{mode}_{type}.json", "rb") as f:
             data = f.read()
-        f.close()
         return data
 
     return _scores
@@ -41,7 +39,6 @@ def beatmap():
     def _beatmap(mode="osu"):
         with open(f"tests/data/v1/multiple_beatmap_{mode}.json", "rb") as f:
             data = f.read()
-        f.close()
         return data
 
     return _beatmap
@@ -51,7 +48,6 @@ def beatmap():
 def match():
     with open(f"tests/data/v1/match.json", "rb") as f:
         data = f.read()
-    f.close()
     return data
 
 
@@ -59,7 +55,6 @@ def match():
 def replay():
     with open(f"tests/data/v1/replay.json", "rb") as f:
         data = f.read()
-    f.close()
     return data
 
 
