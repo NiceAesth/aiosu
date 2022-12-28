@@ -89,31 +89,32 @@ class ClientStorage(Eventable):
 
         return _on_client_update
 
-    @property
-    async def app_client(self) -> Client:
-        r"""Client credentials guest client.
-
-        :raises ValueError: If no app client is provided and creation is disabled
-        :return: Client credentials guest client session
-        :rtype: aiosu.v2.client.Client
-        """
-        if not self.__create_app_client:
-            raise ValueError("Guest clients have been disabled.")
-
-        if not (_app_client := self.clients.get(0)):
-            raise NotImplementedError("Client credential grant creation is still WIP")
-            await self._process_event(
-                ClientAddEvent(client_id=0, client=self._app_client),
-            )
-
-        return _app_client
-
     def _get_client_args(self) -> dict[str, Union[str, int]]:
         return {
             "client_secret": self.client_secret,
             "client_id": self.client_id,
             "base_url": self.base_url,
         }
+
+    @property
+    async def app_client(self) -> Client:
+        r"""Client credentials app client.
+
+        :raises ValueError: If no app client is provided and creation is disabled
+        :return: Client credentials app client session
+        :rtype: aiosu.v2.client.Client
+        """
+        if not self.__create_app_client:
+            raise ValueError("App clients have been disabled.")
+
+        if 0 in self.clients:
+            client = Client(token=OAuthToken(), **self._get_client_args())
+            self.clients[0] = client
+            await self._process_event(
+                ClientAddEvent(client_id=0, client=client),
+            )
+
+        return self.clients[0]
 
     def client_exists(self, client_uid: int) -> bool:
         r"""Checks if a client exists.
