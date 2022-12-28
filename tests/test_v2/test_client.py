@@ -47,6 +47,17 @@ def user():
 
 
 @pytest.fixture
+def score():
+    def _score(mode="osu"):
+        with open(f"tests/data/v2/single_score_{mode}.json", "rb") as f:
+            data = f.read()
+        f.close()
+        return data
+
+    return _score
+
+
+@pytest.fixture
 def scores():
     def _scores(mode="osu", type="recents"):
         with open(f"tests/data/v2/multiple_score_{mode}_{type}.json", "rb") as f:
@@ -261,6 +272,21 @@ class TestClient:
             mocker.patch("aiohttp.ClientSession.post", return_value=resp)
             data = await client.get_beatmap_attributes("2354779")
             assert isinstance(data, aiosu.classes.BeatmapDifficultyAttributes)
+        await client.close()
+
+    @pytest.mark.asyncio
+    async def test_get_score(
+        self,
+        mocker,
+        token,
+        score,
+    ):
+        client = aiosu.v2.Client(token=token)
+        for mode in modes:
+            resp = MockResponse(score(mode), 200)
+            mocker.patch("aiohttp.ClientSession.get", return_value=resp)
+            data = await client.get_score(4220635589, mode)
+            assert isinstance(data, aiosu.classes.Score)
         await client.close()
 
     @pytest.mark.asyncio
