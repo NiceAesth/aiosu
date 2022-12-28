@@ -154,6 +154,7 @@ class Client(Eventable):
             "client_id": self.client_id,
             "client_secret": self.client_secret,
             "grant_type": "client_credentials",
+            "scope": "public",
         }
 
     def _refresh_auth_data(self) -> dict[str, Union[str, int]]:
@@ -413,7 +414,7 @@ class Client(Eventable):
         if "mode" in kwargs:
             mode = Gamemode(kwargs.pop("mode"))  # type: ignore
             params["mode"] = str(mode)
-        async with self._session.get(url) as resp:
+        async with self._session.get(url, params=params) as resp:
             body = await resp.read()
             json = orjson.loads(body)
             if resp.status != 200:
@@ -452,7 +453,7 @@ class Client(Eventable):
             params["mode"] = str(mods)
         if "type" in kwargs:
             params["type"] = kwargs.pop("type")
-        async with self._session.get(url) as resp:
+        async with self._session.get(url, params=params) as resp:
             body = await resp.read()
             json = orjson.loads(body)
             if resp.status != 200:
@@ -499,16 +500,16 @@ class Client(Eventable):
         :rtype: aiosu.classes.beatmap.Beatmap
         """
         url = f"{self.base_url}/api/v2/beatmaps/lookup"
-        data = {}
+        params = {}
         if "checksum" in kwargs:
-            data["checksum"] = kwargs.pop("checksum")
+            params["checksum"] = kwargs.pop("checksum")
         if "filename" in kwargs:
-            data["filename"] = kwargs.pop("filename")
-        if "bmap_id" in kwargs:
-            data["id"] = kwargs.pop("id")
-        if not data:
+            params["filename"] = kwargs.pop("filename")
+        if "id" in kwargs:
+            params["id"] = kwargs.pop("id")
+        if not params:
             raise ValueError("One of checksum, filename or id must be provided.")
-        async with self._session.get(url, data=data) as resp:
+        async with self._session.get(url, params=params) as resp:
             body = await resp.read()
             json = orjson.loads(body)
             if resp.status != 200:
