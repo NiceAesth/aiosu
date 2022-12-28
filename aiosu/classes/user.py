@@ -131,9 +131,12 @@ class UserGroup(BaseModel):
     identifier: str
     name: str
     short_name: str
-    description: str
     colour: str
-    is_probationary: Optional[bool] = None
+    has_listing: bool
+    has_playmodes: bool
+    is_probationary: bool
+    playmodes: Optional[list[Gamemode]] = None
+    description: Optional[str] = None
 
 
 class UserStats(BaseModel):
