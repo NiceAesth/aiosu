@@ -276,6 +276,23 @@ class Client(Eventable):
         return User.parse_obj(json)
 
     @check_token
+    async def get_users(self, user_ids: list[int]) -> list[User]:
+        r"""Get multiple user data.
+
+        :param user_ids: The IDs of the users
+        :type user_ids: list[int]
+        :raises APIException: Contains status code and error message
+        :return: List of user data objects
+        :rtype: list[aiosu.classes.user.User]
+        """
+        url = f"{self.base_url}/api/v2/users"
+        params = {
+            "ids": user_ids,
+        }
+        json = await self._request("GET", url, params=params)
+        return helpers.from_list(User.parse_obj, json.get("users", []))
+
+    @check_token
     async def __get_type_scores(
         self, user_id: int, request_type: str, **kwargs: Any
     ) -> list[Score]:
