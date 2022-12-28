@@ -664,6 +664,16 @@ class Client(Eventable):
         url = f"{self.base_url}/api/v2/scores/{mode}/{score_id}/download"
         return await self._request("GET", url)
 
+    @check_token
+    async def revoke_token(self) -> None:
+        """Revokes the current token and closes the session.
+
+        :raises APIException: Contains status code and error message
+        """
+        url = f"{self.base_url}/api/v2/oauth/tokens/current"
+        await self._request("DELETE", url)
+        await self.close()
+
     async def close(self) -> None:
         """Closes the client session."""
         if self._session:
