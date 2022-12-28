@@ -101,7 +101,23 @@ def difficulty_attributes():
     return _difficulty_attributes
 
 
+@pytest.fixture
+def seasonal_bgs():
+    with open(f"tests/data/v2/seasonal_backgrounds.json", "rb") as f:
+        data = orjson.loads(f.read())
+    f.close()
+    return data
+
+
 class TestClient:
+    @pytest.mark.asyncio
+    async def test_get_seasonal_backgrounds(self, mocker, token, seasonal_bgs):
+        client = aiosu.v2.Client(token=token)
+        resp = MockResponse(seasonal_bgs, 200)
+        data = await client.get_seasonal_backgrounds()
+        assert isinstance(data, aiosu.classes.SeasonalBackgroundSet)
+        await client.close()
+
     @pytest.mark.asyncio
     async def test_get_me(self, mocker, token, user):
         client = aiosu.v2.Client(token=token)
