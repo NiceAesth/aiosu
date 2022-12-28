@@ -65,14 +65,14 @@ class Client:
 
     :Keyword Arguments:
         * *base_url* (``str``) --
-            Optional, base API URL, defaults to \"https://osu.ppy.sh/api\"
+            Optional, base API URL, defaults to \"https://osu.ppy.sh\"
         * *limiter* (``aiolimiter.AsyncLimiter``) --
             Optional, custom AsyncLimiter, defaults to AsyncLimiter(1200, 60)
     """
 
     def __init__(self, token: str, **kwargs: Any) -> None:
         self.token: str = token
-        self.base_url: str = kwargs.pop("base_url", "https://osu.ppy.sh/api")
+        self.base_url: str = kwargs.pop("base_url", "https://osu.ppy.sh")
         self._limiter: AsyncLimiter = kwargs.pop("limiter", AsyncLimiter(1200, 60))
         self._session: aiohttp.ClientSession = None  # type: ignore
 
@@ -108,7 +108,7 @@ class Client:
         :return: Requested user
         :rtype: list[aiosu.classes.user.User]
         """
-        url = f"{self.base_url}/get_user"
+        url = f"{self.base_url}/api/get_user"
         params = {
             "k": self.token,
             "u": user_query,
@@ -157,7 +157,7 @@ class Client:
             raise ValueError(
                 'Invalid request_type specified. Valid options are: "best", "recent"',
             )
-        url = f"{self.base_url}/get_user_{request_type}"
+        url = f"{self.base_url}/api/get_user_{request_type}"
         params = {
             "k": self.token,
             "u": user_query,
@@ -269,7 +269,7 @@ class Client:
         """
         if not 1 <= kwargs.get("limit", 500) <= 500:
             raise ValueError("Invalid limit specified. Limit must be between 1 and 500")
-        url = f"{self.base_url}/get_beatmaps"
+        url = f"{self.base_url}/api/get_beatmaps"
         params = {
             "k": self.token,
             "limit": kwargs.pop("limit", 500),
@@ -331,7 +331,7 @@ class Client:
         """
         if not 1 <= kwargs.get("limit", 100) <= 100:
             raise ValueError("Invalid limit specified. Limit must be between 1 and 100")
-        url = f"{self.base_url}/get_scores"
+        url = f"{self.base_url}/api/get_scores"
         params = {
             "k": self.token,
             "b": beatmap_id,
@@ -365,7 +365,7 @@ class Client:
         :return: The requested multiplayer match
         :rtype: aiosu.classes.legacy.match.Match
         """
-        url = f"{self.base_url}/get_match"
+        url = f"{self.base_url}/api/get_match"
         params = {
             "k": self.token,
             "mp": match_id,
@@ -403,7 +403,7 @@ class Client:
         :return: The data for the requested replay
         :rtype: aiosu.classes.legacy.replay.Replay
         """
-        url = f"{self.base_url}/get_replay"
+        url = f"{self.base_url}/api/get_replay"
         params = {"k": self.token}
         params["m"] = int(Gamemode(kwargs.pop("mode", 0)))  # type: ignore
         if "score_id" in kwargs:

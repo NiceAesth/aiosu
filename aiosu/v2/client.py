@@ -154,6 +154,7 @@ class Client(Eventable):
             "client_id": self.client_id,
             "client_secret": self.client_secret,
             "grant_type": "client_credentials",
+            "scope": "public",
         }
 
     def _refresh_auth_data(self) -> dict[str, Union[str, int]]:
@@ -413,7 +414,7 @@ class Client(Eventable):
         if "mode" in kwargs:
             mode = Gamemode(kwargs.pop("mode"))  # type: ignore
             params["mode"] = str(mode)
-        async with self._session.get(url) as resp:
+        async with self._session.get(url, params=params) as resp:
             body = await resp.read()
             json = orjson.loads(body)
             if resp.status != 200:
@@ -452,7 +453,7 @@ class Client(Eventable):
             params["mode"] = str(mods)
         if "type" in kwargs:
             params["type"] = kwargs.pop("type")
-        async with self._session.get(url) as resp:
+        async with self._session.get(url, params=params) as resp:
             body = await resp.read()
             json = orjson.loads(body)
             if resp.status != 200:
@@ -472,6 +473,43 @@ class Client(Eventable):
         """
         url = f"{self.base_url}/api/v2/beatmaps/{beatmap_id}"
         async with self._session.get(url) as resp:
+            body = await resp.read()
+            json = orjson.loads(body)
+            if resp.status != 200:
+                raise APIException(resp.status, json.get("error", ""))
+            return Beatmap.parse_obj(json)
+
+    @rate_limited
+    @check_token
+    async def lookup_beatmap(self, **kwargs: Any) -> Beatmap:
+        r"""Lookup beatmap data.
+        :param \**kwargs:
+            See below
+
+        :Keyword Arguments:
+            * *checksum* (``str``) --
+                Optional, the MD5 checksum of the beatmap
+            * *filename* (``str``) --
+                Optional, the filename of the beatmap
+            * *id* (``int``) --
+                Optional, the ID of the beatmap
+
+        :raises ValueError: If no arguments are specified
+        :raises APIException: Contains status code and error message
+        :return: Beatmap data object
+        :rtype: aiosu.classes.beatmap.Beatmap
+        """
+        url = f"{self.base_url}/api/v2/beatmaps/lookup"
+        params = {}
+        if "checksum" in kwargs:
+            params["checksum"] = kwargs.pop("checksum")
+        if "filename" in kwargs:
+            params["filename"] = kwargs.pop("filename")
+        if "id" in kwargs:
+            params["id"] = kwargs.pop("id")
+        if not params:
+            raise ValueError("One of checksum, filename or id must be provided.")
+        async with self._session.get(url, params=params) as resp:
             body = await resp.read()
             json = orjson.loads(body)
             if resp.status != 200:
