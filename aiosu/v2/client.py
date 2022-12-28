@@ -21,7 +21,7 @@ if TYPE_CHECKING:
     from typing import Union
 
 from ..classes import APIException
-from ..classes import Beatmap
+from ..classes import Beatmap, Beatmapset
 from ..classes import Score
 from ..classes import SeasonalBackgroundSet
 from ..classes import Mods
@@ -573,6 +573,25 @@ class Client(Eventable):
             if resp.status != 200:
                 raise APIException(resp.status, json.get("error", ""))
             return BeatmapDifficultyAttributes.parse_obj(json.get("attributes"))
+
+    @rate_limited
+    @check_token
+    async def get_beatmapset(self, beatmapset_id: int) -> Beatmapset:
+        r"""Get beatmapset data.
+
+        :param beatmapset_id: The ID of the beatmapset
+        :type beatmapset_id: int
+        :raises APIException: Contains status code and error message
+        :return: Beatmapset data object
+        :rtype: aiosu.classes.beatmap.Beatmapset
+        """
+        url = f"{self.base_url}/api/v2/beatmapsets/{beatmapset_id}"
+        async with self._session.get(url) as resp:
+            body = await resp.read()
+            json = orjson.loads(body)
+            if resp.status != 200:
+                raise APIException(resp.status, json.get("error", ""))
+            return Beatmapset.parse_obj(json)
 
     @rate_limited
     @check_token
