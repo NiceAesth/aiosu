@@ -76,6 +76,13 @@ def beatmap():
 
 
 @pytest.fixture
+def beatmaps():
+    with open("tests/data/v2/multiple_beatmap.json", "rb") as f:
+        data = f.read()
+    return data
+
+
+@pytest.fixture
 def beatmapset():
     def _beatmapset(mode="osu"):
         with open(f"tests/data/v2/single_beatmapset_{mode}.json", "rb") as f:
@@ -97,7 +104,7 @@ def replay():
 
 @pytest.fixture
 def seasonal_bgs():
-    with open(f"tests/data/v2/seasonal_backgrounds.json", "rb") as f:
+    with open("tests/data/v2/seasonal_backgrounds.json", "rb") as f:
         data = f.read()
     return data
 
@@ -265,6 +272,18 @@ class TestClient:
             mocker.patch("aiohttp.ClientSession.get", return_value=resp)
             data = await client.get_beatmap(2354779)
             assert isinstance(data, aiosu.classes.Beatmap)
+        await client.close()
+
+    @pytest.mark.asyncio
+    async def test_get_beatmaps(self, mocker, token, beatmaps):
+        client = aiosu.v2.Client(token=token)
+        for mode in modes:
+            resp = MockResponse(beatmaps, 200)
+            mocker.patch("aiohttp.ClientSession.get", return_value=resp)
+            data = await client.get_beatmaps([2095393, 2354779])
+            assert isinstance(data, list) and all(
+                isinstance(x, aiosu.classes.Beatmap) for x in data
+            )
         await client.close()
 
     @pytest.mark.asyncio

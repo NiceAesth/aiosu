@@ -474,6 +474,23 @@ class Client(Eventable):
         return Beatmap.parse_obj(json)
 
     @check_token
+    async def get_beatmaps(self, beatmap_ids: list[int]) -> list[Beatmap]:
+        r"""Get multiple beatmap data.
+
+        :param beatmap_ids: The IDs of the beatmaps
+        :type beatmap_ids: list[int]
+        :raises APIException: Contains status code and error message
+        :return: List of beatmap data objects
+        :rtype: list[aiosu.classes.beatmap.Beatmap]
+        """
+        url = f"{self.base_url}/api/v2/beatmaps"
+        params = {
+            "ids": beatmap_ids,
+        }
+        json = await self._request("GET", url, params=params)
+        return helpers.from_list(Beatmap.parse_obj, json.get("beatmaps", []))
+
+    @check_token
     async def lookup_beatmap(self, **kwargs: Any) -> Beatmap:
         r"""Lookup beatmap data.
 
