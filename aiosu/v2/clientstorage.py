@@ -34,8 +34,6 @@ class ClientStorage(Eventable):
             Optional, base API URL, defaults to \"https://osu.ppy.sh/api/v2/\"
         * *create_app_client* (``bool``) --
             Optional, whether to automatically create guest clients, defaults to False
-        * *app_client* (``aiosu.v2.client.Client``) --
-            Optional, guest client, defaults to None
     """
 
     def __init__(self, **kwargs: Any) -> None:
@@ -45,10 +43,8 @@ class ClientStorage(Eventable):
         self.client_secret: str = kwargs.pop("client_secret", None)
         self.client_id: int = kwargs.pop("client_id", None)
         self.base_url: str = kwargs.pop("base_url", "https://osu.ppy.sh/api/v2")
-        self.__create_app_client: bool = kwargs.pop("create_app_client", False)
         self.clients: dict[int, Client] = {}
-        if _app_client := kwargs.pop("app_client", None):
-            self.clients[0] = _app_client
+        self.__create_app_client: bool = kwargs.pop("create_app_client", False)
 
     async def __aenter__(self) -> ClientStorage:
         return self
@@ -101,6 +97,9 @@ class ClientStorage(Eventable):
         :return: Client credentials guest client session
         :rtype: aiosu.v2.client.Client
         """
+        if not self.__create_app_client:
+            raise ValueError("Guest clients have been disabled.")
+
         if not (_app_client := self.clients.get(0)):
             raise NotImplementedError("Client credential grant creation is still WIP")
             await self._process_event(

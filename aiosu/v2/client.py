@@ -29,6 +29,7 @@ from ..classes import BeatmapDifficultyAttributes
 from ..classes.events import ClientUpdateEvent
 from .. import helpers
 from ..classes import User
+from ..classes import Scopes
 import aiohttp
 from aiolimiter import AsyncLimiter
 from ..classes import OAuthToken
@@ -67,6 +68,25 @@ def rate_limited(func: Callable) -> Callable:
             return await func(self, *args, **kwargs)
 
     return _rate_limited
+
+
+def requires_scope(required_scopes: Scopes) -> Callable:
+    """
+    A decorator that enforces a scope, to be used as:
+    @requires_scope(Scopes.PUBLIC)
+    """
+
+    def _requires_scope(func: Callable) -> Callable:
+        @functools.wraps(func)
+        async def _wrap(self: Client, *args: Any, **kwargs: Any) -> Any:
+            if required_scopes & self.token.scopes != required_scopes:
+                raise APIException(403, "Missing required scopes.")
+
+            return await func(self, *args, **kwargs)
+
+        return _wrap
+
+    return _requires_scope
 
 
 class Client(Eventable):
@@ -164,6 +184,7 @@ class Client(Eventable):
 
     @rate_limited
     @check_token
+    @requires_scope(Scopes.IDENTIFY)
     async def get_me(self, **kwargs: Any) -> User:
         r"""Gets the user who owns the current token
 
