@@ -588,6 +588,24 @@ class Client(Eventable):
         return Beatmapset.parse_obj(json)
 
     @check_token
+    async def search_beatmapsets(
+        self,
+        search_filter: Optional[str] = "",
+    ) -> list[Beatmapset]:
+        r"""Search beatmapset by filter.
+
+        :param search_filter: The search filter.
+        :type search_filter: str
+
+        :raises APIException: Contains status code and error message
+        :return: List of beatmapset data objects
+        :rtype: list[aiosu.classes.beatmap.Beatmapset]
+        """
+        url = f"{self.base_url}/api/v2/beatmapsets/search/{search_filter}"
+        json = await self._request("GET", url)
+        return helpers.from_list(Beatmapset.parse_obj, json.get("beatmapsets", []))
+
+    @check_token
     async def get_score(
         self,
         score_id: int,
