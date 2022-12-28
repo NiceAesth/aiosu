@@ -559,6 +559,32 @@ class Client(Eventable):
 
     @rate_limited
     @check_token
+    async def get_score(
+        self,
+        score_id: int,
+        mode: Gamemode,
+    ) -> Score:
+        r"""Gets data about a score.
+
+        :param score_id: The ID of the score
+        :type score_id: int
+        :param mode: The gamemode to search for
+        :type mode: aiosu.classes.gamemode.Gamemode
+
+        :raises APIException: Contains status code and error message
+        :return: Score data object
+        :rtype: aiosu.classes.score.Score
+        """
+        url = f"{self.base_url}/api/v2/scores/{mode}/{score_id}"
+        async with self._session.get(url) as resp:
+            body = await resp.read()
+            json = orjson.loads(body)
+            if resp.status != 200:
+                raise APIException(resp.status, json.get("error", ""))
+            return Score.parse_obj(json)
+
+    @rate_limited
+    @check_token
     @requires_scope(Scopes.IDENTIFY | Scopes.DELEGATE, any_scope=True)
     async def get_score_replay(
         self,
