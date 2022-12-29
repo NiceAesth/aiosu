@@ -36,6 +36,7 @@ from .scopes import Scopes
 from .score import Score
 from .score import ScoreStatistics
 from .score import ScoreWeight
+from .spotllight import Spotlight
 from .token import OAuthToken
 from .user import User
 from .user import UserAccountHistory
