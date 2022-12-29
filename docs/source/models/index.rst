@@ -8,6 +8,13 @@ Common
     :members:
     :undoc-members:
 
+Rankings
+--------
+
+.. automodule:: aiosu.models.rankings
+    :members:
+    :undoc-members:
+
 User
 ----
 
