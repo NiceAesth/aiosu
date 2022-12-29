@@ -71,6 +71,27 @@ Spotlights
     :members:
     :undoc-members:
 
+News
+----
+
+.. automodule:: aiosu.models.news
+    :members:
+    :undoc-members:
+
+Wiki
+----
+
+.. automodule:: aiosu.models.wiki
+    :members:
+    :undoc-members:
+
+Comments
+--------
+
+.. automodule:: aiosu.models.comment
+    :members:
+    :undoc-members:
+
 OAuth Token
 -----------
 
