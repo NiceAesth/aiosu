@@ -53,6 +53,7 @@ from .token import OAuthToken
 from .user import User
 from .user import UserAccountHistory
 from .user import UserBadge
+from .user import UserBeatmapPlaycount
 from .user import UserGradeCounts
 from .user import UserGroup
 from .user import UserKudosu
