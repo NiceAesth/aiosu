@@ -419,7 +419,7 @@ class Client:
         """
         url = f"{self.base_url}/osu/{beatmap_id}"
         file = await self._request("GET", url)
-        
+
         return file
 
     async def close(self) -> None:
