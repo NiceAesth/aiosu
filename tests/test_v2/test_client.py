@@ -108,6 +108,13 @@ def beatmapsets():
 
 
 @pytest.fixture
+def user_beatmapsets():
+    with open("tests/data/v2/multiple_user_beatmapset.json", "rb") as f:
+        data = f.read()
+    return data
+
+
+@pytest.fixture
 def replay():
     def _replay(mode="osu"):
         with open(f"tests/data/replay_{mode}.osr", "rb") as f:
@@ -169,6 +176,13 @@ def kudosu_history():
 @pytest.fixture
 def search():
     with open("tests/data/v2/search.json", "rb") as f:
+        data = f.read()
+    return data
+
+
+@pytest.fixture
+def most_played():
+    with open("tests/data/v2/multiple_user_playcount.json", "rb") as f:
         data = f.read()
     return data
 
@@ -378,6 +392,28 @@ class TestClient:
         data = await client.get_user_beatmap_scores(7782553, 2095393)
         assert isinstance(data, list) and all(
             isinstance(x, aiosu.models.Score) for x in data
+        )
+        await client.close()
+
+    @pytest.mark.asyncio
+    async def test_get_user_beatmaps(self, mocker, token, user_beatmapsets):
+        client = aiosu.v2.Client(token=token)
+        resp = MockResponse(user_beatmapsets, 200)
+        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
+        data = await client.get_user_beatmaps(7118575, "ranked")
+        assert isinstance(data, list) and all(
+            isinstance(x, aiosu.models.Beatmapset) for x in data
+        )
+        await client.close()
+
+    @pytest.mark.asyncio
+    async def test_get_user_most_played(self, mocker, token, most_played):
+        client = aiosu.v2.Client(token=token)
+        resp = MockResponse(most_played, 200)
+        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
+        data = await client.get_user_most_played(7782553)
+        assert isinstance(data, list) and all(
+            isinstance(x, aiosu.models.UserBeatmapPlaycount) for x in data
         )
         await client.close()
 

@@ -8,6 +8,7 @@ from __future__ import annotations
 import functools
 from datetime import datetime
 from io import BytesIO
+from typing import Literal
 from typing import TYPE_CHECKING
 
 import aiohttp
@@ -34,6 +35,7 @@ from ..models import SearchResponse
 from ..models import SeasonalBackgroundSet
 from ..models import Spotlight
 from ..models import User
+from ..models import UserBeatmapPlaycount
 from ..models import UserQueryType
 from ..models import WikiPage
 
@@ -44,7 +46,6 @@ if TYPE_CHECKING:
     from typing import Optional
     from typing import Type
     from typing import Union
-    from typing import Literal
 
 
 def check_token(func: Callable) -> Callable:
@@ -603,6 +604,70 @@ class Client(Eventable):
             params["mode"] = str(mode)
         json = await self._request("GET", url, params=params)
         return from_list(Score.parse_obj, json.get("scores", []))
+
+    UserBeatmapType = Literal["favourite", "graveyard", "loved", "ranked", "pending"]
+
+    @check_token
+    async def get_user_beatmaps(
+        self, user_id: int, type: UserBeatmapType, **kwargs: Any
+    ) -> list[Beatmapset]:
+        r"""Get a user's beatmaps.
+
+        :param user_id: ID of the user
+        :type user_id: int
+        :param type: Type of beatmaps to get
+        :type type: UserBeatmapType
+        :param \**kwargs:
+            See below
+
+        :Keyword Arguments:
+            * *offset* (``int``) --
+                Optional, offset of the first beatmap to get
+            * *limit* (``int``) --
+                Optional, number of beatmaps to get
+
+        :raises APIException: Contains status code and error message
+        :return: List of requested beatmaps
+        :rtype: list[aiosu.models.beatmap.Beatmap]
+        """
+        url = f"{self.base_url}/api/v2/users/{user_id}/beatmapsets/{type}"
+        params = {}
+        if "offset" in kwargs:
+            params["offset"] = kwargs.pop("offset")
+        if "limit" in kwargs:
+            params["limit"] = kwargs.pop("limit")
+        json = await self._request("GET", url, params=params)
+        return from_list(Beatmapset.parse_obj, json)
+
+    @check_token
+    async def get_user_most_played(
+        self, user_id: int, **kwargs: Any
+    ) -> list[UserBeatmapPlaycount]:
+        r"""Get a user's most played beatmaps.
+
+        :param user_id: ID of the user
+        :type user_id: int
+        :param \**kwargs:
+            See below
+
+        :Keyword Arguments:
+            * *limit* (``int``) --
+                Optional, number of beatmaps to get
+            * *offset* (``int``) --
+                Optional, offset of the first beatmap to get
+
+        :raises APIException: Contains status code and error message
+        :return: List of user playcount objects
+        :rtype: list[aiosu.models.user.UserBeatmapPlaycount]
+        """
+        url = f"{self.base_url}/api/v2/users/{user_id}/beatmapsets/most_played"
+        params = {}
+        if "limit" in kwargs:
+            params["limit"] = kwargs.pop("limit")
+        if "offset" in kwargs:
+            params["offset"] = kwargs.pop("offset")
+        json = await self._request("GET", url, params=params)
+        return from_list(UserBeatmapPlaycount.parse_obj, json)
 
     @check_token
     async def get_beatmap_scores(self, beatmap_id: int, **kwargs: Any) -> list[Score]:

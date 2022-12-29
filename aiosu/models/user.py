@@ -10,6 +10,8 @@ from typing import Optional
 from typing import TYPE_CHECKING
 
 from .base import BaseModel
+from .beatmap import Beatmap
+from .beatmap import Beatmapset
 from .common import Achievement
 from .common import Country
 from .common import TimestampedCount
@@ -20,6 +22,13 @@ if TYPE_CHECKING:
 
 cast_int: Callable[..., int] = lambda x: int(x or 0)
 cast_float: Callable[..., float] = lambda x: float(x or 0)
+
+
+class UserBeatmapPlaycount(BaseModel):
+    count: int
+    beatmap_id: int
+    beatmap: Optional[Beatmap]
+    beatmapset: Optional[Beatmapset]
 
 
 class UserQueryType(Enum):
