@@ -1,20 +1,6 @@
 Classes
 =======
 
-Beatmap
--------
-
-.. automodule:: aiosu.classes.beatmap
-    :members:
-    :undoc-members:
-
-Backgrounds
------------
-
-.. automodule:: aiosu.classes.backgrounds
-    :members:
-    :undoc-members:
-
 Common
 ------
 
@@ -33,6 +19,20 @@ Events
 ----------
 
 .. automodule:: aiosu.classes.events
+    :members:
+    :undoc-members:
+
+OAuth Token
+-----------
+
+.. automodule:: aiosu.classes.token
+    :members:
+    :undoc-members:
+
+OAuth Scopes
+------------
+
+.. automodule:: aiosu.classes.scopes
     :members:
     :undoc-members:
 
@@ -57,6 +57,13 @@ Performance
     :members:
     :undoc-members:
 
+Beatmap
+-------
+
+.. automodule:: aiosu.classes.beatmap
+    :members:
+    :undoc-members:
+
 Score
 -----
 
@@ -64,10 +71,10 @@ Score
     :members:
     :undoc-members:
 
-OAuth Token
+Backgrounds
 -----------
 
-.. automodule:: aiosu.classes.token
+.. automodule:: aiosu.classes.backgrounds
     :members:
     :undoc-members:
 
