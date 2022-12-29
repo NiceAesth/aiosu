@@ -21,8 +21,13 @@ from .changelog import ChangelogEntry
 from .changelog import GithubUser
 from .changelog import UpdateStream
 from .changelog import Version
+from .comment import Comment
+from .comment import Commentable
+from .comment import CommentBundle
 from .common import Achievement
 from .common import Country
+from .common import CurrentUserAttributes
+from .common import Cursor
 from .common import TimestampedCount
 from .gamemode import Gamemode
 from .mods import Mod
