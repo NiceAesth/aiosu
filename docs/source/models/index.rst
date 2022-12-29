@@ -113,6 +113,13 @@ Comments
     :members:
     :undoc-members:
 
+API Events
+----------
+
+.. automodule:: aiosu.models.event
+    :members:
+    :undoc-members:
+
 OAuth Token
 -----------
 
