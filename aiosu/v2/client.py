@@ -24,6 +24,7 @@ from ..models import Beatmapset
 from ..models import Build
 from ..models import Gamemode
 from ..models import Mods
+from ..models import NewsPost
 from ..models import OAuthToken
 from ..models import Scopes
 from ..models import Score
@@ -239,17 +240,18 @@ class Client(Eventable):
         return Build.parse_obj(json)
 
     async def lookup_changelog_build(
-        self, changelog_query: str, **kwargs: Any
+        self, changelog_query: Union[str, int], **kwargs: Any
     ) -> Build:
         r"""Looks up a build from the changelog.
 
         :param changelog_query: The query to search for
+        :type changelog_query: Union[str, int]
         :param \**kwargs:
             See below
 
         :Keyword Arguments:
             * *is_id* (``bool``) --
-                Optional, whether the query is an ID or not
+                Optional, whether the query is an ID or not, defaults to ``True`` if the query is an int
             * *message_formats* (``list[Literal["html", "markdown"]]``) --
                 Optional, message formats to get, defaults to ``["html", "markdown"]``
 
@@ -261,10 +263,37 @@ class Client(Eventable):
         params = {
             "message_formats": kwargs.pop("message_formats", ["html", "markdown"]),
         }
-        if "is_id" in kwargs:
+        if "is_id" in kwargs or isinstance(changelog_query, int):
             params["key"] = "id"
         json = await self._request("GET", url, params=params)
         return Build.parse_obj(json)
+
+    async def get_news_post(
+        self, news_query: Union[str, int], **kwargs: Any
+    ) -> NewsPost:
+        r"""Gets a news post.
+
+        :param news_query: The query to search for
+        :type news_query: Union[str, int]
+        :param \**kwargs:
+            See below
+
+        :Keyword Arguments:
+            * *is_id* (``bool``) --
+                Optional, whether the query is an ID or not, defaults to ``True`` if the query is an int
+
+        :raises APIException: Contains status code and error message
+        :return: News post object
+        :rtype: aiosu.models.news.NewsPost
+        """
+        url = f"{self.base_url}/api/v2/news/{news_query}"
+        params = {
+            "message_formats": kwargs.pop("message_formats", ["html", "markdown"]),
+        }
+        if "is_id" in kwargs or isinstance(news_query, int):
+            params["key"] = "id"
+        json = await self._request("GET", url, params=params)
+        return NewsPost.parse_obj(json)
 
     @check_token
     @requires_scope(Scopes.IDENTIFY)
@@ -709,16 +738,6 @@ class Client(Eventable):
         return await self._request("GET", url)
 
     @check_token
-    async def revoke_token(self) -> None:
-        r"""Revokes the current token and closes the session.
-
-        :raises APIException: Contains status code and error message
-        """
-        url = f"{self.base_url}/api/v2/oauth/tokens/current"
-        await self._request("DELETE", url)
-        await self.close()
-
-    @check_token
     async def get_spotlights(self) -> list[Spotlight]:
         r"""Gets the current spotlights.
 
@@ -729,6 +748,16 @@ class Client(Eventable):
         url = f"{self.base_url}/api/v2/spotlights"
         json = await self._request("GET", url)
         return from_list(Spotlight.parse_obj, json.get("spotlights", []))
+
+    @check_token
+    async def revoke_token(self) -> None:
+        r"""Revokes the current token and closes the session.
+
+        :raises APIException: Contains status code and error message
+        """
+        url = f"{self.base_url}/api/v2/oauth/tokens/current"
+        await self._request("DELETE", url)
+        await self.close()
 
     async def close(self) -> None:
         """Closes the client session."""
