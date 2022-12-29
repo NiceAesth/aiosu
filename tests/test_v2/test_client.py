@@ -279,6 +279,19 @@ class TestClient:
         await client.close()
 
     @pytest.mark.asyncio
+    async def test_get_own_friends(self, mocker, token, users):
+        token.scopes |= aiosu.models.Scopes.FRIENDS_READ
+        client = aiosu.v2.Client(token=token)
+        json = orjson.loads(users)
+        resp = MockResponse(to_bytes(json["users"]), 200)
+        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
+        data = await client.get_own_friends()
+        assert isinstance(data, list) and all(
+            isinstance(x, aiosu.models.User) for x in data
+        )
+        await client.close()
+
+    @pytest.mark.asyncio
     async def test_get_user(self, mocker, token, user):
         client = aiosu.v2.Client(token=token)
         for mode in modes:

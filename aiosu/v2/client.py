@@ -382,6 +382,19 @@ class Client(Eventable):
         return User.parse_obj(json)
 
     @check_token
+    @requires_scope(Scopes.FRIENDS_READ)
+    async def get_own_friends(self) -> list[User]:
+        r"""Gets the token owner's friend list
+
+        :raises APIException: Contains status code and error message
+        :return: List of friends
+        :rtype: list[aiosu.models.user.User]
+        """
+        url = f"{self.base_url}/api/v2/friends"
+        json = await self._request("GET", url)
+        return from_list(User.parse_obj, json)
+
+    @check_token
     async def get_user(self, user_query: Union[str, int], **kwargs: Any) -> User:
         r"""Gets a user by a query.
 
