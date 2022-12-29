@@ -47,7 +47,7 @@ class Gamemode(Enum):
         :type __o: object
         :raises ValueError: If object cannot be converted to Gamemode
         :return: A Gamemode object. Will search by name_api, name_short, id
-        :rtype: aiosu.classes.gamemode.Gamemode
+        :rtype: aiosu.models.gamemode.Gamemode
         """
         if isinstance(__o, cls):
             return __o

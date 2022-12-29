@@ -11,10 +11,10 @@ from ..utils.accuracy import CatchAccuracyCalculator
 from ..utils.accuracy import ManiaAccuracyCalculator
 from ..utils.accuracy import OsuAccuracyCalculator
 from ..utils.accuracy import TaikoAccuracyCalculator
+from .base import BaseModel
 from .beatmap import Beatmap
 from .beatmap import Beatmapset
 from .gamemode import Gamemode
-from .models import BaseModel
 from .mods import Mods
 from .user import User
 

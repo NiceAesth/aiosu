@@ -8,21 +8,21 @@ import math
 from typing import Callable
 from typing import TYPE_CHECKING
 
-from ..classes import CatchPerformanceAttributes
-from ..classes import ManiaPerformanceAttributes
-from ..classes import Mod
-from ..classes import OsuPerformanceAttributes
-from ..classes import TaikoPerformanceAttributes
+from ..models import CatchPerformanceAttributes
+from ..models import ManiaPerformanceAttributes
+from ..models import Mod
+from ..models import OsuPerformanceAttributes
+from ..models import TaikoPerformanceAttributes
 from .accuracy import CatchAccuracyCalculator
 from .accuracy import ManiaAccuracyCalculator
 from .accuracy import OsuAccuracyCalculator
 from .accuracy import TaikoAccuracyCalculator
 
 if TYPE_CHECKING:
-    from ..classes import Score
-    from ..classes import BeatmapDifficultyAttributes
+    from ..models import Score
+    from ..models import BeatmapDifficultyAttributes
 
-    from ..classes import PerformanceAttributes
+    from ..models import PerformanceAttributes
 
 
 __all__ = [
@@ -62,10 +62,10 @@ class OsuPerformanceCalculator(AbstractPerformanceCalculator):
         """Calculates performance points for a score.
 
         :param score: The score to calculate pp for
-        :type score: aiosu.classes.score.Score
+        :type score: aiosu.models.score.Score
         :raises ValueError: If score does not have an associated beatmap
         :return: Performance attributes for the score
-        :rtype: aiosu.classes.performance.OsuPerformanceAttributes
+        :rtype: aiosu.models.performance.OsuPerformanceAttributes
         """
         if score.beatmap is None:
             raise ValueError("Given score does not have a beatmap.")
@@ -389,9 +389,9 @@ class TaikoPerformanceCalculator(AbstractPerformanceCalculator):
         """Calculates performance points for a score
 
         :param score: The score to calculate pp for
-        :type score: aiosu.classes.score.Score
+        :type score: aiosu.models.score.Score
         :return: Performance attributes for the score
-        :rtype: aiosu.classes.performance.TaikoPerformanceAttributes
+        :rtype: aiosu.models.performance.TaikoPerformanceAttributes
         """
         accuracy_calculator = TaikoAccuracyCalculator()
         accuracy = accuracy_calculator.calculate_weighted(score)
@@ -530,9 +530,9 @@ class ManiaPerformanceCalculator(AbstractPerformanceCalculator):
         """Calculates performance points for a score.
 
         :param score: The score to calculate pp for
-        :type score: aiosu.classes.score.Score
+        :type score: aiosu.models.score.Score
         :return: Performance attributes for the score
-        :rtype: aiosu.classes.performance.ManiaPerformanceAttributes
+        :rtype: aiosu.models.performance.ManiaPerformanceAttributes
         """
         accuracy_calculator = ManiaAccuracyCalculator()
         accuracy = ManiaAccuracyCalculator().calculate_weighted(score)
@@ -583,9 +583,9 @@ class CatchPerformanceCalculator(AbstractPerformanceCalculator):
         """Calculates performance points for a score.
 
         :param score: The score to calculate pp for
-        :type score: aiosu.classes.score.Score
+        :type score: aiosu.models.score.Score
         :return: Performance attributes for the score
-        :rtype: aiosu.classes.performance.CatchPerformanceAttributes
+        :rtype: aiosu.models.performance.CatchPerformanceAttributes
         """
         accuracy_calculator = CatchAccuracyCalculator()
         accuracy = accuracy_calculator.calculate_weighted(score)

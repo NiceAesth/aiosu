@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import abc
 
-from .models import BaseModel
+from .base import BaseModel
 
 
 class PerformanceAttributes(BaseModel, abc.ABC):

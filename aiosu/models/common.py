@@ -8,7 +8,7 @@ from datetime import datetime
 from emojiflags.lookup import lookup as flag_lookup  # type: ignore
 from pydantic import validator
 
-from .models import BaseModel
+from .base import BaseModel
 
 
 class TimestampedCount(BaseModel):

@@ -6,8 +6,8 @@ from __future__ import annotations
 import aiohttp
 import orjson
 
-from ..classes.exceptions import APIException
-from ..classes.token import OAuthToken
+from ..exceptions import APIException
+from ..models.token import OAuthToken
 
 
 async def process_code(
@@ -27,7 +27,7 @@ async def process_code(
     :param code: Code returned from the API
     :type code: str
     :return: The OAuth token
-    :rtype: aiosu.classes.token.OAuthToken
+    :rtype: aiosu.models.token.OAuthToken
     """
     url = "https://osu.ppy.sh/oauth/token"
     headers = {"Content-Type": "application/x-www-form-urlencoded"}

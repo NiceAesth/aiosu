@@ -9,8 +9,8 @@ from pydantic import Field
 from pydantic import root_validator
 from pydantic import validator
 
+from ..base import BaseModel
 from ..gamemode import Gamemode
-from ..models import BaseModel
 from ..mods import Mods
 from ..score import ScoreStatistics
 

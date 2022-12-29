@@ -11,8 +11,8 @@ from typing import TYPE_CHECKING
 from pydantic import Field
 from pydantic import root_validator
 
+from .base import BaseModel
 from .gamemode import Gamemode
-from .models import BaseModel
 
 if TYPE_CHECKING:
     from typing import Any

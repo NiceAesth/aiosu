@@ -14,21 +14,21 @@ import aiohttp
 import orjson
 from aiolimiter import AsyncLimiter
 
-from .. import helpers
-from ..classes import APIException
-from ..classes import Beatmap
-from ..classes import BeatmapDifficultyAttributes
-from ..classes import Beatmapset
-from ..classes import Gamemode
-from ..classes import Mods
-from ..classes import OAuthToken
-from ..classes import Scopes
-from ..classes import Score
-from ..classes import SeasonalBackgroundSet
-from ..classes import User
-from ..classes import UserQueryType
-from ..classes.events import ClientUpdateEvent
-from ..classes.events import Eventable
+from ..events import ClientUpdateEvent
+from ..events import Eventable
+from ..exceptions import APIException
+from ..helpers import from_list
+from ..models import Beatmap
+from ..models import BeatmapDifficultyAttributes
+from ..models import Beatmapset
+from ..models import Gamemode
+from ..models import Mods
+from ..models import OAuthToken
+from ..models import Scopes
+from ..models import Score
+from ..models import SeasonalBackgroundSet
+from ..models import User
+from ..models import UserQueryType
 
 if TYPE_CHECKING:
     from types import TracebackType
@@ -88,7 +88,7 @@ class Client(Eventable):
         * *client_secret* (``str``)
         * *base_url* (``str``) --
             Optional, base API URL, defaults to \"https://osu.ppy.sh\"
-        * *token* (``aiosu.classes.token.OAuthToken``)
+        * *token* (``aiosu.models.token.OAuthToken``)
         * *limiter* (``aiolimiter.AsyncLimiter``) --
             Optional, custom AsyncLimiter, defaults to AsyncLimiter(1200, 60)
     """
@@ -217,7 +217,7 @@ class Client(Eventable):
 
         :raises APIException: Contains status code and error message
         :return: Seasonal background set object
-        :rtype: aiosu.classes.backgrounds.SeasonalBackgroundSet
+        :rtype: aiosu.models.backgrounds.SeasonalBackgroundSet
         """
         url = f"{self.base_url}/api/v2/seasonal-backgrounds"
         json = await self._request("GET", url)
@@ -232,12 +232,12 @@ class Client(Eventable):
             See below
 
         :Keyword Arguments:
-            * *mode* (``aiosu.classes.gamemode.Gamemode``) --
+            * *mode* (``aiosu.models.gamemode.Gamemode``) --
                 Optional, gamemode to search for
 
         :raises APIException: Contains status code and error message
         :return: Requested user
-        :rtype: aiosu.classes.user.User
+        :rtype: aiosu.models.user.User
         """
         url = f"{self.base_url}/api/v2/me"
         if "mode" in kwargs:
@@ -256,14 +256,14 @@ class Client(Eventable):
             See below
 
         :Keyword Arguments:
-            * *mode* (``aiosu.classes.gamemode.Gamemode``) --
+            * *mode* (``aiosu.models.gamemode.Gamemode``) --
                 Optional, gamemode to search for
             * *qtype* (``str``) --
                 Optional, \"string\" or \"id\". Type of the user_query
 
         :raises APIException: Contains status code and error message
         :return: Requested user
-        :rtype: aiosu.classes.user.User
+        :rtype: aiosu.models.user.User
         """
         url = f"{self.base_url}/api/v2/users/{user_query}"
         params = {}
@@ -284,14 +284,14 @@ class Client(Eventable):
         :type user_ids: list[int]
         :raises APIException: Contains status code and error message
         :return: List of user data objects
-        :rtype: list[aiosu.classes.user.User]
+        :rtype: list[aiosu.models.user.User]
         """
         url = f"{self.base_url}/api/v2/users"
         params = {
             "ids": user_ids,
         }
         json = await self._request("GET", url, params=params)
-        return helpers.from_list(User.parse_obj, json.get("users", []))
+        return from_list(User.parse_obj, json.get("users", []))
 
     @check_token
     async def __get_type_scores(
@@ -307,7 +307,7 @@ class Client(Eventable):
             See below
 
         :Keyword Arguments:
-            * *mode* (``aiosu.classes.gamemode.Gamemode``) --
+            * *mode* (``aiosu.models.gamemode.Gamemode``) --
                 Optional, gamemode to search for
             * *limit* (``int``) --
                 Optional, number of scores to get. Min: 1, Max: 100, defaults to 100
@@ -320,7 +320,7 @@ class Client(Eventable):
         :raises ValueError: If type is invalid
         :raises APIException: Contains status code and error message
         :return: List of requested scores
-        :rtype: list[aiosu.classes.score.Score]
+        :rtype: list[aiosu.models.score.Score]
         """
         if not 1 <= kwargs.get("limit", 100) <= 100:
             raise ValueError("Invalid limit specified. Limit must be between 1 and 100")
@@ -340,7 +340,7 @@ class Client(Eventable):
         if "limit" in kwargs:
             params["limit"] = kwargs.pop("limit")
         json = await self._request("GET", url, params=params)
-        return helpers.from_list(Score.parse_obj, json)
+        return from_list(Score.parse_obj, json)
 
     async def get_user_recents(self, user_id: int, **kwargs: Any) -> list[Score]:
         r"""Get a user's recent scores.
@@ -351,7 +351,7 @@ class Client(Eventable):
             See below
 
         :Keyword Arguments:
-            * *mode* (``aiosu.classes.gamemode.Gamemode``) --
+            * *mode* (``aiosu.models.gamemode.Gamemode``) --
                 Optional, gamemode to search for
             * *limit* (``int``) --
                 Optional, number of scores to get. Min: 1, Max: 100, defaults to 100
@@ -362,7 +362,7 @@ class Client(Eventable):
 
         :raises APIException: Contains status code and error message
         :return: List of requested scores
-        :rtype: list[aiosu.classes.score.Score]
+        :rtype: list[aiosu.models.score.Score]
         """
         return await self.__get_type_scores(user_id, "recent", **kwargs)
 
@@ -375,7 +375,7 @@ class Client(Eventable):
             See below
 
         :Keyword Arguments:
-            * *mode* (``aiosu.classes.gamemode.Gamemode``) --
+            * *mode* (``aiosu.models.gamemode.Gamemode``) --
                 Optional, gamemode to search for
             * *limit* (``int``) --
                 Optional, number of scores to get. Min: 1, Max: 100, defaults to 100
@@ -386,7 +386,7 @@ class Client(Eventable):
 
         :raises APIException: Contains status code and error message
         :return: List of requested scores
-        :rtype: list[aiosu.classes.score.Score]
+        :rtype: list[aiosu.models.score.Score]
         """
         return await self.__get_type_scores(user_id, "best", **kwargs)
 
@@ -399,7 +399,7 @@ class Client(Eventable):
             See below
 
         :Keyword Arguments:
-            * *mode* (``aiosu.classes.gamemode.Gamemode``) --
+            * *mode* (``aiosu.models.gamemode.Gamemode``) --
                 Optional, gamemode to search for
             * *limit* (``int``) --
                 Optional, number of scores to get. Min: 1, Max: 100, defaults to 100
@@ -410,7 +410,7 @@ class Client(Eventable):
 
         :raises APIException: Contains status code and error message
         :return: List of requested scores
-        :rtype: list[aiosu.classes.score.Score]
+        :rtype: list[aiosu.models.score.Score]
         """
         return await self.__get_type_scores(user_id, "firsts", **kwargs)
 
@@ -428,12 +428,12 @@ class Client(Eventable):
             See below
 
         :Keyword Arguments:
-            * *mode* (``aiosu.classes.gamemode.Gamemode``) --
+            * *mode* (``aiosu.models.gamemode.Gamemode``) --
                 Optional, gamemode to search for
 
         :raises APIException: Contains status code and error message
         :return: List of requested scores
-        :rtype: list[aiosu.classes.score.Score]
+        :rtype: list[aiosu.models.score.Score]
         """
         url = f"{self.base_url}/api/v2/beatmaps/{beatmap_id}/scores/users/{user_id}/all"
         params = {}
@@ -441,7 +441,7 @@ class Client(Eventable):
             mode = Gamemode(kwargs.pop("mode"))  # type: ignore
             params["mode"] = str(mode)
         json = await self._request("GET", url, params=params)
-        return helpers.from_list(Score.parse_obj, json.get("scores", []))
+        return from_list(Score.parse_obj, json.get("scores", []))
 
     @check_token
     async def get_beatmap_scores(self, beatmap_id: int, **kwargs: Any) -> list[Score]:
@@ -453,16 +453,16 @@ class Client(Eventable):
             See below
 
         :Keyword Arguments:
-            * *mode* (``aiosu.classes.gamemode.Gamemode``) --
+            * *mode* (``aiosu.models.gamemode.Gamemode``) --
                 Optional, gamemode to search for
-            * *mods* (``aiosu.classes.mods.Mods``) --
+            * *mods* (``aiosu.models.mods.Mods``) --
                 Optional, mods to search for
             * *type* (``str``) --
                 Optional, beatmap score ranking type
 
         :raises APIException: Contains status code and error message
         :return: List of requested scores
-        :rtype: list[aiosu.classes.score.Score]
+        :rtype: list[aiosu.models.score.Score]
         """
         url = f"{self.base_url}/api/v2/beatmaps/{beatmap_id}/scores"
         params = {}
@@ -475,7 +475,7 @@ class Client(Eventable):
         if "type" in kwargs:
             params["type"] = kwargs.pop("type")
         json = await self._request("GET", url, params=params)
-        return helpers.from_list(Score.parse_obj, json.get("scores", []))
+        return from_list(Score.parse_obj, json.get("scores", []))
 
     @check_token
     async def get_beatmap(self, beatmap_id: int) -> Beatmap:
@@ -485,7 +485,7 @@ class Client(Eventable):
         :type beatmap_id: int
         :raises APIException: Contains status code and error message
         :return: Beatmap data object
-        :rtype: aiosu.classes.beatmap.Beatmap
+        :rtype: aiosu.models.beatmap.Beatmap
         """
         url = f"{self.base_url}/api/v2/beatmaps/{beatmap_id}"
         json = await self._request("GET", url)
@@ -499,14 +499,14 @@ class Client(Eventable):
         :type beatmap_ids: list[int]
         :raises APIException: Contains status code and error message
         :return: List of beatmap data objects
-        :rtype: list[aiosu.classes.beatmap.Beatmap]
+        :rtype: list[aiosu.models.beatmap.Beatmap]
         """
         url = f"{self.base_url}/api/v2/beatmaps"
         params = {
             "ids": beatmap_ids,
         }
         json = await self._request("GET", url, params=params)
-        return helpers.from_list(Beatmap.parse_obj, json.get("beatmaps", []))
+        return from_list(Beatmap.parse_obj, json.get("beatmaps", []))
 
     @check_token
     async def lookup_beatmap(self, **kwargs: Any) -> Beatmap:
@@ -526,7 +526,7 @@ class Client(Eventable):
         :raises ValueError: If no arguments are specified
         :raises APIException: Contains status code and error message
         :return: Beatmap data object
-        :rtype: aiosu.classes.beatmap.Beatmap
+        :rtype: aiosu.models.beatmap.Beatmap
         """
         url = f"{self.base_url}/api/v2/beatmaps/lookup"
         params = {}
@@ -553,14 +553,14 @@ class Client(Eventable):
             See below
 
         :Keyword Arguments:
-            * *mode* (``aiosu.classes.gamemode.Gamemode``) --
+            * *mode* (``aiosu.models.gamemode.Gamemode``) --
                 Optional, gamemode to search for
-            * *mods* (``aiosu.classes.mods.Mods``) --
+            * *mods* (``aiosu.models.mods.Mods``) --
                 Optional, mods to apply to the result
 
         :raises APIException: Contains status code and error message
         :return: Difficulty attributes for a beatmap
-        :rtype: aiosu.classes.beatmap.BeatmapDifficultyAttributes
+        :rtype: aiosu.models.beatmap.BeatmapDifficultyAttributes
         """
         url = f"{self.base_url}/api/v2/beatmaps/{beatmap_id}/attributes"
         data: dict[str, Any] = {}
@@ -581,7 +581,7 @@ class Client(Eventable):
         :type beatmapset_id: int
         :raises APIException: Contains status code and error message
         :return: Beatmapset data object
-        :rtype: aiosu.classes.beatmap.Beatmapset
+        :rtype: aiosu.models.beatmap.Beatmapset
         """
         url = f"{self.base_url}/api/v2/beatmapsets/{beatmapset_id}"
         json = await self._request("GET", url)
@@ -596,7 +596,7 @@ class Client(Eventable):
 
         :raises APIException: Contains status code and error message
         :return: Beatmapset data object
-        :rtype: aiosu.classes.beatmap.Beatmapset
+        :rtype: aiosu.models.beatmap.Beatmapset
         """
         url = f"{self.base_url}/api/v2/beatmapsets/lookup"
         params = {
@@ -617,11 +617,11 @@ class Client(Eventable):
 
         :raises APIException: Contains status code and error message
         :return: List of beatmapset data objects
-        :rtype: list[aiosu.classes.beatmap.Beatmapset]
+        :rtype: list[aiosu.models.beatmap.Beatmapset]
         """
         url = f"{self.base_url}/api/v2/beatmapsets/search/{search_filter}"
         json = await self._request("GET", url)
-        return helpers.from_list(Beatmapset.parse_obj, json.get("beatmapsets", []))
+        return from_list(Beatmapset.parse_obj, json.get("beatmapsets", []))
 
     @check_token
     async def get_score(
@@ -634,11 +634,11 @@ class Client(Eventable):
         :param score_id: The ID of the score
         :type score_id: int
         :param mode: The gamemode to search for
-        :type mode: aiosu.classes.gamemode.Gamemode
+        :type mode: aiosu.models.gamemode.Gamemode
 
         :raises APIException: Contains status code and error message
         :return: Score data object
-        :rtype: aiosu.classes.score.Score
+        :rtype: aiosu.models.score.Score
         """
         url = f"{self.base_url}/api/v2/scores/{mode}/{score_id}"
         json = await self._request("GET", url)
@@ -656,7 +656,7 @@ class Client(Eventable):
         :param score_id: The ID of the score
         :type score_id: int
         :param mode: The gamemode to search for
-        :type mode: aiosu.classes.gamemode.Gamemode
+        :type mode: aiosu.models.gamemode.Gamemode
 
         :raises APIException: Contains status code and error message
         :return: Replay file

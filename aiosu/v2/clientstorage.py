@@ -7,10 +7,10 @@ import functools
 from typing import TYPE_CHECKING
 
 from . import Client
-from ..classes import OAuthToken
-from ..classes.events import ClientAddEvent
-from ..classes.events import ClientUpdateEvent
-from ..classes.events import Eventable
+from ..events import ClientAddEvent
+from ..events import ClientUpdateEvent
+from ..events import Eventable
+from ..models import OAuthToken
 
 if TYPE_CHECKING:
     from types import TracebackType
@@ -134,7 +134,7 @@ class ClientStorage(Eventable):
         r"""Adds a client to storage.
 
         :param token: Token object for the client
-        :type token: aiosu.classes.token.OAuthToken
+        :type token: aiosu.models.token.OAuthToken
         :param \**kwargs:
             See below
 
@@ -166,7 +166,7 @@ class ClientStorage(Eventable):
         :Keyword Arguments:
             * *id* (``int``) --
                 Optional, the ID of the client, defaults to None
-            * *token* (``aiosu.classes.token.OAuthToken``) --
+            * *token* (``aiosu.models.token.OAuthToken``) --
                 Optional, token of client to add, defaults to None
 
         :raises ValueError: If neither id nor token are specified

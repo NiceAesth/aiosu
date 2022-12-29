@@ -1,8 +1,12 @@
+"""
+This module contains API models.
+"""
 from __future__ import annotations
 
-from . import events
 from .backgrounds import Background
 from .backgrounds import SeasonalBackgroundSet
+from .base import BaseModel
+from .base import FrozenModel
 from .beatmap import Beatmap
 from .beatmap import BeatmapAvailability
 from .beatmap import BeatmapCovers
@@ -20,10 +24,7 @@ from .changelog import Version
 from .common import Achievement
 from .common import Country
 from .common import TimestampedCount
-from .exceptions import APIException
 from .gamemode import Gamemode
-from .models import BaseModel
-from .models import FrozenModel
 from .mods import Mod
 from .mods import Mods
 from .performance import CatchPerformanceAttributes

@@ -7,7 +7,7 @@ import abc
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from ..classes import Score
+    from ..models import Score
 
 __all__ = [
     "OsuAccuracyCalculator",
@@ -35,7 +35,7 @@ class OsuAccuracyCalculator(AbstractAccuracyCalculator):
         """Calculates accuracy for an osu!std score.
 
         :param score: The score to calculate accuracy for
-        :type score: aiosu.classes.score.Score
+        :type score: aiosu.models.score.Score
         :return: Accuracy for the given score
         :rtype: float
         """
@@ -65,7 +65,7 @@ class OsuAccuracyCalculator(AbstractAccuracyCalculator):
         """Calculates weighted accuracy for an osu!std score.
 
         :param score: The score to calculate accuracy for
-        :type score: aiosu.classes.score.Score
+        :type score: aiosu.models.score.Score
         :raises ValueError: If score does not have an associated beatmap
         :raises ValueError: If the associated beatmap does not have object counts
         :return: Weighted accuracy to be used in pp calculation
@@ -109,7 +109,7 @@ class TaikoAccuracyCalculator(AbstractAccuracyCalculator):
         """Calculates accuracy for an osu!taiko score.
 
         :param score: The score to calculate accuracy for
-        :type score: aiosu.classes.score.Score
+        :type score: aiosu.models.score.Score
         :return: Accuracy for the given score
         :rtype: float
         """
@@ -133,7 +133,7 @@ class TaikoAccuracyCalculator(AbstractAccuracyCalculator):
         """Calculates weighted accuracy for an osu!taiko score.
 
         :param score: The score to calculate accuracy for
-        :type score: aiosu.classes.score.Score
+        :type score: aiosu.models.score.Score
         :return: Weighted accuracy to be used in pp calculation
         :rtype: float
         """
@@ -146,7 +146,7 @@ class ManiaAccuracyCalculator(AbstractAccuracyCalculator):
         """Calculates accuracy for an osu!mania score.
 
         :param score: The score to calculate accuracy for
-        :type score: aiosu.classes.score.Score
+        :type score: aiosu.models.score.Score
         :return: Accuracy for the given score
         :rtype: float
         """
@@ -177,7 +177,7 @@ class ManiaAccuracyCalculator(AbstractAccuracyCalculator):
         """Calculates weighted accuracy for an osu!mania score.
 
         :param score: The score to calculate accuracy for
-        :type score: aiosu.classes.score.Score
+        :type score: aiosu.models.score.Score
         :return: Weighted accuracy to be used in pp calculation
         :rtype: float
         """
@@ -211,7 +211,7 @@ class CatchAccuracyCalculator(AbstractAccuracyCalculator):
         """Calculates accuracy for an osu!catch score.
 
         :param score: The score to calculate accuracy for
-        :type score: aiosu.classes.score.Score
+        :type score: aiosu.models.score.Score
         :return: Accuracy for the given score
         :rtype: float
         """
@@ -238,7 +238,7 @@ class CatchAccuracyCalculator(AbstractAccuracyCalculator):
         """Calculates weighted accuracy for an osu!catch score.
 
         :param score: The score to calculate accuracy for
-        :type score: aiosu.classes.score.Score
+        :type score: aiosu.models.score.Score
         :return: Weighted accuracy to be used in pp calculation
         :rtype: float
         """

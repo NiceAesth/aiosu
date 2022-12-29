@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from typing import Type
     from typing import Callable
-    from .token import OAuthToken
+    from .models.token import OAuthToken
 
 
 class Eventable(abc.ABC):

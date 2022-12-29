@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from ..models import BaseModel
+from ..base import BaseModel
 
 
 class Replay(BaseModel):

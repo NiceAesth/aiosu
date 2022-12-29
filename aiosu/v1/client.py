@@ -13,16 +13,15 @@ import orjson
 from aiolimiter import AsyncLimiter
 
 from .. import helpers
-from ..classes import APIException
-from ..classes import Beatmap
-from ..classes import Beatmapset
-from ..classes import Gamemode
-from ..classes import Mods
-from ..classes import Score
-from ..classes import User
-from ..classes import UserQueryType
-from ..classes.legacy import Match
-from ..classes.legacy import Replay
+from ..exceptions import APIException
+from ..models import Beatmapset
+from ..models import Gamemode
+from ..models import Mods
+from ..models import Score
+from ..models import User
+from ..models import UserQueryType
+from ..models.legacy import Match
+from ..models.legacy import Replay
 
 if TYPE_CHECKING:
     from types import TracebackType
@@ -104,16 +103,16 @@ class Client:
             See below
 
         :Keyword Arguments:
-            * *mode* (``aiosu.classes.gamemode.Gamemode``) --
+            * *mode* (``aiosu.models.gamemode.Gamemode``) --
                 Optional, gamemode to search for, defaults to standard
             * *qtype* (``str``) --
                 Optional, \"string\" or \"id\". Type of the user_query
-            * *event_days* (``aiosu.classes.gamemode.Gamemode``) --
+            * *event_days* (``aiosu.models.gamemode.Gamemode``) --
                 Optional, max number of days since last event, Min: 1, Max: 31, defaults to 1
 
         :raises APIException: Contains status code and error message
         :return: Requested user
-        :rtype: list[aiosu.classes.user.User]
+        :rtype: list[aiosu.models.user.User]
         """
         url = f"{self.base_url}/api/get_user"
         params = {
@@ -143,7 +142,7 @@ class Client:
             See below
 
         :Keyword Arguments:
-            * *mode* (``aiosu.classes.gamemode.Gamemode``) --
+            * *mode* (``aiosu.models.gamemode.Gamemode``) --
                 Optional, gamemode to search for, defaults to standard
             * *limit* (``int``) --
                 Optional, number of scores to get, defaults to 10
@@ -153,7 +152,7 @@ class Client:
         :raises ValueError: If request_type is invalid
         :raises APIException: Contains status code and error message
         :return: List of requested scores
-        :rtype: list[aiosu.classes.score.Score]
+        :rtype: list[aiosu.models.score.Score]
         """
         if request_type not in ("recent", "best"):
             raise ValueError(
@@ -185,7 +184,7 @@ class Client:
             See below
 
         :Keyword Arguments:
-            * *mode* (``aiosu.classes.gamemode.Gamemode``) --
+            * *mode* (``aiosu.models.gamemode.Gamemode``) --
                 Optional, gamemode to search for, defaults to standard
             * *limit* (``int``) --
                 Optional, number of scores to get, Min: 1, Max: 50, defaults to 50
@@ -195,7 +194,7 @@ class Client:
         :raises ValueError: If limit is not between 1 and 50
         :raises APIException: Contains status code and error message
         :return: List of requested scores
-        :rtype: list[aiosu.classes.score.Score]
+        :rtype: list[aiosu.models.score.Score]
         """
         limit = kwargs.pop("limit", 50)
         if not 1 <= limit <= 50:
@@ -213,7 +212,7 @@ class Client:
             See below
 
         :Keyword Arguments:
-            * *mode* (``aiosu.classes.gamemode.Gamemode``) --
+            * *mode* (``aiosu.models.gamemode.Gamemode``) --
                 Optional, gamemode to search for, defaults to standard
             * *limit* (``int``) --
                 Optional, number of scores to get, Min: 1, Max: 100, defaults to 100
@@ -223,7 +222,7 @@ class Client:
         :raises ValueError: If limit is not between 1 and 100
         :raises APIException: Contains status code and error message
         :return: List of requested scores
-        :rtype: list[aiosu.classes.score.Score]
+        :rtype: list[aiosu.models.score.Score]
         """
         limit = kwargs.pop("limit", 100)
         if not 1 <= limit <= 100:
@@ -239,11 +238,11 @@ class Client:
         :Keyword Arguments:
             * *limit* (``int``) --
                 Optional, number of scores to get, Min: 1, Max: 500, defaults to 500
-            * *mode* (``aiosu.classes.gamemode.Gamemode``) --
+            * *mode* (``aiosu.models.gamemode.Gamemode``) --
                 Optional, gamemode to search for, defaults to standard
             * *converts* (``bool``) --
                 Optional, whether to return converts, defaults to False
-            * *mods* (``aiosu.classes.mods.Mods``) --
+            * *mods* (``aiosu.models.mods.Mods``) --
                 Optional, mods to apply to the result
             * *beatmap_id* (``int``) --
                 Optional, The ID of the beatmap
@@ -262,7 +261,7 @@ class Client:
         :raises ValueError: If none of hash, since, user_query, beatmap_id or beatmapset_id specified.
         :raises APIException: Contains status code and error message
         :return: List of beatmapsets each containing one difficulty of the result
-        :rtype: list[aiosu.classes.beatmap.Beatmapset]
+        :rtype: list[aiosu.models.beatmap.Beatmapset]
         """
         if not 1 <= kwargs.get("limit", 500) <= 500:
             raise ValueError("Invalid limit specified. Limit must be between 1 and 500")
@@ -305,9 +304,9 @@ class Client:
             See below
 
         :Keyword Arguments:
-            * *mode* (``aiosu.classes.gamemode.Gamemode``) --
+            * *mode* (``aiosu.models.gamemode.Gamemode``) --
                 Optional, gamemode to search for, defaults to standard
-            * *mods* (``aiosu.classes.mods.Mods``) --
+            * *mods* (``aiosu.models.mods.Mods``) --
                 Optional, mods to search for
             * *limit* (``int``) --
                 Optional, number of scores to get, Min: 1, Max: 100, defaults to 100
@@ -319,7 +318,7 @@ class Client:
         :raises ValueError: If limit is not between 1 and 100
         :raises APIException: Contains status code and error message
         :return: List of requested scores
-        :rtype: list[aiosu.classes.score.Score]
+        :rtype: list[aiosu.models.score.Score]
         """
         if not 1 <= kwargs.get("limit", 100) <= 100:
             raise ValueError("Invalid limit specified. Limit must be between 1 and 100")
@@ -350,7 +349,7 @@ class Client:
         :type match_id: int
         :raises APIException: Contains status code and error message
         :return: The requested multiplayer match
-        :rtype: aiosu.classes.legacy.match.Match
+        :rtype: aiosu.models.legacy.match.Match
         """
         url = f"{self.base_url}/api/get_match"
         params = {
@@ -367,9 +366,9 @@ class Client:
             See below
 
         :Keyword Arguments:
-            * *mode* (``aiosu.classes.gamemode.Gamemode``) --
+            * *mode* (``aiosu.models.gamemode.Gamemode``) --
                 Optional, gamemode to search for, defaults to standard
-            * *mods* (``aiosu.classes.mods.Mods``) --
+            * *mods* (``aiosu.models.mods.Mods``) --
                 Optional, mods to search for
             * *score_id* (``int``) --
                 Optional, the ID of the score
@@ -383,7 +382,7 @@ class Client:
         :raises ValueError: If neither score_id nor beatmap_id + user_id specified
         :raises APIException: Contains status code and error message
         :return: The data for the requested replay
-        :rtype: aiosu.classes.legacy.replay.Replay
+        :rtype: aiosu.models.legacy.replay.Replay
         """
         url = f"{self.base_url}/api/get_replay"
         params = {"k": self.token}

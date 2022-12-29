@@ -9,11 +9,11 @@ from typing import Any
 from typing import Optional
 from typing import TYPE_CHECKING
 
+from .base import BaseModel
 from .common import Achievement
 from .common import Country
 from .common import TimestampedCount
 from .gamemode import Gamemode
-from .models import BaseModel
 
 if TYPE_CHECKING:
     from typing import Callable

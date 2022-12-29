@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING
 
 from pydantic import root_validator
 
-from .models import BaseModel
+from .base import BaseModel
 from .scopes import Scopes
 
 if TYPE_CHECKING:
