@@ -132,6 +132,13 @@ def changelog():
 
 
 @pytest.fixture
+def spotlights():
+    with open("tests/data/v2/multiple_spotlight.json", "rb") as f:
+        data = f.read()
+    return data
+
+
+@pytest.fixture
 def difficulty_attributes():
     def _difficulty_attributes(mode="osu"):
         with open(f"tests/data/v2/difficulty_attributes_{mode}.json", "rb") as f:
@@ -423,4 +430,15 @@ class TestClient:
             mocker.patch("aiohttp.ClientSession.get", return_value=resp)
             data = await client.get_score_replay(4220635589, mode)
             assert isinstance(data, BytesIO)
+        await client.close()
+
+    @pytest.mark.asyncio
+    async def test_get_spotlights(self, mocker, token, spotlights):
+        client = aiosu.v2.Client(token=token)
+        resp = MockResponse(spotlights, 200)
+        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
+        data = await client.get_spotlights()
+        assert isinstance(data, list) and all(
+            isinstance(x, aiosu.models.Spotlight) for x in data
+        )
         await client.close()

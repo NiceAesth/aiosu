@@ -28,6 +28,7 @@ from ..models import OAuthToken
 from ..models import Scopes
 from ..models import Score
 from ..models import SeasonalBackgroundSet
+from ..models import Spotlight
 from ..models import User
 from ..models import UserQueryType
 
@@ -716,6 +717,18 @@ class Client(Eventable):
         url = f"{self.base_url}/api/v2/oauth/tokens/current"
         await self._request("DELETE", url)
         await self.close()
+
+    @check_token
+    async def get_spotlights(self) -> list[Spotlight]:
+        r"""Gets the current spotlights.
+
+        :raises APIException: Contains status code and error message
+        :return: List of spotlights
+        :rtype: list[aiosu.models.spotlight.Spotlight]
+        """
+        url = f"{self.base_url}/api/v2/spotlights"
+        json = await self._request("GET", url)
+        return from_list(Spotlight.parse_obj, json.get("spotlights", []))
 
     async def close(self) -> None:
         """Closes the client session."""
