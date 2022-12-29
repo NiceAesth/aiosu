@@ -24,6 +24,7 @@ from ..models import BeatmapDifficultyAttributes
 from ..models import Beatmapset
 from ..models import Build
 from ..models import CommentBundle
+from ..models import Event
 from ..models import Gamemode
 from ..models import KudosuHistory
 from ..models import Mods
@@ -668,6 +669,36 @@ class Client(Eventable):
             params["offset"] = kwargs.pop("offset")
         json = await self._request("GET", url, params=params)
         return from_list(UserBeatmapPlaycount.parse_obj, json)
+
+    @check_token
+    async def get_user_recent_activity(
+        self, user_id: int, **kwargs: Any
+    ) -> list[Event]:
+        r"""Get a user's recent activity.
+
+        :param user_id: ID of the user
+        :type user_id: int
+        :param \**kwargs:
+            See below
+
+        :Keyword Arguments:
+            * *limit* (``int``) --
+                Optional, number of events to get
+            * *offset* (``int``) --
+                Optional, offset of the first event to get
+
+        :raises APIException: Contains status code and error message
+        :return: List of events
+        :rtype: list[aiosu.models.event.Event]
+        """
+        url = f"{self.base_url}/api/v2/users/{user_id}/recent_activity"
+        params = {}
+        if "limit" in kwargs:
+            params["limit"] = kwargs.pop("limit")
+        if "offset" in kwargs:
+            params["offset"] = kwargs.pop("offset")
+        json = await self._request("GET", url, params=params)
+        return from_list(Event.parse_obj, json)
 
     @check_token
     async def get_beatmap_scores(self, beatmap_id: int, **kwargs: Any) -> list[Score]:

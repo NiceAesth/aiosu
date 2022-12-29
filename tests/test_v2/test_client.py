@@ -188,6 +188,13 @@ def most_played():
 
 
 @pytest.fixture
+def events():
+    with open("tests/data/v2/multiple_event.json", "rb") as f:
+        data = f.read()
+    return data
+
+
+@pytest.fixture
 def difficulty_attributes():
     def _difficulty_attributes(mode="osu"):
         with open(f"tests/data/v2/difficulty_attributes_{mode}.json", "rb") as f:
@@ -414,6 +421,17 @@ class TestClient:
         data = await client.get_user_most_played(7782553)
         assert isinstance(data, list) and all(
             isinstance(x, aiosu.models.UserBeatmapPlaycount) for x in data
+        )
+        await client.close()
+
+    @pytest.mark.asyncio
+    async def test_get_user_recent_activity(self, mocker, token, events):
+        client = aiosu.v2.Client(token=token)
+        resp = MockResponse(events, 200)
+        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
+        data = await client.get_user_recent_activity(7118575)
+        assert isinstance(data, list) and all(
+            isinstance(x, aiosu.models.Event) for x in data
         )
         await client.close()
 

@@ -29,6 +29,10 @@ from .common import Country
 from .common import CurrentUserAttributes
 from .common import Cursor
 from .common import TimestampedCount
+from .event import Event
+from .event import EventBeatmap
+from .event import EventBeatmapset
+from .event import EventUser
 from .gamemode import Gamemode
 from .kudosu import KudosuAction
 from .kudosu import KudosuGiver
