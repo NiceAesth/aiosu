@@ -167,6 +167,13 @@ def kudosu_history():
 
 
 @pytest.fixture
+def search():
+    with open("tests/data/v2/search.json", "rb") as f:
+        data = f.read()
+    return data
+
+
+@pytest.fixture
 def difficulty_attributes():
     def _difficulty_attributes(mode="osu"):
         with open(f"tests/data/v2/difficulty_attributes_{mode}.json", "rb") as f:
@@ -229,6 +236,15 @@ class TestClient:
         mocker.patch("aiohttp.ClientSession.get", return_value=resp)
         data = await client.get_comment(123)
         assert isinstance(data, aiosu.models.CommentBundle)
+        await client.close()
+
+    @pytest.mark.asyncio
+    async def test_search(self, mocker, token, search):
+        client = aiosu.v2.Client(token=token)
+        resp = MockResponse(search, 200)
+        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
+        data = await client.search("a")
+        assert isinstance(data, aiosu.models.SearchResponse)
         await client.close()
 
     @pytest.mark.asyncio
