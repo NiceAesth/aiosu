@@ -36,8 +36,8 @@ def scores():
 def test_osu_performance(scores, difficulty_attributes):
     for score_type in types:
         score_list = scores("osu", score_type)
-        for score in from_list(aiosu.classes.Score.parse_obj, score_list):
-            diffatrib = aiosu.classes.BeatmapDifficultyAttributes.parse_obj(
+        for score in from_list(aiosu.models.Score.parse_obj, score_list):
+            diffatrib = aiosu.models.BeatmapDifficultyAttributes.parse_obj(
                 difficulty_attributes("osu")[str(score.beatmap.id)]["attributes"],
             )
             calc = aiosu.utils.performance.OsuPerformanceCalculator(diffatrib)
@@ -48,8 +48,8 @@ def test_osu_performance(scores, difficulty_attributes):
 def test_taiko_performance(scores, difficulty_attributes):
     for score_type in types:
         score_list = scores("taiko", score_type)
-        for score in from_list(aiosu.classes.Score.parse_obj, score_list):
-            diffatrib = aiosu.classes.BeatmapDifficultyAttributes.parse_obj(
+        for score in from_list(aiosu.models.Score.parse_obj, score_list):
+            diffatrib = aiosu.models.BeatmapDifficultyAttributes.parse_obj(
                 difficulty_attributes("taiko")[str(score.beatmap.id)]["attributes"],
             )
             calc = aiosu.utils.performance.TaikoPerformanceCalculator(diffatrib)
@@ -60,8 +60,8 @@ def test_taiko_performance(scores, difficulty_attributes):
 def test_mania_performance(scores, difficulty_attributes):
     for score_type in types:
         score_list = scores("mania", score_type)
-        for score in from_list(aiosu.classes.Score.parse_obj, score_list):
-            diffatrib = aiosu.classes.BeatmapDifficultyAttributes.parse_obj(
+        for score in from_list(aiosu.models.Score.parse_obj, score_list):
+            diffatrib = aiosu.models.BeatmapDifficultyAttributes.parse_obj(
                 difficulty_attributes("mania")[str(score.beatmap.id)]["attributes"],
             )
             calc = aiosu.utils.performance.ManiaPerformanceCalculator(diffatrib)
@@ -72,8 +72,8 @@ def test_mania_performance(scores, difficulty_attributes):
 def test_catch_performance(scores, difficulty_attributes):
     for score_type in types:
         score_list = scores("fruits", score_type)
-        for score in from_list(aiosu.classes.Score.parse_obj, score_list):
-            diffatrib = aiosu.classes.BeatmapDifficultyAttributes.parse_obj(
+        for score in from_list(aiosu.models.Score.parse_obj, score_list):
+            diffatrib = aiosu.models.BeatmapDifficultyAttributes.parse_obj(
                 difficulty_attributes("fruits")[str(score.beatmap.id)]["attributes"],
             )
             calc = aiosu.utils.performance.CatchPerformanceCalculator(diffatrib)

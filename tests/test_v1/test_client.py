@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import orjson
 import pytest
 
 import aiosu
@@ -66,7 +65,7 @@ class TestClient:
             resp = MockResponse(user(mode), 200)
             mocker.patch("aiohttp.ClientSession.get", return_value=resp)
             data = await client.get_user(7782553, mode=mode)
-            assert isinstance(data, aiosu.classes.User)
+            assert isinstance(data, aiosu.models.User)
         await client.close()
 
     @pytest.mark.asyncio
@@ -77,7 +76,7 @@ class TestClient:
             mocker.patch("aiohttp.ClientSession.get", return_value=resp)
             data = await client.get_user_recents(1473890, mode=mode)
             assert isinstance(data, list) and all(
-                isinstance(x, aiosu.classes.Score) for x in data
+                isinstance(x, aiosu.models.Score) for x in data
             )
         await client.close()
 
@@ -88,7 +87,7 @@ class TestClient:
         mocker.patch("aiohttp.ClientSession.get", return_value=resp)
         data = await client.get_user_recents(7782553)
         assert isinstance(data, list) and all(
-            isinstance(x, aiosu.classes.Score) for x in data
+            isinstance(x, aiosu.models.Score) for x in data
         )
         await client.close()
 
@@ -100,7 +99,7 @@ class TestClient:
             mocker.patch("aiohttp.ClientSession.get", return_value=resp)
             data = await client.get_user_bests(7782553, mode=mode)
             assert isinstance(data, list) and all(
-                isinstance(x, aiosu.classes.Score) for x in data
+                isinstance(x, aiosu.models.Score) for x in data
             )
         await client.close()
 
@@ -111,7 +110,7 @@ class TestClient:
         mocker.patch("aiohttp.ClientSession.get", return_value=resp)
         data = await client.get_user_bests(7782553)
         assert isinstance(data, list) and all(
-            isinstance(x, aiosu.classes.Score) for x in data
+            isinstance(x, aiosu.models.Score) for x in data
         )
         await client.close()
 
@@ -123,7 +122,7 @@ class TestClient:
             mocker.patch("aiohttp.ClientSession.get", return_value=resp)
             data = await client.get_beatmap(user_query=7118575, mode=mode)
             assert isinstance(data, list) and all(
-                isinstance(x, aiosu.classes.Beatmapset) for x in data
+                isinstance(x, aiosu.models.Beatmapset) for x in data
             )
         await client.close()
 
@@ -139,7 +138,7 @@ class TestClient:
                 mode=mode,
             )
             assert isinstance(data, list) and all(
-                isinstance(x, aiosu.classes.Score) for x in data
+                isinstance(x, aiosu.models.Score) for x in data
             )
         await client.close()
 
@@ -150,7 +149,7 @@ class TestClient:
         mocker.patch("aiohttp.ClientSession.get", return_value=resp)
         data = await client.get_beatmap_scores(2095393, user_query=7782553)
         assert isinstance(data, list) and all(
-            isinstance(x, aiosu.classes.Score) for x in data
+            isinstance(x, aiosu.models.Score) for x in data
         )
         await client.close()
 
@@ -162,7 +161,7 @@ class TestClient:
             mocker.patch("aiohttp.ClientSession.get", return_value=resp)
             data = await client.get_beatmap_scores(2354779, mode=mode)
             assert isinstance(data, list) and all(
-                isinstance(x, aiosu.classes.Score) for x in data
+                isinstance(x, aiosu.models.Score) for x in data
             )
         await client.close()
 
@@ -173,7 +172,7 @@ class TestClient:
         mocker.patch("aiohttp.ClientSession.get", return_value=resp)
         data = await client.get_beatmap_scores(2095393)
         assert isinstance(data, list) and all(
-            isinstance(x, aiosu.classes.Score) for x in data
+            isinstance(x, aiosu.models.Score) for x in data
         )
         await client.close()
 
@@ -183,7 +182,7 @@ class TestClient:
         resp = MockResponse(match, 200)
         mocker.patch("aiohttp.ClientSession.get", return_value=resp)
         data = await client.get_match(105019274)
-        assert isinstance(data, aiosu.classes.legacy.Match)
+        assert isinstance(data, aiosu.models.legacy.Match)
         await client.close()
 
     @pytest.mark.asyncio
@@ -192,5 +191,5 @@ class TestClient:
         resp = MockResponse(replay, 200)
         mocker.patch("aiohttp.ClientSession.get", return_value=resp)
         data = await client.get_replay(beatmap_id=2271666, user_query=9703390)
-        assert isinstance(data, aiosu.classes.legacy.Replay)
+        assert isinstance(data, aiosu.models.legacy.Replay)
         await client.close()

@@ -5,14 +5,14 @@ import pytest
 import aiosu
 
 
-class SampleBaseModel(aiosu.classes.BaseModel):
+class SampleBaseModel(aiosu.models.BaseModel):
     simple: str
-    mods: aiosu.classes.Mods
+    mods: aiosu.models.Mods
 
 
-class SampleFrozenModel(aiosu.classes.FrozenModel):
+class SampleFrozenModel(aiosu.models.FrozenModel):
     simple: str
-    mods: aiosu.classes.Mods
+    mods: aiosu.models.Mods
 
 
 def test_base_model():

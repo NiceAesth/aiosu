@@ -16,7 +16,7 @@ def to_bytes(obj):
 
 @pytest.fixture
 def token():
-    token = aiosu.classes.OAuthToken(
+    token = aiosu.models.OAuthToken(
         refresh_token="hi",
         expires_on=datetime.utcnow() + timedelta(days=1),
     )
@@ -25,7 +25,7 @@ def token():
 
 @pytest.fixture
 def token_expired():
-    token = aiosu.classes.OAuthToken(
+    token = aiosu.models.OAuthToken(
         refresh_token="hi",
         expires_on=datetime.utcnow() - timedelta(days=1),
     )
