@@ -67,9 +67,9 @@ API v2 Example
 
 
     async def main():
-        token = aiosu.classes.OAuthToken.parse_obj(json_token_from_api)
+        token = aiosu.models.OAuthToken.parse_obj(json_token_from_api)
 
-        token = aiosu.classes.OAuthToken(
+        token = aiosu.models.OAuthToken(
             access_token="access token",
             refresh_token="refresh token",
             expires_on=datetime.datetime.utcnow()
@@ -85,7 +85,7 @@ API v2 Example
         # regular syntax
         client = aiosu.v2.Client(client_secret="secret", client_id=1000, token=token)
         user = await client.get_me()
-        client.close()
+        await client.close()
 
 
     if __name__ == "__main__":

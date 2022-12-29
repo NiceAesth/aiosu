@@ -53,7 +53,7 @@ Documentation for the API clients can be found below.
 
    clients/*/*
 
-Classes
+Models
 -------
 
 Documentation for `aiosu` types can be found below.
@@ -61,4 +61,14 @@ Documentation for `aiosu` types can be found below.
 .. toctree::
    :maxdepth: 1
 
-   classes/index.rst
+   models/index.rst
+
+Library Classes
+---------------
+
+Documentation for `aiosu` classes can be found below.
+
+.. toctree::
+   :maxdepth: 1
+
+   library/index.rst
