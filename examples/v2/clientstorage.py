@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import asyncio
-import datetime
+from datetime import datetime, timedelta
 
 import aiosu
 
@@ -10,8 +10,7 @@ async def main():
     token = aiosu.classes.OAuthToken(
         access_token="access token",
         refresh_token="refresh token",
-        expires_on=datetime.datetime.utcnow()
-        + datetime.timedelta(days=1),  # can also be string
+        expires_on=datetime.utcnow() + timedelta(days=1),  # can also be string
     )
 
     # async with syntax

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import datetime
+from datetime import datetime
 
 from .models import BaseModel
 from .user import User
@@ -12,5 +12,5 @@ class Background(BaseModel):
 
 
 class SeasonalBackgroundSet(BaseModel):
-    ends_at: datetime.datetime
+    ends_at: datetime
     backgrounds: list[Background]

@@ -3,7 +3,7 @@ This module contains models for Score objects.
 """
 from __future__ import annotations
 
-import datetime
+from datetime import datetime
 from typing import Optional
 from typing import TYPE_CHECKING
 
@@ -67,7 +67,7 @@ class Score(BaseModel):
     perfect: bool
     statistics: ScoreStatistics
     rank: str
-    created_at: datetime.datetime
+    created_at: datetime
     mode: Gamemode
     replay: bool
     id: Optional[int] = None

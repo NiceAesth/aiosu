@@ -3,7 +3,7 @@ This module contains models for User objects.
 """
 from __future__ import annotations
 
-import datetime
+from datetime import datetime
 from enum import Enum
 from typing import Any
 from typing import Optional
@@ -87,7 +87,7 @@ class UserProfileTournamentBanner(BaseModel):
 
 
 class UserBadge(BaseModel):
-    awarded_at: datetime.datetime
+    awarded_at: datetime
     description: str
     image_url: str
     url: str
@@ -97,7 +97,7 @@ class UserAccountHistory(BaseModel):
     id: int
     description: str
     length: int
-    timestamp: datetime.datetime
+    timestamp: datetime
     type: str
 
 
@@ -192,11 +192,11 @@ class User(BaseModel):
     pm_friends_only: Optional[bool]
     profile_colour: Optional[str]
     is_deleted: Optional[bool] = None
-    last_visit: Optional[datetime.datetime] = None
+    last_visit: Optional[datetime] = None
     discord: Optional[str] = None
     has_supported: Optional[bool] = None
     interests: Optional[str] = None
-    join_date: Optional[datetime.datetime] = None
+    join_date: Optional[datetime] = None
     kudosu: Optional[UserKudosu] = None
     location: Optional[str] = None
     max_blocks: Optional[int] = None

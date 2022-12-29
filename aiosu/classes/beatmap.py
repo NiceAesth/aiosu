@@ -3,7 +3,7 @@ This module contains models for Beatmap objects.
 """
 from __future__ import annotations
 
-import datetime
+from datetime import datetime
 from enum import Enum
 from typing import Optional
 from typing import TYPE_CHECKING
@@ -139,11 +139,11 @@ class Beatmap(BaseModel):
     count_circles: Optional[int] = None
     count_sliders: Optional[int] = None
     count_spinners: Optional[int] = None
-    deleted_at: Optional[datetime.datetime] = None
+    deleted_at: Optional[datetime] = None
     drain: Optional[float] = None
     hit_length: Optional[int] = None
     is_scoreable: Optional[bool] = None
-    last_updated: Optional[datetime.datetime] = None
+    last_updated: Optional[datetime] = None
     passcount: Optional[int] = None
     play_count: Optional[int] = Field(None, alias="playcount")
     checksum: Optional[str] = None
@@ -235,12 +235,12 @@ class Beatmapset(BaseModel):
     discussion_enabled: Optional[bool] = None
     discussion_locked: Optional[bool] = None
     is_scoreable: Optional[bool] = None
-    last_updated: Optional[datetime.datetime] = None
+    last_updated: Optional[datetime] = None
     legacy_thread_url: Optional[str] = None
     nominations_summary: Optional[BeatmapNominations] = None
-    ranked_date: Optional[datetime.datetime] = None
+    ranked_date: Optional[datetime] = None
     storyboard: Optional[bool] = None
-    submitted_date: Optional[datetime.datetime] = None
+    submitted_date: Optional[datetime] = None
     tags: Optional[str] = None
     ratings: Optional[list[int]] = None
     has_favourited: Optional[bool] = None

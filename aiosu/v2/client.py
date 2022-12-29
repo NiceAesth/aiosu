@@ -5,7 +5,7 @@ You can read more about it here: https://osu.ppy.sh/docs/index.html
 """
 from __future__ import annotations
 
-import datetime
+from datetime import datetime
 import functools
 from io import BytesIO
 from typing import TYPE_CHECKING
@@ -48,7 +48,7 @@ def check_token(func: Callable) -> Callable:
 
     @functools.wraps(func)
     async def _check_token(self: Client, *args: Any, **kwargs: Any) -> Any:
-        if datetime.datetime.now() > self.token.expires_on:
+        if datetime.utcnow() > self.token.expires_on:
             await self._refresh()
         return await func(self, *args, **kwargs)
 

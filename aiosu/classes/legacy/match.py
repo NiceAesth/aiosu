@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import datetime
+from datetime import datetime
 from enum import Enum
 from typing import Optional
 from typing import TYPE_CHECKING
@@ -79,7 +79,7 @@ class MatchGame(BaseModel):
     """Multiplayer game API object."""
 
     id: int = Field(alias="game_id")
-    start_time: datetime.datetime
+    start_time: datetime
     beatmap_id: int
     mode: Gamemode = Field(alias="play_mode")
     match_type: int
@@ -87,7 +87,7 @@ class MatchGame(BaseModel):
     team_type: MatchTeamType
     scores: list[MatchScore]
     mods: Mods
-    end_time: Optional[datetime.datetime]
+    end_time: Optional[datetime]
     """None if game was aborted."""
 
     @validator("mode", pre=True)
@@ -114,9 +114,9 @@ class Match(BaseModel):
 
     id: int = Field(alias="match_id")
     name: str
-    start_time: datetime.datetime
+    start_time: datetime
     games: list[MatchGame]
-    end_time: Optional[datetime.datetime]
+    end_time: Optional[datetime]
     """None if game is ongoing."""
 
     @root_validator(pre=True)

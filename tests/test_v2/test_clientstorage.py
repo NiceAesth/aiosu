@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import datetime
+from datetime import datetime, timedelta
 
 import orjson
 import pytest
@@ -13,7 +13,7 @@ from ..classes import MockResponse
 def token():
     token = aiosu.classes.OAuthToken(
         refresh_token="hi",
-        expires_on=datetime.datetime.utcnow() + datetime.timedelta(days=1),
+        expires_on=datetime.utcnow() + timedelta(days=1),
     )
     return token
 
