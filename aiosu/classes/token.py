@@ -3,7 +3,8 @@ This module contains models for API v2 token objects.
 """
 from __future__ import annotations
 
-from datetime import datetime, timedelta
+from datetime import datetime
+from datetime import timedelta
 from typing import TYPE_CHECKING
 
 from pydantic import root_validator

@@ -5,8 +5,8 @@ You can read more about it here: https://osu.ppy.sh/docs/index.html
 """
 from __future__ import annotations
 
-from datetime import datetime
 import functools
+from datetime import datetime
 from io import BytesIO
 from typing import TYPE_CHECKING
 
