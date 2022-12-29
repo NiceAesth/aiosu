@@ -24,6 +24,7 @@ from ..models import Beatmapset
 from ..models import Build
 from ..models import CommentBundle
 from ..models import Gamemode
+from ..models import KudosuHistory
 from ..models import Mods
 from ..models import NewsPost
 from ..models import OAuthToken
@@ -394,6 +395,34 @@ class Client(Eventable):
         }
         json = await self._request("GET", url, params=params)
         return from_list(User.parse_obj, json.get("users", []))
+
+    @check_token
+    async def get_user_kudosu(self, user_id: int, **kwargs: Any) -> list[KudosuHistory]:
+        r"""Get a user's kudosu history.
+
+        :param user_id: User ID to search by
+        :type user_id: int
+        :param \**kwargs:
+            See below
+
+        :Keyword Arguments:
+            * *limit* (``int``) --
+                Optional, number of scores to get
+            * *offset* (``int``) --
+                Optional, offset of the first score to get
+
+        :raises APIException: Contains status code and error message
+        :return: List of kudosu history objects
+        :rtype: list[aiosu.models.kudosu.KudosuHistory]
+        """
+        url = f"{self.base_url}/api/v2/users/{user_id}/kudosu"
+        params = {}
+        if "limit" in kwargs:
+            params["limit"] = kwargs.pop("limit")
+        if "offset" in kwargs:
+            params["offset"] = kwargs.pop("offset")
+        json = await self._request("GET", url, params=params)
+        return from_list(KudosuHistory.parse_obj, json)
 
     @check_token
     async def __get_type_scores(
