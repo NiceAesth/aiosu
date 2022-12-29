@@ -52,14 +52,14 @@ class AbstractPerformanceCalculator(abc.ABC):
 
 
 class OsuPerformanceCalculator(AbstractPerformanceCalculator):
-    """osu!std performance point calculator. Only compatible with scores from API v2.
+    r"""osu!std performance point calculator. Only compatible with scores from API v2.
 
     :param difficulty_attributes: API difficulty attributes for a beatmap
     :type difficulty_attributes: BeatmapDifficultyAttributes
     """
 
     def calculate(self, score: Score) -> OsuPerformanceAttributes:
-        """Calculates performance points for a score.
+        r"""Calculates performance points for a score.
 
         :param score: The score to calculate pp for
         :type score: aiosu.models.score.Score
@@ -379,14 +379,14 @@ class OsuPerformanceCalculator(AbstractPerformanceCalculator):
 
 
 class TaikoPerformanceCalculator(AbstractPerformanceCalculator):
-    """osu!taiko performance point calculator.
+    r"""osu!taiko performance point calculator.
 
     :param difficulty_attributes: API difficulty attributes for a beatmap
     :type difficulty_attributes: BeatmapDifficultyAttributes
     """
 
     def calculate(self, score: Score) -> TaikoPerformanceAttributes:
-        """Calculates performance points for a score
+        r"""Calculates performance points for a score
 
         :param score: The score to calculate pp for
         :type score: aiosu.models.score.Score
@@ -520,14 +520,14 @@ class TaikoPerformanceCalculator(AbstractPerformanceCalculator):
 
 
 class ManiaPerformanceCalculator(AbstractPerformanceCalculator):
-    """osu!mania performance point calculator.
+    r"""osu!mania performance point calculator.
 
     :param difficulty_attributes: API difficulty attributes for a beatmap
     :type difficulty_attributes: BeatmapDifficultyAttributes
     """
 
     def calculate(self, score: Score) -> ManiaPerformanceAttributes:
-        """Calculates performance points for a score.
+        r"""Calculates performance points for a score.
 
         :param score: The score to calculate pp for
         :type score: aiosu.models.score.Score
@@ -573,14 +573,14 @@ class ManiaPerformanceCalculator(AbstractPerformanceCalculator):
 
 
 class CatchPerformanceCalculator(AbstractPerformanceCalculator):
-    """osu!catch performance point calculator.
+    r"""osu!catch performance point calculator.
 
     :param difficulty_attributes: API difficulty attributes for a beatmap
     :type difficulty_attributes: BeatmapDifficultyAttributes
     """
 
     def calculate(self, score: Score) -> CatchPerformanceAttributes:
-        """Calculates performance points for a score.
+        r"""Calculates performance points for a score.
 
         :param score: The score to calculate pp for
         :type score: aiosu.models.score.Score

@@ -159,6 +159,24 @@ class TestClient:
         await client.close()
 
     @pytest.mark.asyncio
+    async def test_get_changelog_build(self, mocker, token, changelog):
+        client = aiosu.v2.Client(token=token)
+        resp = MockResponse(changelog, 200)
+        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
+        data = await client.get_changelog_build("lazer", "2022.1228.0")
+        assert isinstance(data, aiosu.models.Build)
+        await client.close()
+
+    @pytest.mark.asyncio
+    async def test_lookup_changelog_build(self, mocker, token, changelog):
+        client = aiosu.v2.Client(token=token)
+        resp = MockResponse(changelog, 200)
+        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
+        data = await client.lookup_changelog_build("lazer")
+        assert isinstance(data, aiosu.models.Build)
+        await client.close()
+
+    @pytest.mark.asyncio
     async def test_get_me(self, mocker, token, user):
         client = aiosu.v2.Client(token=token)
         for mode in modes:
