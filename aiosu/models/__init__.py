@@ -48,7 +48,7 @@ from .score import ScoreStatistics
 from .score import ScoreWeight
 from .search import SearchResponse
 from .search import SearchResult
-from .spotllight import Spotlight
+from .spotlight import Spotlight
 from .token import OAuthToken
 from .user import User
 from .user import UserAccountHistory
