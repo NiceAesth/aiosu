@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from io import StringIO
+
 import pytest
 
 import aiosu
@@ -53,6 +55,13 @@ def match():
 @pytest.fixture
 def replay():
     with open(f"tests/data/v1/replay.json", "rb") as f:
+        data = f.read()
+    return data
+
+
+@pytest.fixture
+def beatmap_osu():
+    with open(f"tests/data/beatmap.osu", "rb") as f:
         data = f.read()
     return data
 
@@ -192,4 +201,13 @@ class TestClient:
         mocker.patch("aiohttp.ClientSession.get", return_value=resp)
         data = await client.get_replay(beatmap_id=2271666, user_query=9703390)
         assert isinstance(data, aiosu.models.legacy.Replay)
+        await client.close()
+
+    @pytest.mark.asyncio
+    async def test_get_beatmap_osu(self, mocker, beatmap_osu):
+        client = aiosu.v1.Client("")
+        resp = MockResponse(beatmap_osu, 200, "text/plain")
+        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
+        data = await client.get_beatmap_osu(413428)
+        assert isinstance(data, StringIO)
         await client.close()

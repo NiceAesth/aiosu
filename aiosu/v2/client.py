@@ -188,7 +188,7 @@ class Client(Eventable):
                 if content_type == "application/octet-stream":
                     return BytesIO(body)
                 if content_type == "text/plain":
-                    return BytesIO(body)
+                    return body.decode()
                 raise APIException(415, "Unhandled Content Type")
 
     async def _refresh(self) -> None:
