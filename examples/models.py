@@ -11,7 +11,7 @@ dict_json = (
 # see: https://pydantic-docs.helpmanual.io/usage/models/#helper-functions
 new_model = aiosu.models.BaseModel.parse_obj(dict_model)  # dict to class
 new_model = aiosu.models.BaseModel.parse_raw(dict_json)  # json string to class
-new_model = aiosu.models.BaseModel.parse_file(path)  # file to class
+new_model = aiosu.models.BaseModel.parse_file("./path/to/file")  # file to class
 
 # models which are also supported in API v1 can be obtained with
 data = {}
