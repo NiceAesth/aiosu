@@ -95,6 +95,7 @@ class Client:
                     return BytesIO(body)
                 if content_type == "text/plain":
                     return BytesIO(body)
+                raise APIException(415, "Unhandled Content Type")
 
     async def get_user(self, user_query: Union[str, int], **kwargs: Any) -> User:
         r"""Gets a user by a query.
@@ -417,7 +418,7 @@ class Client:
         :rtype: BytesIO
         """
         url = f"{self.base_url}/osu/{beatmap_id}"
-        file = await self._request(url)
+        file = await self._request("GET", url)
         
         return file
 

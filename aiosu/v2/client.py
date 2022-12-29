@@ -187,6 +187,9 @@ class Client(Eventable):
                     return orjson.loads(body)
                 if content_type == "application/octet-stream":
                     return BytesIO(body)
+                if content_type == "text/plain":
+                    return BytesIO(body)
+                raise APIException(415, "Unhandled Content Type")
 
     async def _refresh(self) -> None:
         r"""INTERNAL: Refreshes the client's token
