@@ -153,6 +153,13 @@ def wiki_page():
 
 
 @pytest.fixture
+def comment_bundle():
+    with open("tests/data/v2/comment_bundle.json", "rb") as f:
+        data = f.read()
+    return data
+
+
+@pytest.fixture
 def difficulty_attributes():
     def _difficulty_attributes(mode="osu"):
         with open(f"tests/data/v2/difficulty_attributes_{mode}.json", "rb") as f:
@@ -206,6 +213,15 @@ class TestClient:
         mocker.patch("aiohttp.ClientSession.get", return_value=resp)
         data = await client.get_wiki_page("ro", "Welcome")
         assert isinstance(data, aiosu.models.WikiPage)
+        await client.close()
+
+    @pytest.mark.asyncio
+    async def test_get_comment(self, mocker, token, comment_bundle):
+        client = aiosu.v2.Client(token=token)
+        resp = MockResponse(comment_bundle, 200)
+        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
+        data = await client.get_comment(123)
+        assert isinstance(data, aiosu.models.CommentBundle)
         await client.close()
 
     @pytest.mark.asyncio
