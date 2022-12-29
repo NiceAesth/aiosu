@@ -10,7 +10,25 @@ import functools
 from io import BytesIO
 from typing import TYPE_CHECKING
 
+import aiohttp
 import orjson
+from aiolimiter import AsyncLimiter
+
+from .. import helpers
+from ..classes import APIException
+from ..classes import Beatmap
+from ..classes import BeatmapDifficultyAttributes
+from ..classes import Beatmapset
+from ..classes import Gamemode
+from ..classes import Mods
+from ..classes import OAuthToken
+from ..classes import Scopes
+from ..classes import Score
+from ..classes import SeasonalBackgroundSet
+from ..classes import User
+from ..classes import UserQueryType
+from ..classes.events import ClientUpdateEvent
+from ..classes.events import Eventable
 
 if TYPE_CHECKING:
     from types import TracebackType
@@ -20,23 +38,6 @@ if TYPE_CHECKING:
     from typing import Type
     from typing import Union
     from typing import Literal
-
-from ..classes import APIException
-from ..classes import Beatmap, Beatmapset
-from ..classes import Score
-from ..classes import SeasonalBackgroundSet
-from ..classes import Mods
-from ..classes import Gamemode
-from ..classes import UserQueryType
-from ..classes import BeatmapDifficultyAttributes
-from ..classes.events import ClientUpdateEvent
-from .. import helpers
-from ..classes import User
-from ..classes import Scopes
-import aiohttp
-from aiolimiter import AsyncLimiter
-from ..classes import OAuthToken
-from ..classes.events import Eventable
 
 
 def check_token(func: Callable) -> Callable:
