@@ -20,7 +20,7 @@ class Eventable(abc.ABC):
         self._listeners: dict[str, list[Callable]] = {}
 
     def _register_event(self, event: Type[BaseEvent]) -> None:
-        """Registers an event
+        r"""Registers an event
 
         :param event: Event type to register
         :type event: Type[BaseEvent]
@@ -28,7 +28,7 @@ class Eventable(abc.ABC):
         self._listeners[event._name] = []
 
     def _register_listener(self, func: Callable, event: Type[BaseEvent]) -> None:
-        """Registers an event listener
+        r"""Registers an event listener
 
         :param func: Function to call when event is emitted
         :type func: Callable
@@ -42,7 +42,7 @@ class Eventable(abc.ABC):
         self._listeners[event._name].append(func)
 
     async def _process_event(self, event: BaseEvent) -> None:
-        """Processes an event
+        r"""Processes an event
 
         :param event: Event to process
         :type event: BaseEvent

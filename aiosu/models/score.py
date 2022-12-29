@@ -140,7 +140,7 @@ class Score(BaseModel):
     @property
     def score_url(self) -> Optional[str]:
         # score.id has undefined behaviour, best_id is the one you should use as it returns None if the URL does not exist
-        """Link to the score.
+        r"""Link to the score.
 
         :return: Link to the score on the osu! website
         :rtype: Optional[str]
@@ -154,7 +154,7 @@ class Score(BaseModel):
     @property
     def replay_url(self) -> Optional[str]:
         # score.id has undefined behaviour, best_id is the one you should use as it returns None if the URL does not exist
-        """Link to the replay.
+        r"""Link to the replay.
 
         :return: Link to download the replay on the osu! website
         :rtype: Optional[str]
@@ -166,7 +166,7 @@ class Score(BaseModel):
         )
 
     async def request_beatmap(self, client: v1.Client) -> None:
-        """For v1 Scores: requests the beatmap from the API and sets it.
+        r"""For v1 Scores: requests the beatmap from the API and sets it.
 
         :param client: An API v1 Client
         :type client: aiosu.v1.client.Client

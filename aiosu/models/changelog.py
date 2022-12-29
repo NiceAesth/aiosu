@@ -41,8 +41,9 @@ class Version(BaseModel):
 
 class UpdateStream(BaseModel):
     id: int
-    display_name: str
     is_featured: bool
+    name: str
+    display_name: Optional[str]
     user_count: Optional[int]
     latest_build: Optional[Build]
 
@@ -55,7 +56,8 @@ class Build(BaseModel):
     version: str
     update_stream: Optional[UpdateStream]
     changelog_entries: Optional[list[ChangelogEntry]]
-    versions: Optional[list[Version]]
+    versions: Optional[Version]
 
 
 Version.update_forward_refs()
+UpdateStream.update_forward_refs()

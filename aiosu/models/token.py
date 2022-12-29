@@ -22,8 +22,9 @@ class OAuthToken(BaseModel):
     access_token: str = ""
     refresh_token: str = ""
     expires_on: datetime = datetime.utcfromtimestamp(0)
-    scopes: Scopes = Scopes.PUBLIC | Scopes.IDENTIFY
     """Can be a datetime.datetime object or a string. Alternatively, expires_in may be passed representing the number of seconds the token will be valid for."""
+    scopes: Scopes = Scopes.PUBLIC | Scopes.IDENTIFY
+    """Defaults to Scopes.PUBLIC | Scopes.IDENTIFY. If refresh_token is not passed, scopes will be set to Scopes.PUBLIC."""
 
     @root_validator(pre=True)
     def _set_expires_on(cls, values: dict[str, Any]) -> dict[str, Any]:
@@ -41,4 +42,5 @@ class OAuthToken(BaseModel):
 
     @property
     def can_refresh(self) -> bool:
+        """Returns True if the token can be refreshed."""
         return bool(self.refresh_token)

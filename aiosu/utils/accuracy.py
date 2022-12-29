@@ -32,7 +32,7 @@ class AbstractAccuracyCalculator(abc.ABC):
 class OsuAccuracyCalculator(AbstractAccuracyCalculator):
     @staticmethod
     def calculate(score: Score) -> float:
-        """Calculates accuracy for an osu!std score.
+        r"""Calculates accuracy for an osu!std score.
 
         :param score: The score to calculate accuracy for
         :type score: aiosu.models.score.Score
@@ -62,7 +62,7 @@ class OsuAccuracyCalculator(AbstractAccuracyCalculator):
 
     @staticmethod
     def calculate_weighted(score: Score) -> float:
-        """Calculates weighted accuracy for an osu!std score.
+        r"""Calculates weighted accuracy for an osu!std score.
 
         :param score: The score to calculate accuracy for
         :type score: aiosu.models.score.Score
@@ -106,7 +106,7 @@ class OsuAccuracyCalculator(AbstractAccuracyCalculator):
 class TaikoAccuracyCalculator(AbstractAccuracyCalculator):
     @staticmethod
     def calculate(score: Score) -> float:
-        """Calculates accuracy for an osu!taiko score.
+        r"""Calculates accuracy for an osu!taiko score.
 
         :param score: The score to calculate accuracy for
         :type score: aiosu.models.score.Score
@@ -130,7 +130,7 @@ class TaikoAccuracyCalculator(AbstractAccuracyCalculator):
 
     @classmethod
     def calculate_weighted(cls, score: Score) -> float:
-        """Calculates weighted accuracy for an osu!taiko score.
+        r"""Calculates weighted accuracy for an osu!taiko score.
 
         :param score: The score to calculate accuracy for
         :type score: aiosu.models.score.Score
@@ -143,7 +143,7 @@ class TaikoAccuracyCalculator(AbstractAccuracyCalculator):
 class ManiaAccuracyCalculator(AbstractAccuracyCalculator):
     @staticmethod
     def calculate(score: Score) -> float:
-        """Calculates accuracy for an osu!mania score.
+        r"""Calculates accuracy for an osu!mania score.
 
         :param score: The score to calculate accuracy for
         :type score: aiosu.models.score.Score
@@ -174,7 +174,7 @@ class ManiaAccuracyCalculator(AbstractAccuracyCalculator):
 
     @staticmethod
     def calculate_weighted(score: Score) -> float:
-        """Calculates weighted accuracy for an osu!mania score.
+        r"""Calculates weighted accuracy for an osu!mania score.
 
         :param score: The score to calculate accuracy for
         :type score: aiosu.models.score.Score
@@ -208,7 +208,7 @@ class ManiaAccuracyCalculator(AbstractAccuracyCalculator):
 class CatchAccuracyCalculator(AbstractAccuracyCalculator):
     @staticmethod
     def calculate(score: Score) -> float:
-        """Calculates accuracy for an osu!catch score.
+        r"""Calculates accuracy for an osu!catch score.
 
         :param score: The score to calculate accuracy for
         :type score: aiosu.models.score.Score
@@ -235,7 +235,7 @@ class CatchAccuracyCalculator(AbstractAccuracyCalculator):
 
     @classmethod
     def calculate_weighted(cls, score: Score) -> float:
-        """Calculates weighted accuracy for an osu!catch score.
+        r"""Calculates weighted accuracy for an osu!catch score.
 
         :param score: The score to calculate accuracy for
         :type score: aiosu.models.score.Score

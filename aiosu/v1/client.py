@@ -48,7 +48,7 @@ class Client:
 
     :Keyword Arguments:
         * *base_url* (``str``) --
-            Optional, base API URL, defaults to \"https://osu.ppy.sh\"
+            Optional, base API URL, defaults to "https://osu.ppy.sh"
         * *limiter* (``aiolimiter.AsyncLimiter``) --
             Optional, custom AsyncLimiter, defaults to AsyncLimiter(1200, 60)
     """
@@ -106,7 +106,7 @@ class Client:
             * *mode* (``aiosu.models.gamemode.Gamemode``) --
                 Optional, gamemode to search for, defaults to standard
             * *qtype* (``str``) --
-                Optional, \"string\" or \"id\". Type of the user_query
+                Optional, "string" or "id". Type of the user_query
             * *event_days* (``aiosu.models.gamemode.Gamemode``) --
                 Optional, max number of days since last event, Min: 1, Max: 31, defaults to 1
 
@@ -147,7 +147,7 @@ class Client:
             * *limit* (``int``) --
                 Optional, number of scores to get, defaults to 10
             * *qtype* (``str``) --
-                Optional, \"string\" or \"id\". Type of the user_query
+                Optional, "string" or "id". Type of the user_query
 
         :raises ValueError: If request_type is invalid
         :raises APIException: Contains status code and error message
@@ -189,7 +189,7 @@ class Client:
             * *limit* (``int``) --
                 Optional, number of scores to get, Min: 1, Max: 50, defaults to 50
             * *qtype* (``str``) --
-                Optional, \"string\" or \"id\". Type of the user_query
+                Optional, "string" or "id". Type of the user_query
 
         :raises ValueError: If limit is not between 1 and 50
         :raises APIException: Contains status code and error message
@@ -217,7 +217,7 @@ class Client:
             * *limit* (``int``) --
                 Optional, number of scores to get, Min: 1, Max: 100, defaults to 100
             * *qtype* (``str``) --
-                Optional, \"string\" or \"id\". Type of the user_query
+                Optional, "string" or "id". Type of the user_query
 
         :raises ValueError: If limit is not between 1 and 100
         :raises APIException: Contains status code and error message
@@ -255,7 +255,7 @@ class Client:
             * *user_query* (``Union[str, int]``) --
                 Optional, username or ID to search by
             * *qtype* (``str``) --
-                Optional, \"string\" or \"id\". Type of the user_query
+                Optional, "string" or "id". Type of the user_query
 
         :raises ValueError: If limit is not between 1 and 500
         :raises ValueError: If none of hash, since, user_query, beatmap_id or beatmapset_id specified.
@@ -313,7 +313,7 @@ class Client:
             * *user_query* (``Union[str, int]``) --
                 Optional, username or ID to search by
             * *qtype* (``str``) --
-                Optional, \"string\" or \"id\". Type of the user_query
+                Optional, "string" or "id". Type of the user_query
 
         :raises ValueError: If limit is not between 1 and 100
         :raises APIException: Contains status code and error message
@@ -377,7 +377,7 @@ class Client:
             * *user_query* (``Union[str, int]``) --
                 Optional, username or ID to search by, specified together with beatmap_id
             * *qtype* (``str``) --
-                Optional, \"string\" or \"id\". Type of the user_query
+                Optional, "string" or "id". Type of the user_query
 
         :raises ValueError: If neither score_id nor beatmap_id + user_id specified
         :raises APIException: Contains status code and error message

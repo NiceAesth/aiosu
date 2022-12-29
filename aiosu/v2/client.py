@@ -21,6 +21,7 @@ from ..helpers import from_list
 from ..models import Beatmap
 from ..models import BeatmapDifficultyAttributes
 from ..models import Beatmapset
+from ..models import Build
 from ..models import Gamemode
 from ..models import Mods
 from ..models import OAuthToken
@@ -87,7 +88,7 @@ class Client(Eventable):
         * *client_id* (``int``)
         * *client_secret* (``str``)
         * *base_url* (``str``) --
-            Optional, base API URL, defaults to \"https://osu.ppy.sh\"
+            Optional, base API URL, defaults to "https://osu.ppy.sh"
         * *token* (``aiosu.models.token.OAuthToken``)
         * *limiter* (``aiolimiter.AsyncLimiter``) --
             Optional, custom AsyncLimiter, defaults to AsyncLimiter(1200, 60)
@@ -180,7 +181,7 @@ class Client(Eventable):
                     return BytesIO(body)
 
     async def _refresh(self) -> None:
-        """INTERNAL: Refreshes the client's token
+        r"""INTERNAL: Refreshes the client's token
 
         :raises APIException: Contains status code and error message
         """
@@ -223,6 +224,47 @@ class Client(Eventable):
         json = await self._request("GET", url)
         return SeasonalBackgroundSet.parse_obj(json)
 
+    async def get_changelog_build(self, stream: str, build: str) -> Build:
+        r"""Gets a specific build from the changelog.
+
+        :param stream: The stream to get the build from
+        :param build: The build to get
+        :raises APIException: Contains status code and error message
+        :return: Build object
+        :rtype: aiosu.models.changelog.Build
+        """
+        url = f"{self.base_url}/api/v2/changelog/{stream}/{build}"
+        json = await self._request("GET", url)
+        return Build.parse_obj(json)
+
+    async def lookup_changelog_build(
+        self, changelog_query: str, **kwargs: Any
+    ) -> Build:
+        r"""Looks up a build from the changelog.
+
+        :param changelog_query: The query to search for
+        :param \**kwargs:
+            See below
+
+        :Keyword Arguments:
+            * *is_id* (``bool``) --
+                Optional, whether the query is an ID or not
+            * *message_formats* (``list[Literal["html", "markdown"]]``) --
+                Optional, message formats to get, defaults to ``["html", "markdown"]``
+
+        :raises APIException: Contains status code and error message
+        :return: Build object
+        :rtype: aiosu.models.changelog.Build
+        """
+        url = f"{self.base_url}/api/v2/changelog/{changelog_query}"
+        params = {
+            "message_formats": kwargs.pop("message_formats", ["html", "markdown"]),
+        }
+        if "is_id" in kwargs:
+            params["key"] = "id"
+        json = await self._request("GET", url, params=params)
+        return Build.parse_obj(json)
+
     @check_token
     @requires_scope(Scopes.IDENTIFY)
     async def get_me(self, **kwargs: Any) -> User:
@@ -259,7 +301,7 @@ class Client(Eventable):
             * *mode* (``aiosu.models.gamemode.Gamemode``) --
                 Optional, gamemode to search for
             * *qtype* (``str``) --
-                Optional, \"string\" or \"id\". Type of the user_query
+                Optional, "string" or "id". Type of the user_query
 
         :raises APIException: Contains status code and error message
         :return: Requested user
@@ -667,7 +709,7 @@ class Client(Eventable):
 
     @check_token
     async def revoke_token(self) -> None:
-        """Revokes the current token and closes the session.
+        r"""Revokes the current token and closes the session.
 
         :raises APIException: Contains status code and error message
         """

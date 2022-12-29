@@ -93,7 +93,7 @@ class Mods(UserList):
 
     @property
     def bitwise(self) -> int:
-        """Bitwise representation.
+        r"""Bitwise representation.
 
         :return: Bitwise representation of the mod combination
         :rtype: int
