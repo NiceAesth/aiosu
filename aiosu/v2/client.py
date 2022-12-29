@@ -22,6 +22,7 @@ from ..models import Beatmap
 from ..models import BeatmapDifficultyAttributes
 from ..models import Beatmapset
 from ..models import Build
+from ..models import CommentBundle
 from ..models import Gamemode
 from ..models import Mods
 from ..models import NewsPost
@@ -310,6 +311,19 @@ class Client(Eventable):
         url = f"{self.base_url}/api/v2/wiki/{locale}/{path}"
         json = await self._request("GET", url)
         return WikiPage.parse_obj(json)
+
+    async def get_comment(self, comment_id: int) -> CommentBundle:
+        r"""Gets a comment.
+
+        :param comment_id: The ID of the comment
+        :type comment_id: int
+        :raises APIException: Contains status code and error message
+        :return: Comment bundle object
+        :rtype: aiosu.models.comment.CommentBundle
+        """
+        url = f"{self.base_url}/api/v2/comments/{comment_id}"
+        json = await self._request("GET", url)
+        return CommentBundle.parse_obj(json)
 
     @check_token
     @requires_scope(Scopes.IDENTIFY)
