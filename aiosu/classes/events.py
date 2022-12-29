@@ -1,3 +1,6 @@
+"""
+This module contains base classes for library events.
+"""
 from __future__ import annotations
 
 import abc

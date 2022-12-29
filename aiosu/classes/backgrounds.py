@@ -1,3 +1,6 @@
+"""
+This module contains models for seasonal background objects.
+"""
 from __future__ import annotations
 
 from datetime import datetime

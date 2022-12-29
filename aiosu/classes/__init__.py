@@ -12,6 +12,11 @@ from .beatmap import BeatmapHype
 from .beatmap import BeatmapNominations
 from .beatmap import BeatmapRankStatus
 from .beatmap import Beatmapset
+from .changelog import Build
+from .changelog import ChangelogEntry
+from .changelog import GithubUser
+from .changelog import UpdateStream
+from .changelog import Version
 from .common import Achievement
 from .common import Country
 from .common import TimestampedCount
