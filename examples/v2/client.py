@@ -8,7 +8,7 @@ import aiosu
 
 
 async def main():
-    token = aiosu.classes.OAuthToken(
+    token = aiosu.models.OAuthToken(
         access_token="access token",
         refresh_token="refresh token",
         expires_on=datetime.utcnow() + timedelta(days=1),  # can also be string
@@ -25,7 +25,7 @@ async def main():
     # regular syntax
     client = aiosu.v2.Client(client_secret="secret", client_id=1000, token=token)
     user = await client.get_me()
-    client.close()
+    await client.close()
 
 
 if __name__ == "__main__":
