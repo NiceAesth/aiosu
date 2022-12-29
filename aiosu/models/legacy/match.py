@@ -50,7 +50,7 @@ class MatchScore(BaseModel):
     statistics: ScoreStatistics
 
     def get_full_mods(self, game: MatchGame) -> Mods:
-        """Get the mods including globals from the match.
+        r"""Get the mods including globals from the match.
 
         :param game: The match the score took place in
         :type game: MatchGame

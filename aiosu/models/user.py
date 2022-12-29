@@ -66,7 +66,7 @@ class UserRankHistoryElement(BaseModel):
 
     @property
     def average_gain(self) -> float:
-        """Average rank gain.
+        r"""Average rank gain.
 
         :return: Average rank gain for a user
         :rtype: float

@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 
 
 def from_list(f: Callable[[Any], T], x: Any) -> list[T]:
-    """Applies a function to all elements in a list.
+    r"""Applies a function to all elements in a list.
 
     :param f: Function to apply on list elements
     :type f: Callable[[Any], T]

@@ -31,7 +31,7 @@ class ClientStorage(Eventable):
         * *client_secret* (``str``)
         * *client_id* (``int``)
         * *base_url* (``str``) --
-            Optional, base API URL, defaults to \"https://osu.ppy.sh\"
+            Optional, base API URL, defaults to "https://osu.ppy.sh"
         * *create_app_client* (``bool``) --
             Optional, whether to automatically create guest clients, defaults to True
     """
