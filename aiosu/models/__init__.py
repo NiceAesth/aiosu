@@ -30,6 +30,10 @@ from .common import CurrentUserAttributes
 from .common import Cursor
 from .common import TimestampedCount
 from .gamemode import Gamemode
+from .kudosu import KudosuAction
+from .kudosu import KudosuGiver
+from .kudosu import KudosuHistory
+from .kudosu import KudosuPost
 from .mods import Mod
 from .mods import Mods
 from .news import NewsPost
