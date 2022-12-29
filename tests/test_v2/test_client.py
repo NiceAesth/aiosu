@@ -146,6 +146,13 @@ def news_post():
 
 
 @pytest.fixture
+def wiki_page():
+    with open("tests/data/v2/single_wiki_page.json", "rb") as f:
+        data = f.read()
+    return data
+
+
+@pytest.fixture
 def difficulty_attributes():
     def _difficulty_attributes(mode="osu"):
         with open(f"tests/data/v2/difficulty_attributes_{mode}.json", "rb") as f:
@@ -188,8 +195,17 @@ class TestClient:
         client = aiosu.v2.Client(token=token)
         resp = MockResponse(news_post, 200)
         mocker.patch("aiohttp.ClientSession.get", return_value=resp)
-        data = await client.get_news_post(1)
+        data = await client.get_news_post(943)
         assert isinstance(data, aiosu.models.NewsPost)
+        await client.close()
+
+    @pytest.mark.asyncio
+    async def test_get_wiki_page(self, mocker, token, wiki_page):
+        client = aiosu.v2.Client(token=token)
+        resp = MockResponse(wiki_page, 200)
+        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
+        data = await client.get_wiki_page("ro", "Welcome")
+        assert isinstance(data, aiosu.models.WikiPage)
         await client.close()
 
     @pytest.mark.asyncio

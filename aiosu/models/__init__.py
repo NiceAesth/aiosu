@@ -52,3 +52,4 @@ from .user import UserProfileTournamentBanner
 from .user import UserQueryType
 from .user import UserRankHistoryElement
 from .user import UserStats
+from .wiki import WikiPage

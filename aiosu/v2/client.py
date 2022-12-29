@@ -32,6 +32,7 @@ from ..models import SeasonalBackgroundSet
 from ..models import Spotlight
 from ..models import User
 from ..models import UserQueryType
+from ..models import WikiPage
 
 if TYPE_CHECKING:
     from types import TracebackType
@@ -294,6 +295,21 @@ class Client(Eventable):
             params["key"] = "id"
         json = await self._request("GET", url, params=params)
         return NewsPost.parse_obj(json)
+
+    async def get_wiki_page(self, locale: str, path: str) -> WikiPage:
+        r"""Gets a wiki page.
+
+        :param locale: The locale of the wiki page
+        :type locale: str
+        :param path: The path of the wiki page
+        :type path: str
+        :raises APIException: Contains status code and error message
+        :return: Wiki page object
+        :rtype: aiosu.models.wiki.WikiPage
+        """
+        url = f"{self.base_url}/api/v2/wiki/{locale}/{path}"
+        json = await self._request("GET", url)
+        return WikiPage.parse_obj(json)
 
     @check_token
     @requires_scope(Scopes.IDENTIFY)
