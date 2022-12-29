@@ -85,6 +85,13 @@ Wiki
     :members:
     :undoc-members:
 
+Kudosu
+------
+
+.. automodule:: aiosu.models.kudosu
+    :members:
+    :undoc-members:
+
 Comments
 --------
 

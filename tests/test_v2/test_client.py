@@ -160,6 +160,13 @@ def comment_bundle():
 
 
 @pytest.fixture
+def kudosu_history():
+    with open("tests/data/v2/kudosu_history.json", "rb") as f:
+        data = f.read()
+    return data
+
+
+@pytest.fixture
 def difficulty_attributes():
     def _difficulty_attributes(mode="osu"):
         with open(f"tests/data/v2/difficulty_attributes_{mode}.json", "rb") as f:
@@ -252,6 +259,17 @@ class TestClient:
         data = await client.get_users([7782553, 15118934])
         assert isinstance(data, list) and all(
             isinstance(x, aiosu.models.User) for x in data
+        )
+        await client.close()
+
+    @pytest.mark.asyncio
+    async def test_get_user_kudosu(self, mocker, token, kudosu_history):
+        client = aiosu.v2.Client(token=token)
+        resp = MockResponse(kudosu_history, 200)
+        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
+        data = await client.get_user_kudosu(7782553)
+        assert isinstance(data, list) and all(
+            isinstance(x, aiosu.models.KudosuHistory) for x in data
         )
         await client.close()
 
