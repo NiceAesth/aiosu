@@ -93,6 +93,8 @@ class Client:
                     return orjson.loads(body)
                 if content_type == "application/octet-stream":
                     return BytesIO(body)
+                if content_type == "text/plain":
+                    return BytesIO(body)
 
     async def get_user(self, user_query: Union[str, int], **kwargs: Any) -> User:
         r"""Gets a user by a query.
@@ -404,6 +406,20 @@ class Client:
             params["mode"] = str(mods)
         json = await self._request("GET", url, params=params)
         return Replay.parse_obj(json)
+
+    async def get_beatmap_osu(self, beatmap_id: int) -> BytesIO: 
+        r"""Returns the Buffer of the beatmap file requested.
+
+        :param beatmap_id: The ID of the beatmap
+        :type beatmap_id: int
+        
+        :return: File-like object of .osu data downloaded from the server.
+        :rtype: BytesIO
+        """
+        url = f"{self.base_url}/osu/{beatmap_id}"
+        file = await self._request(url)
+        
+        return file
 
     async def close(self) -> None:
         """Closes the client session."""
