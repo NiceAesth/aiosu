@@ -407,18 +407,18 @@ class Client:
         json = await self._request("GET", url, params=params)
         return Replay.parse_obj(json)
 
-    async def get_beatmap_osu(self, beatmap_id: int) -> BytesIO: 
+    async def get_beatmap_osu(self, beatmap_id: int) -> BytesIO:
         r"""Returns the Buffer of the beatmap file requested.
 
         :param beatmap_id: The ID of the beatmap
         :type beatmap_id: int
-        
+
         :return: File-like object of .osu data downloaded from the server.
         :rtype: BytesIO
         """
         url = f"{self.base_url}/osu/{beatmap_id}"
         file = await self._request(url)
-        
+
         return file
 
     async def close(self) -> None:
