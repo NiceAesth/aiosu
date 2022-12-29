@@ -64,6 +64,13 @@ Changelogs
     :members:
     :undoc-members:
 
+Spotlights
+----------
+
+.. automodule:: aiosu.models.spotlight
+    :members:
+    :undoc-members:
+
 OAuth Token
 -----------
 
