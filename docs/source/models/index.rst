@@ -92,6 +92,13 @@ Kudosu
     :members:
     :undoc-members:
 
+Search
+------
+
+.. automodule:: aiosu.models.search
+    :members:
+    :undoc-members:
+
 Comments
 --------
 

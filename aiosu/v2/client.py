@@ -30,6 +30,7 @@ from ..models import NewsPost
 from ..models import OAuthToken
 from ..models import Scopes
 from ..models import Score
+from ..models import SearchResponse
 from ..models import SeasonalBackgroundSet
 from ..models import Spotlight
 from ..models import User
@@ -325,6 +326,35 @@ class Client(Eventable):
         url = f"{self.base_url}/api/v2/comments/{comment_id}"
         json = await self._request("GET", url)
         return CommentBundle.parse_obj(json)
+
+    @check_token
+    async def search(self, query: str, **kwargs: Any) -> SearchResponse:
+        r"""Searches for a user, beatmap, beatmapset, or wiki page.
+
+        :param query: The query to search for
+        :type query: str
+        :param \**kwargs:
+            See below
+
+        :Keyword Arguments:
+            * *mode* (``Literal["all", "user", "wiki_page"]``) --
+                Optional, gamemode to search for
+            * *page* (``int``) --
+                Optional, page to get, ignored if mode is ``all``
+
+        :raises APIException: Contains status code and error message
+        :return: Search response object
+        :rtype: aiosu.models.search.SearchResponse
+        """
+        url = f"{self.base_url}/api/v2/search"
+        params = {
+            "query": query,
+            "mode": kwargs.pop("mode", "all"),
+        }
+        if "page" in kwargs:
+            params["page"] = kwargs.pop("page")
+        json = await self._request("GET", url, params=params)
+        return SearchResponse.parse_obj(json)
 
     @check_token
     @requires_scope(Scopes.IDENTIFY)
