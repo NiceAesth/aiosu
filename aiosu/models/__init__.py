@@ -27,6 +27,7 @@ from .common import TimestampedCount
 from .gamemode import Gamemode
 from .mods import Mod
 from .mods import Mods
+from .news import NewsPost
 from .performance import CatchPerformanceAttributes
 from .performance import ManiaPerformanceAttributes
 from .performance import OsuPerformanceAttributes
