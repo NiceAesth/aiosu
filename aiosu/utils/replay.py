@@ -12,6 +12,7 @@ from ..models import ReplayLifebarEvent
 from .binary import pack_byte
 from .binary import pack_int
 from .binary import pack_long
+from .binary import pack_replay_data
 from .binary import pack_short
 from .binary import pack_string
 from .binary import pack_timestamp
@@ -110,7 +111,7 @@ def write_replay(file: BinaryIO, replay: Replay) -> None:
     :param replay: The replay to write.
     :type replay: Replay
     """
-    pack_byte(file, replay.mode)
+    pack_byte(file, int(replay.mode))
     pack_int(file, replay.version)
     pack_string(file, replay.map_md5)
     pack_string(file, replay.player_name)
@@ -124,18 +125,15 @@ def write_replay(file: BinaryIO, replay: Replay) -> None:
     pack_int(file, replay.score)
     pack_short(file, replay.max_combo)
     pack_byte(file, replay.perfect_combo)
-    pack_int(file, replay.mods)
+    pack_int(file, int(replay.mods))
     pack_string(
         file,
         ",".join(
-            [
-                f"{event.time}|{event.x}|{event.y}|{event.keys}"
-                for event in replay.lifebar_data
-            ],
+            [f"{event.time}|{event.hp}" for event in replay.lifebar_data],
         ),
     )
     pack_timestamp(file, replay.played_at)
-    pack_string(
+    pack_replay_data(
         file,
         ",".join(
             [

@@ -10,38 +10,82 @@ from typing import BinaryIO
 
 
 def unpack(file: BinaryIO, fmt: str) -> int:
-    """Unpack a value from a file."""
+    """Unpack a value from a file.
+
+    :param file: The file to unpack from.
+    :type file: BinaryIO
+    :param fmt: The format to unpack.
+    :type fmt: str
+    :return: The unpacked value.
+    :rtype: int
+    """
     return struct.unpack(fmt, file.read(struct.calcsize(fmt)))[0]
 
 
 def unpack_byte(file: BinaryIO) -> int:
-    """Unpack a byte from a file."""
+    """Unpack a byte from a file.
+
+    :param file: The file to unpack from.
+    :type file: BinaryIO
+    :return: The unpacked byte.
+    :rtype: int
+    """
     return unpack(file, "<b")
 
 
 def unpack_short(file: BinaryIO) -> int:
-    """Unpack a short from a file."""
+    """Unpack a short from a file.
+
+    :param file: The file to unpack from.
+    :type file: BinaryIO
+    :return: The unpacked short.
+    :rtype: int
+    """
     return unpack(file, "<h")
 
 
 def unpack_int(file: BinaryIO) -> int:
-    """Unpack an integer from a file."""
+    """Unpack an integer from a file.
+
+    :param file: The file to unpack from.
+    :type file: BinaryIO
+    :return: The unpacked integer.
+    :rtype: int
+    """
     return unpack(file, "<i")
 
 
 def unpack_long(file: BinaryIO) -> int:
-    """Unpack a long from a file."""
+    """Unpack a long from a file.
+
+    :param file: The file to unpack from.
+    :type file: BinaryIO
+    :return: The unpacked long.
+    :rtype: int
+    """
     return unpack(file, "q")
 
 
 def unpack_timestamp(file: BinaryIO) -> datetime:
-    """Unpack a timestamp from a file."""
+    """Unpack a timestamp from a file.
+
+    :param file: The file to unpack from.
+    :type file: BinaryIO
+    :return: The unpacked timestamp.
+    :rtype: datetime
+    """
     seconds = unpack_long(file) / 10000000 - 62135596800
-    return datetime.utcfromtimestamp(seconds)
+    return datetime.fromtimestamp(seconds)
 
 
 def unpack_uleb128(file: BinaryIO) -> int:
-    """Unpack a ULEB128 from a file."""
+    """Unpack a ULEB128 from a file.
+
+    :param file: The file to unpack from.
+    :type file: BinaryIO
+    :return: The unpacked ULEB128.
+    :rtype: int
+    """
     result = 0
     shift = 0
     while True:
@@ -54,7 +98,13 @@ def unpack_uleb128(file: BinaryIO) -> int:
 
 
 def unpack_string(file: BinaryIO) -> str:
-    """Unpack a string from a file."""
+    """Unpack a string from a file.
+
+    :param file: The file to unpack from.
+    :type file: BinaryIO
+    :return: The unpacked string.
+    :rtype: str
+    """
     fb = file.read(1)
     if fb == b"\x00":
         return ""
@@ -141,8 +191,8 @@ def pack_timestamp(file: BinaryIO, value: datetime) -> None:
     :param value: The value to pack.
     :type value: datetime
     """
-    seconds = int(value.timestamp()) + 62135596800
-    pack_long(file, seconds * 10000000)
+    seconds = (value.timestamp() + 62135596800) * 10000000
+    pack_long(file, int(seconds))
 
 
 def pack_uleb128(file: BinaryIO, value: int) -> None:
@@ -171,6 +221,7 @@ def pack_string(file: BinaryIO, value: str) -> None:
     :param value: The value to pack.
     :type value: str
     """
+    pack_byte(file, 11)
     if not value:
         file.write(b"\x00")
         return
