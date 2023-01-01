@@ -3,7 +3,7 @@ from __future__ import annotations
 from ..base import BaseModel
 
 
-class Replay(BaseModel):
+class ReplayCompact(BaseModel):
     """Replay API object."""
 
     content: str  # test

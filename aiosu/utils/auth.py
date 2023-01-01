@@ -15,6 +15,7 @@ async def process_code(
     client_secret: str,
     redirect_uri: str,
     code: str,
+    base_url: str = "https://osu.ppy.sh",
 ) -> OAuthToken:
     r"""Creates an OAuth Token from an authorization code.
 
@@ -26,10 +27,12 @@ async def process_code(
     :type redirect_uri: str
     :param code: Code returned from the API
     :type code: str
+    :param base_url: The base URL of the API, defaults to "https://osu.ppy.sh"
+    :type base_url: Optional[str]
     :return: The OAuth token
     :rtype: aiosu.models.token.OAuthToken
     """
-    url = "https://osu.ppy.sh/oauth/token"
+    url = f"{base_url}/oauth/token"
     headers = {"Content-Type": "application/x-www-form-urlencoded"}
     data = {
         "client_id": client_id,

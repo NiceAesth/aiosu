@@ -200,7 +200,7 @@ class TestClient:
         resp = MockResponse(replay, 200)
         mocker.patch("aiohttp.ClientSession.get", return_value=resp)
         data = await client.get_replay(beatmap_id=2271666, user_query=9703390)
-        assert isinstance(data, aiosu.models.legacy.Replay)
+        assert isinstance(data, aiosu.models.legacy.ReplayCompact)
         await client.close()
 
     @pytest.mark.asyncio

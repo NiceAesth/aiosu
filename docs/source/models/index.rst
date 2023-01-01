@@ -36,6 +36,13 @@ Score
     :members:
     :undoc-members:
 
+Replay
+------
+
+.. automodule:: aiosu.models.replay
+    :members:
+    :undoc-members:
+
 Mods
 ----
 

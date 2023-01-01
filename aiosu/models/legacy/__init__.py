@@ -6,4 +6,4 @@ from .match import MatchScore
 from .match import MatchScoringType
 from .match import MatchTeam
 from .match import MatchTeamType
-from .replay import Replay
+from .replay import ReplayCompact

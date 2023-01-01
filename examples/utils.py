@@ -11,3 +11,8 @@ accuracy_weighted: float = acc_calc.calculate_weighted(score)
 
 pp_calc = aiosu.utils.performance.OsuPerformanceCalculator(diff_atribs)
 pp_atribs: aiosu.models.OsuPerformanceAttributes = pp_calc.calculate(score)
+
+replay: aiosu.models.Replay = aiosu.utils.replay.parse_path("./replay.osr")
+
+with open("./replay.osr", "rb") as f:
+    replay: aiosu.models.Replay = aiosu.utils.replay.parse_file(f)

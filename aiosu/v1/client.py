@@ -22,7 +22,7 @@ from ..models import Score
 from ..models import User
 from ..models import UserQueryType
 from ..models.legacy import Match
-from ..models.legacy import Replay
+from ..models.legacy import ReplayCompact
 
 if TYPE_CHECKING:
     from types import TracebackType
@@ -363,7 +363,7 @@ class Client:
         json = await self._request("GET", url, params=params)
         return Match.parse_obj(json)
 
-    async def get_replay(self, **kwargs: Any) -> Replay:
+    async def get_replay(self, **kwargs: Any) -> ReplayCompact:
         r"""Gets data for a replay.
 
         :param \**kwargs:
@@ -407,7 +407,7 @@ class Client:
             mods = Mods(kwargs.pop("mods"))
             params["mode"] = str(mods)
         json = await self._request("GET", url, params=params)
-        return Replay.parse_obj(json)
+        return ReplayCompact.parse_obj(json)
 
     async def get_beatmap_osu(self, beatmap_id: int) -> StringIO:
         r"""Returns the Buffer of the beatmap file requested.
