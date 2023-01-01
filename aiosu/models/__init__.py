@@ -46,6 +46,10 @@ from .performance import ManiaPerformanceAttributes
 from .performance import OsuPerformanceAttributes
 from .performance import PerformanceAttributes
 from .performance import TaikoPerformanceAttributes
+from .replay import Replay
+from .replay import ReplayEvent
+from .replay import ReplayKey
+from .replay import ReplayLifebarEvent
 from .scopes import Scopes
 from .score import Score
 from .score import ScoreStatistics
