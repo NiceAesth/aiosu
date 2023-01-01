@@ -1,6 +1,18 @@
 Utilities
 =========
 
+Authorization
+-------------
+.. automodule:: aiosu.utils.auth
+    :members:
+    :undoc-members:
+
+Replay
+------
+.. automodule:: aiosu.utils.replay
+    :members:
+    :undoc-members:
+
 Accuracy
 --------
 .. automodule:: aiosu.utils.accuracy
@@ -13,8 +25,8 @@ Performance
     :members:
     :undoc-members:
 
-Authorization
--------------
-.. automodule:: aiosu.utils.auth
+Binary
+------
+.. automodule:: aiosu.utils.binary
     :members:
     :undoc-members:
