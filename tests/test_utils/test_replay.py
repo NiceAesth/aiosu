@@ -24,3 +24,15 @@ def test_parse_replay(replay_file):
         data = BytesIO(replay_file(mode))
         replay = aiosu.utils.replay.parse_file(data)
         assert isinstance(replay, aiosu.models.Replay)
+
+
+def test_write_replay(replay_file):
+    for mode in modes:
+        data = BytesIO(replay_file(mode))
+        replay = aiosu.utils.replay.parse_file(data)
+        rf = BytesIO()
+        aiosu.utils.replay.write_replay(rf, replay)
+        rf.seek(0)
+        new_replay = aiosu.utils.replay.parse_file(rf)
+        for attr in replay.__fields__:
+            assert getattr(replay, attr) == getattr(new_replay, attr)
