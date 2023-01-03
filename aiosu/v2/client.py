@@ -98,8 +98,8 @@ class Client(Eventable):
         * *base_url* (``str``) --
             Optional, base API URL, defaults to "https://osu.ppy.sh"
         * *token* (``aiosu.models.token.OAuthToken``)
-        * *limiter* (``aiolimiter.AsyncLimiter``) --
-            Optional, custom AsyncLimiter, defaults to AsyncLimiter(1200, 60)
+        * *limiter* (``tuple[int, int]``) --
+            Optional, rate limit, defaults to (600, 60) (600 requests per minute)
     """
 
     def __init__(self, **kwargs: Any) -> None:
@@ -109,7 +109,12 @@ class Client(Eventable):
         self.client_secret: str = kwargs.pop("client_secret", None)
         self.token: OAuthToken = kwargs.pop("token", OAuthToken())
         self.base_url: str = kwargs.pop("base_url", "https://osu.ppy.sh")
-        self._limiter: AsyncLimiter = kwargs.pop("limiter", AsyncLimiter(1200, 60))
+        self._limiter: AsyncLimiter = AsyncLimiter(
+            *kwargs.pop(
+                "limiter",
+                (600, 60),
+            )
+        )
         self._session: aiohttp.ClientSession = None  # type: ignore
 
     async def __aenter__(self) -> Client:
@@ -207,18 +212,21 @@ class Client(Eventable):
             data = self._refresh_guest_data()
 
         async with aiohttp.ClientSession(headers=headers) as temp_session:
-            async with temp_session.post(url, data=data) as resp:
-                try:
-                    body = await resp.read()
-                    json = orjson.loads(body)
-                    if resp.status != 200:
-                        raise APIException(resp.status, json.get("error", ""))
-                    if self._session:
-                        await self._session.close()
-                    self.token = OAuthToken.parse_obj(json)
-                    self._session = aiohttp.ClientSession(headers=self._get_headers())
-                except aiohttp.client_exceptions.ContentTypeError:
-                    raise APIException(403, "Invalid token specified.")
+            async with self._limiter:
+                async with temp_session.post(url, data=data) as resp:
+                    try:
+                        body = await resp.read()
+                        json = orjson.loads(body)
+                        if resp.status != 200:
+                            raise APIException(resp.status, json.get("error", ""))
+                        if self._session:
+                            await self._session.close()
+                        self.token = OAuthToken.parse_obj(json)
+                        self._session = aiohttp.ClientSession(
+                            headers=self._get_headers(),
+                        )
+                    except aiohttp.client_exceptions.ContentTypeError:
+                        raise APIException(403, "Invalid token specified.")
 
         await self._process_event(
             ClientUpdateEvent(client=self, old_token=old_token, new_token=self.token),

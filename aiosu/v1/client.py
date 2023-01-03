@@ -50,14 +50,19 @@ class Client:
     :Keyword Arguments:
         * *base_url* (``str``) --
             Optional, base API URL, defaults to "https://osu.ppy.sh"
-        * *limiter* (``aiolimiter.AsyncLimiter``) --
-            Optional, custom AsyncLimiter, defaults to AsyncLimiter(1200, 60)
+        * *limiter* (``tuple[int, int]``) --
+            Optional, rate limit, defaults to (600, 60) (600 requests per minute)
     """
 
     def __init__(self, token: str, **kwargs: Any) -> None:
         self.token: str = token
         self.base_url: str = kwargs.pop("base_url", "https://osu.ppy.sh")
-        self._limiter: AsyncLimiter = kwargs.pop("limiter", AsyncLimiter(1200, 60))
+        self._limiter: AsyncLimiter = AsyncLimiter(
+            *kwargs.pop(
+                "limiter",
+                (600, 60),
+            )
+        )
         self._session: aiohttp.ClientSession = None  # type: ignore
 
     async def __aenter__(self) -> Client:
