@@ -6,10 +6,12 @@ from __future__ import annotations
 from typing import Any
 from typing import BinaryIO
 
+from ..models import Mod
 from ..models import Replay
 from ..models import ReplayEvent
 from ..models import ReplayLifebarEvent
 from .binary import pack_byte
+from .binary import pack_float64
 from .binary import pack_int
 from .binary import pack_long
 from .binary import pack_replay_data
@@ -17,6 +19,7 @@ from .binary import pack_short
 from .binary import pack_string
 from .binary import pack_timestamp
 from .binary import unpack_byte
+from .binary import unpack_float64
 from .binary import unpack_int
 from .binary import unpack_long
 from .binary import unpack_replay_data
@@ -88,6 +91,8 @@ def parse_file(file: BinaryIO) -> Replay:
         replay["online_id"] = unpack_long(file)
     elif replay["version"] >= 20121008:
         replay["online_id"] = unpack_int(file)
+    if Mod.Target & replay["mods"]:
+        replay["mod_extras"] = unpack_float64(file)
     return Replay(**replay)
 
 
@@ -142,10 +147,12 @@ def write_replay(file: BinaryIO, replay: Replay) -> None:
             ],
         ),
     )
-    if replay.version >= 20140721:
+    if replay.version >= 2014_07_21:
         pack_long(file, replay.online_id)
-    elif replay.version >= 20121008:
+    elif replay.version >= 2012_10_08:
         pack_int(file, replay.online_id)
+    if replay.mod_extras is not None:
+        pack_float64(file, replay.mod_extras)
 
 
 def write_path(path: str, replay: Replay) -> None:

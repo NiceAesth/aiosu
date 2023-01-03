@@ -6,7 +6,11 @@ from __future__ import annotations
 import lzma
 import struct
 from datetime import datetime
-from typing import BinaryIO
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from typing import Any
+    from typing import BinaryIO
 
 
 def unpack(file: BinaryIO, fmt: str) -> int:
@@ -64,6 +68,39 @@ def unpack_long(file: BinaryIO) -> int:
     :rtype: int
     """
     return unpack(file, "q")
+
+
+def unpack_float16(file: BinaryIO) -> float:
+    """Unpack a float16 from a file.
+
+    :param file: The file to unpack from.
+    :type file: BinaryIO
+    :return: The unpacked float16.
+    :rtype: float
+    """
+    return unpack(file, "e")
+
+
+def unpack_float32(file: BinaryIO) -> float:
+    """Unpack a float32 from a file.
+
+    :param file: The file to unpack from.
+    :type file: BinaryIO
+    :return: The unpacked float32.
+    :rtype: float
+    """
+    return unpack(file, "f")
+
+
+def unpack_float64(file: BinaryIO) -> float:
+    """Unpack a float64 from a file.
+
+    :param file: The file to unpack from.
+    :type file: BinaryIO
+    :return: The unpacked float64.
+    :rtype: float
+    """
+    return unpack(file, "d")
 
 
 def unpack_timestamp(file: BinaryIO) -> datetime:
@@ -126,7 +163,7 @@ def unpack_replay_data(file: BinaryIO) -> str:
     return data.decode("ascii")
 
 
-def pack(file: BinaryIO, fmt: str, value: int) -> None:
+def pack(file: BinaryIO, fmt: str, value: Any) -> None:
     """Pack a value into a file.
 
     :param file: The file to pack into.
@@ -134,7 +171,7 @@ def pack(file: BinaryIO, fmt: str, value: int) -> None:
     :param fmt: The format to pack with.
     :type fmt: str
     :param value: The value to pack.
-    :type value: int
+    :type value: Any
     """
     file.write(struct.pack(fmt, value))
 
@@ -181,6 +218,39 @@ def pack_long(file: BinaryIO, value: int) -> None:
     :type value: int
     """
     pack(file, "q", value)
+
+
+def pack_float16(file: BinaryIO, value: float) -> None:
+    """Pack a float16 into a file.
+
+    :param file: The file to pack into.
+    :type file: BinaryIO
+    :param value: The value to pack.
+    :type value: float
+    """
+    pack(file, "e", value)
+
+
+def pack_float32(file: BinaryIO, value: float) -> None:
+    """Pack a float32 into a file.
+
+    :param file: The file to pack into.
+    :type file: BinaryIO
+    :param value: The value to pack.
+    :type value: float
+    """
+    pack(file, "f", value)
+
+
+def pack_float64(file: BinaryIO, value: float) -> None:
+    """Pack a float64 into a file.
+
+    :param file: The file to pack into.
+    :type file: BinaryIO
+    :param value: The value to pack.
+    :type value: float
+    """
+    pack(file, "d", value)
 
 
 def pack_timestamp(file: BinaryIO, value: datetime) -> None:
