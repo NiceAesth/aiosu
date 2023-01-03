@@ -12,6 +12,8 @@ if TYPE_CHECKING:
     from typing import Any
     from typing import BinaryIO
 
+_lzma_format = lzma.FORMAT_ALONE
+
 
 def unpack(file: BinaryIO, fmt: str) -> int:
     """Unpack a value from a file.
@@ -78,7 +80,7 @@ def unpack_float16(file: BinaryIO) -> float:
     :return: The unpacked float16.
     :rtype: float
     """
-    return unpack(file, "e")
+    return unpack(file, "<e")
 
 
 def unpack_float32(file: BinaryIO) -> float:
@@ -89,7 +91,7 @@ def unpack_float32(file: BinaryIO) -> float:
     :return: The unpacked float32.
     :rtype: float
     """
-    return unpack(file, "f")
+    return unpack(file, "<f")
 
 
 def unpack_float64(file: BinaryIO) -> float:
@@ -100,7 +102,7 @@ def unpack_float64(file: BinaryIO) -> float:
     :return: The unpacked float64.
     :rtype: float
     """
-    return unpack(file, "d")
+    return unpack(file, "<d")
 
 
 def unpack_timestamp(file: BinaryIO) -> datetime:
@@ -217,7 +219,7 @@ def pack_long(file: BinaryIO, value: int) -> None:
     :param value: The value to pack.
     :type value: int
     """
-    pack(file, "q", value)
+    pack(file, "<q", value)
 
 
 def pack_float16(file: BinaryIO, value: float) -> None:
@@ -228,7 +230,7 @@ def pack_float16(file: BinaryIO, value: float) -> None:
     :param value: The value to pack.
     :type value: float
     """
-    pack(file, "e", value)
+    pack(file, "<e", value)
 
 
 def pack_float32(file: BinaryIO, value: float) -> None:
@@ -239,7 +241,7 @@ def pack_float32(file: BinaryIO, value: float) -> None:
     :param value: The value to pack.
     :type value: float
     """
-    pack(file, "f", value)
+    pack(file, "<f", value)
 
 
 def pack_float64(file: BinaryIO, value: float) -> None:
@@ -250,7 +252,7 @@ def pack_float64(file: BinaryIO, value: float) -> None:
     :param value: The value to pack.
     :type value: float
     """
-    pack(file, "d", value)
+    pack(file, "<d", value)
 
 
 def pack_timestamp(file: BinaryIO, value: datetime) -> None:
@@ -308,6 +310,6 @@ def pack_replay_data(file: BinaryIO, data: str) -> None:
     :type data: str
     """
     encoded_data = data.encode("ascii")
-    compressed = lzma.compress(encoded_data)
+    compressed = lzma.compress(encoded_data, format=_lzma_format)
     pack_int(file, len(compressed))
     file.write(compressed)
