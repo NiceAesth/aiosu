@@ -5,11 +5,32 @@ from __future__ import annotations
 
 from datetime import datetime
 from enum import IntFlag
+from typing import Any
+from typing import Optional
+
+from pydantic import root_validator
 
 from .base import BaseModel
 from .gamemode import Gamemode
+from .mods import Mod
 from .mods import Mods
 from .score import ScoreStatistics
+
+
+def _parse_skip_offset(events: list[ReplayEvent], mods: Mods) -> int:
+    """Parse the skip offset from a list of replay events."""
+    if len(events) < 2:
+        return 0
+    if Mod.Autoplay in mods:
+        return events[1].time - 100000
+    return events[1].time
+
+
+def _parse_rng_seed(events: list[ReplayEvent]) -> int:
+    """Parse the RNG seed from a list of replay events."""
+    if len(events) < 2:
+        return 0
+    return int(events[-1].keys)
 
 
 class ReplayKey(IntFlag):
@@ -68,9 +89,27 @@ class Replay(BaseModel):
     statistics: ScoreStatistics
     replay_data: list[ReplayEvent]
     lifebar_data: list[ReplayLifebarEvent]
+    mod_extras: Optional[float]
+    skip_offset: Optional[int]
+    rng_seed: Optional[int]
 
     def __repr__(self) -> str:
         return f"<Replay {self.player_name} {self.map_md5}>"
 
     def __str__(self) -> str:
         return f"{self.player_name} {self.played_at} {self.map_md5} +{self.mods}"
+
+    @root_validator
+    def add_skip_offset(cls, values: dict[str, Any]) -> dict[str, Any]:
+        if not values["skip_offset"]:
+            values["skip_offset"] = _parse_skip_offset(
+                values["replay_data"],
+                values["mods"],
+            )
+        return values
+
+    @root_validator
+    def add_rng_seed(cls, values: dict[str, Any]) -> dict[str, Any]:
+        if not values["rng_seed"] and values["version"] >= 2013_03_19:
+            values["rng_seed"] = _parse_rng_seed(values["replay_data"])
+        return values
