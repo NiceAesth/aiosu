@@ -35,6 +35,9 @@ if TYPE_CHECKING:
     from typing import Callable
 
 
+__all__ = ("Client",)
+
+
 def _beatmap_score_conv(data: Any, mode: Gamemode, beatmap_id: int) -> Score:
     data["beatmap_id"] = beatmap_id
     return Score._from_api_v1(data, mode)

@@ -16,6 +16,13 @@ from .mods import Mod
 from .mods import Mods
 from .score import ScoreStatistics
 
+__all__ = (
+    "Replay",
+    "ReplayKey",
+    "ReplayLifebarEvent",
+    "ReplayEvent",
+)
+
 
 def _parse_skip_offset(events: list[ReplayEvent], mods: Mods) -> int:
     """Parse the skip offset from a list of replay events."""

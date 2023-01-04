@@ -10,6 +10,11 @@ from .base import BaseModel
 from .user import User
 from .wiki import WikiPage
 
+__all__ = (
+    "SearchResult",
+    "SearchResponse",
+)
+
 
 class SearchResult(BaseModel):
     data: list[Union[User, WikiPage]]

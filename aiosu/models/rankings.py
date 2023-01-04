@@ -12,6 +12,12 @@ from .common import Cursor
 from .spotlight import Spotlight
 from .user import UserStats
 
+
+__all__ = (
+    "RankingType",
+    "Rankings",
+)
+
 RankingType = Literal["performance", "score", "country", "charts"]
 
 

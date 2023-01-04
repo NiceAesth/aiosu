@@ -17,6 +17,15 @@ from ..score import ScoreStatistics
 if TYPE_CHECKING:
     from typing import Any
 
+__all__ = (
+    "MatchTeam",
+    "MatchScoringType",
+    "MatchTeamType",
+    "MatchScore",
+    "MatchGame",
+    "Match",
+)
+
 
 class MatchTeam(Enum):
     NONE = 0

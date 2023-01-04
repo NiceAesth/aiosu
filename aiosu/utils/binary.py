@@ -14,9 +14,38 @@ if TYPE_CHECKING:
 
 _lzma_format = lzma.FORMAT_ALONE
 
+__all__ = (
+    "pack",
+    "pack_byte",
+    "pack_short",
+    "pack_int",
+    "pack_long",
+    "pack_uleb128",
+    "pack_string",
+    "pack_timestamp",
+    "pack_bool",
+    "pack_float16",
+    "pack_float32",
+    "pack_float64",
+    "pack_replay_data",
+    "unpack",
+    "unpack_byte",
+    "unpack_short",
+    "unpack_int",
+    "unpack_long",
+    "unpack_uleb128",
+    "unpack_string",
+    "unpack_timestamp",
+    "unpack_bool",
+    "unpack_float16",
+    "unpack_float32",
+    "unpack_float64",
+    "unpack_replay_data",
+)
+
 
 def unpack(file: BinaryIO, fmt: str) -> int:
-    """Unpack a value from a file.
+    r"""Unpack a value from a file.
 
     :param file: The file to unpack from.
     :type file: BinaryIO
@@ -29,7 +58,7 @@ def unpack(file: BinaryIO, fmt: str) -> int:
 
 
 def unpack_byte(file: BinaryIO) -> int:
-    """Unpack a byte from a file.
+    r"""Unpack a byte from a file.
 
     :param file: The file to unpack from.
     :type file: BinaryIO
@@ -40,7 +69,7 @@ def unpack_byte(file: BinaryIO) -> int:
 
 
 def unpack_short(file: BinaryIO) -> int:
-    """Unpack a short from a file.
+    r"""Unpack a short from a file.
 
     :param file: The file to unpack from.
     :type file: BinaryIO
@@ -51,7 +80,7 @@ def unpack_short(file: BinaryIO) -> int:
 
 
 def unpack_int(file: BinaryIO) -> int:
-    """Unpack an integer from a file.
+    r"""Unpack an integer from a file.
 
     :param file: The file to unpack from.
     :type file: BinaryIO
@@ -62,7 +91,7 @@ def unpack_int(file: BinaryIO) -> int:
 
 
 def unpack_long(file: BinaryIO) -> int:
-    """Unpack a long from a file.
+    r"""Unpack a long from a file.
 
     :param file: The file to unpack from.
     :type file: BinaryIO
@@ -73,7 +102,7 @@ def unpack_long(file: BinaryIO) -> int:
 
 
 def unpack_float16(file: BinaryIO) -> float:
-    """Unpack a float16 from a file.
+    r"""Unpack a float16 from a file.
 
     :param file: The file to unpack from.
     :type file: BinaryIO
@@ -84,7 +113,7 @@ def unpack_float16(file: BinaryIO) -> float:
 
 
 def unpack_float32(file: BinaryIO) -> float:
-    """Unpack a float32 from a file.
+    r"""Unpack a float32 from a file.
 
     :param file: The file to unpack from.
     :type file: BinaryIO
@@ -95,7 +124,7 @@ def unpack_float32(file: BinaryIO) -> float:
 
 
 def unpack_float64(file: BinaryIO) -> float:
-    """Unpack a float64 from a file.
+    r"""Unpack a float64 from a file.
 
     :param file: The file to unpack from.
     :type file: BinaryIO
@@ -106,7 +135,7 @@ def unpack_float64(file: BinaryIO) -> float:
 
 
 def unpack_timestamp(file: BinaryIO) -> datetime:
-    """Unpack a timestamp from a file.
+    r"""Unpack a timestamp from a file.
 
     :param file: The file to unpack from.
     :type file: BinaryIO
@@ -118,7 +147,7 @@ def unpack_timestamp(file: BinaryIO) -> datetime:
 
 
 def unpack_uleb128(file: BinaryIO) -> int:
-    """Unpack a ULEB128 from a file.
+    r"""Unpack a ULEB128 from a file.
 
     :param file: The file to unpack from.
     :type file: BinaryIO
@@ -137,7 +166,7 @@ def unpack_uleb128(file: BinaryIO) -> int:
 
 
 def unpack_string(file: BinaryIO) -> str:
-    """Unpack a string from a file.
+    r"""Unpack a string from a file.
 
     :param file: The file to unpack from.
     :type file: BinaryIO
@@ -152,7 +181,7 @@ def unpack_string(file: BinaryIO) -> str:
 
 
 def unpack_replay_data(file: BinaryIO) -> str:
-    """Unpack the replay data from a file.
+    r"""Unpack the replay data from a file.
 
     :param file: The file to unpack from.
     :type file: BinaryIO
@@ -166,7 +195,7 @@ def unpack_replay_data(file: BinaryIO) -> str:
 
 
 def pack(file: BinaryIO, fmt: str, value: Any) -> None:
-    """Pack a value into a file.
+    r"""Pack a value into a file.
 
     :param file: The file to pack into.
     :type file: BinaryIO
@@ -179,7 +208,7 @@ def pack(file: BinaryIO, fmt: str, value: Any) -> None:
 
 
 def pack_byte(file: BinaryIO, value: int) -> None:
-    """Pack a byte into a file.
+    r"""Pack a byte into a file.
 
     :param file: The file to pack into.
     :type file: BinaryIO
@@ -190,7 +219,7 @@ def pack_byte(file: BinaryIO, value: int) -> None:
 
 
 def pack_short(file: BinaryIO, value: int) -> None:
-    """Pack a short into a file.
+    r"""Pack a short into a file.
 
     :param file: The file to pack into.
     :type file: BinaryIO
@@ -201,7 +230,7 @@ def pack_short(file: BinaryIO, value: int) -> None:
 
 
 def pack_int(file: BinaryIO, value: int) -> None:
-    """Pack an integer into a file.
+    r"""Pack an integer into a file.
 
     :param file: The file to pack into.
     :type file: BinaryIO
@@ -212,7 +241,7 @@ def pack_int(file: BinaryIO, value: int) -> None:
 
 
 def pack_long(file: BinaryIO, value: int) -> None:
-    """Pack a long into a file.
+    r"""Pack a long into a file.
 
     :param file: The file to pack into.
     :type file: BinaryIO
@@ -223,7 +252,7 @@ def pack_long(file: BinaryIO, value: int) -> None:
 
 
 def pack_float16(file: BinaryIO, value: float) -> None:
-    """Pack a float16 into a file.
+    r"""Pack a float16 into a file.
 
     :param file: The file to pack into.
     :type file: BinaryIO
@@ -234,7 +263,7 @@ def pack_float16(file: BinaryIO, value: float) -> None:
 
 
 def pack_float32(file: BinaryIO, value: float) -> None:
-    """Pack a float32 into a file.
+    r"""Pack a float32 into a file.
 
     :param file: The file to pack into.
     :type file: BinaryIO
@@ -245,7 +274,7 @@ def pack_float32(file: BinaryIO, value: float) -> None:
 
 
 def pack_float64(file: BinaryIO, value: float) -> None:
-    """Pack a float64 into a file.
+    r"""Pack a float64 into a file.
 
     :param file: The file to pack into.
     :type file: BinaryIO
@@ -256,7 +285,7 @@ def pack_float64(file: BinaryIO, value: float) -> None:
 
 
 def pack_timestamp(file: BinaryIO, value: datetime) -> None:
-    """Pack a timestamp into a file.
+    r"""Pack a timestamp into a file.
 
     :param file: The file to pack into.
     :type file: BinaryIO
@@ -268,7 +297,7 @@ def pack_timestamp(file: BinaryIO, value: datetime) -> None:
 
 
 def pack_uleb128(file: BinaryIO, value: int) -> None:
-    """Pack a ULEB128 into a file.
+    r"""Pack a ULEB128 into a file.
 
     :param file: The file to pack into.
     :type file: BinaryIO
@@ -286,7 +315,7 @@ def pack_uleb128(file: BinaryIO, value: int) -> None:
 
 
 def pack_string(file: BinaryIO, value: str) -> None:
-    """Pack a string into a file.
+    r"""Pack a string into a file.
 
     :param file: The file to pack into.
     :type file: BinaryIO
@@ -302,7 +331,7 @@ def pack_string(file: BinaryIO, value: str) -> None:
 
 
 def pack_replay_data(file: BinaryIO, data: str) -> None:
-    """Pack the replay data into a file.
+    r"""Pack the replay data into a file.
 
     :param file: The file to pack into.
     :type file: BinaryIO

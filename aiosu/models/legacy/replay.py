@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from ..base import BaseModel
 
+__all__ = ("ReplayCompact",)
+
 
 class ReplayCompact(BaseModel):
     """Replay API object."""

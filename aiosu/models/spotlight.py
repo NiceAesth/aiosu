@@ -8,6 +8,8 @@ from typing import Optional
 
 from .base import BaseModel
 
+__all__ = ("Spotlight",)
+
 
 class Spotlight(BaseModel):
     id: int

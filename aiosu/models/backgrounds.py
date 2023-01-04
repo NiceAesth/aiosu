@@ -8,6 +8,11 @@ from datetime import datetime
 from .base import BaseModel
 from .user import User
 
+__all__ = (
+    "Background",
+    "SeasonalBackgroundSet",
+)
+
 
 class Background(BaseModel):
     url: str

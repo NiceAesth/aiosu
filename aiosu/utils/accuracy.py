@@ -7,7 +7,7 @@ import abc
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from ..models import Score
+    from ..models.score import Score
 
 __all__ = [
     "OsuAccuracyCalculator",

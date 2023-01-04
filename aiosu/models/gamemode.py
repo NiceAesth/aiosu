@@ -5,6 +5,8 @@ from __future__ import annotations
 
 from enum import Enum
 
+__all__ = ("Gamemode",)
+
 
 class Gamemode(Enum):
     STANDARD = (0, "https://i.imgur.com/lT2nqls.png", "Standard", "STD", "osu")

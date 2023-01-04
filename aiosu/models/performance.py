@@ -7,6 +7,14 @@ import abc
 
 from .base import BaseModel
 
+__all__ = (
+    "PerformanceAttributes",
+    "OsuPerformanceAttributes",
+    "TaikoPerformanceAttributes",
+    "ManiaPerformanceAttributes",
+    "CatchPerformanceAttributes",
+)
+
 
 class PerformanceAttributes(BaseModel, abc.ABC):
     total: float

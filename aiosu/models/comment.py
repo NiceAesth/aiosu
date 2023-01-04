@@ -11,6 +11,12 @@ from .common import CurrentUserAttributes
 from .common import Cursor
 from .user import User
 
+__all__ = (
+    "Commentable",
+    "Comment",
+    "CommentBundle",
+)
+
 
 class Commentable(BaseModel):
     id: Optional[int]

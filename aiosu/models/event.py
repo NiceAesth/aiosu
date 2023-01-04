@@ -18,6 +18,14 @@ from .gamemode import Gamemode
 if TYPE_CHECKING:
     from typing import Any
 
+__all__ = (
+    "Event",
+    "EventBeatmap",
+    "EventBeatmapset",
+    "EventUser",
+    "EventType",
+)
+
 
 class EventBeatmap(BaseModel):
     title: str

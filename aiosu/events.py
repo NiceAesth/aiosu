@@ -12,6 +12,13 @@ if TYPE_CHECKING:
     from typing import Callable
     from .models import OAuthToken
 
+__all__ = (
+    "Eventable",
+    "BaseEvent",
+    "ClientAddEvent",
+    "ClientUpdateEvent",
+)
+
 
 class Eventable(abc.ABC):
     """Abstract for classes that handle events"""
