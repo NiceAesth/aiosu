@@ -9,6 +9,15 @@ from typing import Optional
 from .base import BaseModel
 
 
+__all__ = (
+    "Build",
+    "ChangelogEntry",
+    "GithubUser",
+    "UpdateStream",
+    "Version",
+)
+
+
 class GithubUser(BaseModel):
     display_name: str
     github_url: Optional[str]

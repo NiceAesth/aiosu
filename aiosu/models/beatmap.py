@@ -18,6 +18,25 @@ from .gamemode import Gamemode
 if TYPE_CHECKING:
     from typing import Any
 
+__all__ = (
+    "Beatmap",
+    "BeatmapAvailability",
+    "BeatmapCovers",
+    "BeatmapDifficultyAttributes",
+    "BeatmapFailtimes",
+    "BeatmapHype",
+    "BeatmapNominations",
+    "BeatmapRankStatus",
+    "Beatmapset",
+    "BeatmapsetDiscussion",
+    "BeatmapsetDiscussionPost",
+    "BeatmapsetDisscussionType",
+    "BeatmapsetEvent",
+    "BeatmapsetEventComment",
+    "BeatmapsetEventType",
+    "BeatmapsetVoteEvent",
+)
+
 
 class BeatmapRankStatus(Enum):
     GRAVEYARD = (-2, "graveyard")

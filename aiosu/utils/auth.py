@@ -13,6 +13,11 @@ from ..exceptions import APIException
 from ..models import OAuthToken
 from ..models import Scopes
 
+__all__ = (
+    "get_authorization_url",
+    "process_code",
+)
+
 
 async def process_code(
     client_id: int,
@@ -37,7 +42,7 @@ async def process_code(
     :param scopes: The scopes to request, defaults to Scopes.PUBLIC | Scopes.IDENTIFY
     :type scopes: Optional[Scopes]
     :return: The OAuth token
-    :rtype: aiosu.models.token.OAuthToken
+    :rtype: aiosu.models.oauthtoken.OAuthToken
     """
     url = f"{base_url}/oauth/token"
     headers = {"Content-Type": "application/x-www-form-urlencoded"}

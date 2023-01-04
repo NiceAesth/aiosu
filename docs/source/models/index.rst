@@ -130,7 +130,7 @@ API Events
 OAuth Token
 -----------
 
-.. automodule:: aiosu.models.token
+.. automodule:: aiosu.models.oauthtoken
     :members:
     :undoc-members:
 

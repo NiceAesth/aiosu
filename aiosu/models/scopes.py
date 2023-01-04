@@ -6,6 +6,8 @@ from __future__ import annotations
 from enum import IntFlag
 from enum import unique
 
+__all__ = ("Scopes",)
+
 
 @unique
 class Scopes(IntFlag):

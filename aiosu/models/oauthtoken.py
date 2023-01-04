@@ -15,6 +15,8 @@ from .scopes import Scopes
 if TYPE_CHECKING:
     from typing import Any
 
+__all__ = ("OAuthToken",)
+
 
 class OAuthToken(BaseModel):
     token_type: str = "Bearer"

@@ -20,6 +20,24 @@ from .gamemode import Gamemode
 if TYPE_CHECKING:
     from typing import Callable
 
+__all__ = (
+    "User",
+    "UserAccountHistory",
+    "UserBadge",
+    "UserBeatmapPlaycount",
+    "UserGradeCounts",
+    "UserGroup",
+    "UserKudosu",
+    "UserLevel",
+    "Userpage",
+    "UserProfileCover",
+    "UserProfileTournamentBanner",
+    "UserQueryType",
+    "UserRankHistoryElement",
+    "UserStats",
+)
+
+
 cast_int: Callable[..., int] = lambda x: int(x or 0)
 cast_float: Callable[..., float] = lambda x: float(x or 0)
 

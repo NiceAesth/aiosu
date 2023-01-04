@@ -8,6 +8,9 @@ from typing import Optional
 from .base import BaseModel
 
 
+__all__ = ("WikiPage",)
+
+
 class WikiPage(BaseModel):
     title: str
     path: str

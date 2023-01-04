@@ -51,6 +51,8 @@ if TYPE_CHECKING:
     from typing import Type
     from typing import Union
 
+__all__ = ("Client",)
+
 
 def check_token(func: Callable) -> Callable:
     """
@@ -104,7 +106,7 @@ class Client(Eventable):
             Optional, base API URL, defaults to "https://osu.ppy.sh"
         * *scopes* (``aiosu.models.Scopes``) --
             Optional, defaults to ``Scopes.PUBLIC | Scopes.IDENTIFY``
-        * *token* (``aiosu.models.token.OAuthToken``) --
+        * *token* (``aiosu.models.oauthtoken.OAuthToken``) --
             Optional, defaults to client credentials if not provided
         * *limiter* (``tuple[int, int]``) --
             Optional, rate limit, defaults to (600, 60) (600 requests per minute)

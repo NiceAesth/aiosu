@@ -21,6 +21,8 @@ if TYPE_CHECKING:
     from typing import Type
     from typing import Union
 
+__all__ = ("ClientStorage",)
+
 
 class ClientStorage(Eventable):
     r"""OAuth sessions manager.
@@ -138,7 +140,7 @@ class ClientStorage(Eventable):
         r"""Adds a client to storage.
 
         :param token: Token object for the client
-        :type token: aiosu.models.token.OAuthToken
+        :type token: aiosu.models.oauthtoken.OAuthToken
         :param \**kwargs:
             See below
 
@@ -173,7 +175,7 @@ class ClientStorage(Eventable):
         :Keyword Arguments:
             * *id* (``int``) --
                 Optional, the ID of the client, defaults to None
-            * *token* (``aiosu.models.token.OAuthToken``) --
+            * *token* (``aiosu.models.oauthtoken.OAuthToken``) --
                 Optional, token of client to add, defaults to None
 
         :raises ValueError: If neither id nor token are specified

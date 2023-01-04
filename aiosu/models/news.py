@@ -9,6 +9,12 @@ from typing import Optional
 from .base import BaseModel
 
 
+__all__ = (
+    "NewsPost",
+    "Navigation",
+)
+
+
 class Navigation(BaseModel):
     newer: Optional[NewsPost]
     older: Optional[NewsPost]

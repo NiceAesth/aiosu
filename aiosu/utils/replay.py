@@ -28,6 +28,14 @@ from .binary import unpack_string
 from .binary import unpack_timestamp
 
 
+__all__ = (
+    "parse_file",
+    "parse_path",
+    "write_replay",
+    "write_path",
+)
+
+
 def _parse_replay_data(data: str) -> list[ReplayEvent]:
     """Parse replay event data and return a list of replay events."""
     events: list[ReplayEvent] = []

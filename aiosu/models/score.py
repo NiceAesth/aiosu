@@ -22,6 +22,12 @@ if TYPE_CHECKING:
     from typing import Any
     from .. import v1
 
+__all__ = (
+    "Score",
+    "ScoreStatistics",
+    "ScoreWeight",
+)
+
 accuracy_calculators = {
     "osu": OsuAccuracyCalculator(),
     "mania": ManiaAccuracyCalculator(),

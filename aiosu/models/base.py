@@ -13,6 +13,11 @@ from .mods import Mods
 if TYPE_CHECKING:
     from typing import Any
 
+__all__ = (
+    "BaseModel",
+    "FrozenModel",
+)
+
 
 def orjson_dumps(v: object, *, default: Any) -> str:
     # orjson.dumps returns bytes, to match standard json.dumps we need to decode

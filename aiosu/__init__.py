@@ -6,6 +6,7 @@ from importlib import metadata
 from . import events
 from . import exceptions
 from . import helpers
+from . import models
 from . import utils
 from . import v1
 from . import v2

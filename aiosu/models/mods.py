@@ -15,6 +15,11 @@ if TYPE_CHECKING:
     from typing import Any
     from typing import Union
 
+__all__ = (
+    "Mod",
+    "Mods",
+)
+
 _mod_short_names = {
     "NoMod": "NM",
     "NoFail": "NF",
