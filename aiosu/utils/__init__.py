@@ -1,3 +1,6 @@
+"""
+This module contains a collection of utility functions.
+"""
 from __future__ import annotations
 
 from . import accuracy
