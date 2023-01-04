@@ -93,11 +93,16 @@ class Client(Eventable):
         See below
 
     :Keyword Arguments:
-        * *client_id* (``int``)
-        * *client_secret* (``str``)
+        * *client_id* (``int``) --
+            Optional, required for client credentials
+        * *client_secret* (``str``) --
+            Optional, required for client credentials
         * *base_url* (``str``) --
             Optional, base API URL, defaults to "https://osu.ppy.sh"
-        * *token* (``aiosu.models.token.OAuthToken``)
+        * *scopes* (``aiosu.models.Scopes``) --
+            Optional, defaults to ``Scopes.PUBLIC | Scopes.IDENTIFY``
+        * *token* (``aiosu.models.token.OAuthToken``) --
+            Optional, defaults to client credentials if not provided
         * *limiter* (``tuple[int, int]``) --
             Optional, rate limit, defaults to (600, 60) (600 requests per minute)
     """
@@ -107,7 +112,8 @@ class Client(Eventable):
         self._register_event(ClientUpdateEvent)
         self.client_id: int = kwargs.pop("client_id", None)
         self.client_secret: str = kwargs.pop("client_secret", None)
-        self.token: OAuthToken = kwargs.pop("token", OAuthToken())
+        self.scopes: Scopes = kwargs.pop("scopes", Scopes.PUBLIC | Scopes.IDENTIFY)
+        self.token: OAuthToken = kwargs.pop("token", OAuthToken(scopes=self.scopes))
         self.base_url: str = kwargs.pop("base_url", "https://osu.ppy.sh")
         self._limiter: AsyncLimiter = AsyncLimiter(
             *kwargs.pop(
@@ -156,7 +162,7 @@ class Client(Eventable):
             "client_id": self.client_id,
             "client_secret": self.client_secret,
             "grant_type": "client_credentials",
-            "scope": "public",
+            "scope": str(self.scopes),
         }
 
     def _refresh_auth_data(self) -> dict[str, Union[str, int]]:
@@ -222,6 +228,7 @@ class Client(Eventable):
                         if self._session:
                             await self._session.close()
                         self.token = OAuthToken.parse_obj(json)
+                        self.token.scopes = self.scopes
                         self._session = aiohttp.ClientSession(
                             headers=self._get_headers(),
                         )
