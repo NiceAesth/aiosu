@@ -18,6 +18,7 @@ from aiolimiter import AsyncLimiter
 from ..events import ClientUpdateEvent
 from ..events import Eventable
 from ..exceptions import APIException
+from ..helpers import add_param
 from ..helpers import from_list
 from ..models import Beatmap
 from ..models import BeatmapDifficultyAttributes
@@ -284,7 +285,7 @@ class Client(Eventable):
         :rtype: aiosu.models.changelog.Build
         """
         url = f"{self.base_url}/api/v2/changelog/{changelog_query}"
-        params = {
+        params: dict[str, Any] = {
             "message_formats": kwargs.pop("message_formats", ["html", "markdown"]),
         }
         if "is_id" in kwargs or isinstance(changelog_query, int):
@@ -311,7 +312,7 @@ class Client(Eventable):
         :rtype: aiosu.models.news.NewsPost
         """
         url = f"{self.base_url}/api/v2/news/{news_query}"
-        params = {
+        params: dict[str, Any] = {
             "message_formats": kwargs.pop("message_formats", ["html", "markdown"]),
         }
         if "is_id" in kwargs or isinstance(news_query, int):
@@ -358,7 +359,7 @@ class Client(Eventable):
 
         :Keyword Arguments:
             * *mode* (``Literal["all", "user", "wiki_page"]``) --
-                Optional, gamemode to search for
+                Optional, gamemode to search for, defaults to ``all``
             * *page* (``int``) --
                 Optional, page to get, ignored if mode is ``all``
 
@@ -367,12 +368,11 @@ class Client(Eventable):
         :rtype: aiosu.models.search.SearchResponse
         """
         url = f"{self.base_url}/api/v2/search"
-        params = {
+        params: dict[str, Any] = {
             "query": query,
             "mode": kwargs.pop("mode", "all"),
         }
-        if "page" in kwargs:
-            params["page"] = kwargs.pop("page")
+        add_param(params, kwargs, key="page")
         json = await self._request("GET", url, params=params)
         return SearchResponse.parse_obj(json)
 
@@ -432,13 +432,17 @@ class Client(Eventable):
         :rtype: aiosu.models.user.User
         """
         url = f"{self.base_url}/api/v2/users/{user_query}"
-        params = {}
+        params: dict[str, Any] = {}
         if "mode" in kwargs:
             mode = Gamemode(kwargs.pop("mode"))  # type: ignore
             url += f"/{mode}"
-        if "qtype" in kwargs:
-            qtype = UserQueryType(kwargs.pop("qtype"))  # type: ignore
-            params["type"] = qtype.new_api_name
+        add_param(
+            params,
+            kwargs,
+            key="qtype",
+            param_name="type",
+            converter=lambda x: UserQueryType(x).new_api_name,  # type: ignore
+        )
         json = await self._request("GET", url, params=params)
         return User.parse_obj(json)
 
@@ -453,7 +457,7 @@ class Client(Eventable):
         :rtype: list[aiosu.models.user.User]
         """
         url = f"{self.base_url}/api/v2/users"
-        params = {
+        params: dict[str, Any] = {
             "ids": user_ids,
         }
         json = await self._request("GET", url, params=params)
@@ -479,11 +483,9 @@ class Client(Eventable):
         :rtype: list[aiosu.models.kudosu.KudosuHistory]
         """
         url = f"{self.base_url}/api/v2/users/{user_id}/kudosu"
-        params = {}
-        if "limit" in kwargs:
-            params["limit"] = kwargs.pop("limit")
-        if "offset" in kwargs:
-            params["offset"] = kwargs.pop("offset")
+        params: dict[str, Any] = {}
+        add_param(params, kwargs, key="limit")
+        add_param(params, kwargs, key="offset")
         json = await self._request("GET", url, params=params)
         return from_list(KudosuHistory.parse_obj, json)
 
@@ -501,14 +503,14 @@ class Client(Eventable):
             See below
 
         :Keyword Arguments:
-            * *mode* (``aiosu.models.gamemode.Gamemode``) --
-                Optional, gamemode to search for
             * *limit* (``int``) --
                 Optional, number of scores to get. Min: 1, Max: 100, defaults to 100
-            * *include_fails* (``bool``) --
-                Optional, whether to include failed scores, defaults to ``False``
             * *offset* (``int``) --
                 Optional, page offset to start from, defaults to 0
+            * *mode* (``aiosu.models.gamemode.Gamemode``) --
+                Optional, gamemode to search for
+            * *include_fails* (``bool``) --
+                Optional, whether to include failed scores, defaults to ``False``
 
         :raises ValueError: If limit is not between 1 and 100
         :raises ValueError: If type is invalid
@@ -523,16 +525,12 @@ class Client(Eventable):
                 f'"{request_type}" is not a valid request_type. Valid options are: "recent", "best", "firsts"',
             )
         url = f"{self.base_url}/api/v2/users/{user_id}/scores/{request_type}"
-        params = {
+        params: dict[str, Any] = {
             "include_fails": kwargs.pop("include_fails", False),
-            "offset": kwargs.pop("offset", 0),
             "limit": kwargs.pop("limit", 100),
+            "offset": kwargs.pop("offset", 0),
         }
-        if "mode" in kwargs:
-            mode = Gamemode(kwargs.pop("mode"))  # type: ignore
-            params["mode"] = str(mode)
-        if "limit" in kwargs:
-            params["limit"] = kwargs.pop("limit")
+        add_param(params, kwargs, key="mode", converter=lambda x: str(Gamemode(x)))  # type: ignore
         json = await self._request("GET", url, params=params)
         return from_list(Score.parse_obj, json)
 
@@ -630,10 +628,8 @@ class Client(Eventable):
         :rtype: list[aiosu.models.score.Score]
         """
         url = f"{self.base_url}/api/v2/beatmaps/{beatmap_id}/scores/users/{user_id}/all"
-        params = {}
-        if "mode" in kwargs:
-            mode = Gamemode(kwargs.pop("mode"))  # type: ignore
-            params["mode"] = str(mode)
+        params: dict[str, Any] = {}
+        add_param(params, kwargs, key="mode", converter=lambda x: str(Gamemode(x)))  # type: ignore
         json = await self._request("GET", url, params=params)
         return from_list(Score.parse_obj, json.get("scores", []))
 
@@ -653,21 +649,19 @@ class Client(Eventable):
             See below
 
         :Keyword Arguments:
-            * *offset* (``int``) --
-                Optional, offset of the first beatmap to get
             * *limit* (``int``) --
                 Optional, number of beatmaps to get
+            * *offset* (``int``) --
+                Optional, offset of the first beatmap to get
 
         :raises APIException: Contains status code and error message
         :return: List of requested beatmaps
         :rtype: list[aiosu.models.beatmap.Beatmap]
         """
         url = f"{self.base_url}/api/v2/users/{user_id}/beatmapsets/{type}"
-        params = {}
-        if "offset" in kwargs:
-            params["offset"] = kwargs.pop("offset")
-        if "limit" in kwargs:
-            params["limit"] = kwargs.pop("limit")
+        params: dict[str, Any] = {}
+        add_param(params, kwargs, key="limit")
+        add_param(params, kwargs, key="offset")
         json = await self._request("GET", url, params=params)
         return from_list(Beatmapset.parse_obj, json)
 
@@ -693,11 +687,9 @@ class Client(Eventable):
         :rtype: list[aiosu.models.user.UserBeatmapPlaycount]
         """
         url = f"{self.base_url}/api/v2/users/{user_id}/beatmapsets/most_played"
-        params = {}
-        if "limit" in kwargs:
-            params["limit"] = kwargs.pop("limit")
-        if "offset" in kwargs:
-            params["offset"] = kwargs.pop("offset")
+        params: dict[str, Any] = {}
+        add_param(params, kwargs, key="limit")
+        add_param(params, kwargs, key="offset")
         json = await self._request("GET", url, params=params)
         return from_list(UserBeatmapPlaycount.parse_obj, json)
 
@@ -723,11 +715,9 @@ class Client(Eventable):
         :rtype: list[aiosu.models.event.Event]
         """
         url = f"{self.base_url}/api/v2/users/{user_id}/recent_activity"
-        params = {}
-        if "limit" in kwargs:
-            params["limit"] = kwargs.pop("limit")
-        if "offset" in kwargs:
-            params["offset"] = kwargs.pop("offset")
+        params: dict[str, Any] = {}
+        add_param(params, kwargs, key="limit")
+        add_param(params, kwargs, key="offset")
         json = await self._request("GET", url, params=params)
         return from_list(Event.parse_obj, json)
 
@@ -753,15 +743,10 @@ class Client(Eventable):
         :rtype: list[aiosu.models.score.Score]
         """
         url = f"{self.base_url}/api/v2/beatmaps/{beatmap_id}/scores"
-        params = {}
-        if "mode" in kwargs:
-            mode = Gamemode(kwargs.pop("mode"))  # type: ignore
-            params["mode"] = str(mode)
-        if "mods" in kwargs:
-            mods = Mods(kwargs.pop("mods"))
-            params["mode"] = str(mods)
-        if "type" in kwargs:
-            params["type"] = kwargs.pop("type")
+        params: dict[str, Any] = {}
+        add_param(params, kwargs, key="mode", converter=lambda x: str(Gamemode(x)))  # type: ignore
+        add_param(params, kwargs, key="mods", converter=lambda x: str(Mods(x)))
+        add_param(params, kwargs, key="type")
         json = await self._request("GET", url, params=params)
         return from_list(Score.parse_obj, json.get("scores", []))
 
@@ -790,7 +775,7 @@ class Client(Eventable):
         :rtype: list[aiosu.models.beatmap.Beatmap]
         """
         url = f"{self.base_url}/api/v2/beatmaps"
-        params = {
+        params: dict[str, Any] = {
             "ids": beatmap_ids,
         }
         json = await self._request("GET", url, params=params)
@@ -817,13 +802,10 @@ class Client(Eventable):
         :rtype: aiosu.models.beatmap.Beatmap
         """
         url = f"{self.base_url}/api/v2/beatmaps/lookup"
-        params = {}
-        if "checksum" in kwargs:
-            params["checksum"] = kwargs.pop("checksum")
-        if "filename" in kwargs:
-            params["filename"] = kwargs.pop("filename")
-        if "id" in kwargs:
-            params["id"] = kwargs.pop("id")
+        params: dict[str, Any] = {}
+        add_param(params, kwargs, key="checksum")
+        add_param(params, kwargs, key="filename")
+        add_param(params, kwargs, key="id")
         if not params:
             raise ValueError("One of checksum, filename or id must be provided.")
         json = await self._request("GET", url, params=params)
@@ -852,12 +834,14 @@ class Client(Eventable):
         """
         url = f"{self.base_url}/api/v2/beatmaps/{beatmap_id}/attributes"
         data: dict[str, Any] = {}
-        if "mode" in kwargs:
-            mode = Gamemode(kwargs.pop("mode"))  # type: ignore
-            data["ruleset_id"] = int(mode)
-        if "mods" in kwargs:
-            mods = Mods(kwargs.pop("mods"))
-            data["mods"] = str(mods)
+        add_param(
+            data,
+            kwargs,
+            key="mode",
+            param_name="ruleset_id",
+            converter=lambda x: int(Gamemode(x)),  # type: ignore
+        )
+        add_param(data, kwargs, key="mods", converter=lambda x: str(Mods(x)))
         json = await self._request("POST", url, data=data)
         return BeatmapDifficultyAttributes.parse_obj(json.get("attributes"))
 
@@ -887,7 +871,7 @@ class Client(Eventable):
         :rtype: aiosu.models.beatmap.Beatmapset
         """
         url = f"{self.base_url}/api/v2/beatmapsets/lookup"
-        params = {
+        params: dict[str, Any] = {
             "beatmap_id": beatmap_id,
         }
         json = await self._request("GET", url, params=params)
@@ -910,6 +894,42 @@ class Client(Eventable):
         url = f"{self.base_url}/api/v2/beatmapsets/search/{search_filter}"
         json = await self._request("GET", url)
         return from_list(Beatmapset.parse_obj, json.get("beatmapsets", []))
+
+    @check_token
+    async def get_beatmapset_events(self, **kwargs: Any) -> list[Event]:
+        r"""Get beatmapset events.
+
+        :param \**kwargs:
+            See below
+
+        :Keyword Arguments:
+            * *limit* (``int``) --
+                Optional, number of results per page
+            * *page* (``int``) --
+                Optional, page number
+            * *user_id* (``int``) --
+                Optional, user ID
+            * *min_date* (``datetime.datetime``) --
+                Optional, minimum date
+            * *max_date* (``datetime.datetime``) --
+                Optional, maximum date
+            * *types* (``list[aiosu.models.event.EventType]``) --
+                Optional, event types
+
+        :raises APIException: Contains status code and error message
+        :return: List of beatmapset events
+        :rtype: list[aiosu.models.event.Event]
+        """
+        url = f"{self.base_url}/api/v2/beatmapsets/events"
+        params: dict[str, Any] = {}
+        add_param(params, kwargs, key="limit")
+        add_param(params, kwargs, key="page")
+        add_param(params, kwargs, key="user_id", param_name="user")
+        add_param(params, kwargs, key="min_date")
+        add_param(params, kwargs, key="max_date")
+        add_param(params, kwargs, key="types")
+        json = await self._request("GET", url, params=params)
+        return from_list(Event.parse_obj, json)
 
     @check_token
     async def get_score(

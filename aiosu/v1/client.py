@@ -13,8 +13,9 @@ import aiohttp
 import orjson
 from aiolimiter import AsyncLimiter
 
-from .. import helpers
 from ..exceptions import APIException
+from ..helpers import add_param
+from ..helpers import from_list
 from ..models import Beatmapset
 from ..models import Gamemode
 from ..models import Mods
@@ -128,11 +129,15 @@ class Client:
             "k": self.token,
             "u": user_query,
             "event_days": kwargs.pop("event_days", 1),
+            "m": int(Gamemode(kwargs.pop("mode", 0))),  # type: ignore
         }
-        params["m"] = int(Gamemode(kwargs.pop("mode", 0)))  # type: ignore
-        if "qtype" in kwargs:
-            qtype = UserQueryType(kwargs.pop("qtype"))  # type: ignore
-            params["type"] = qtype.old_api_name
+        add_param(
+            params,
+            kwargs,
+            key="qtype",
+            param_name="type",
+            converter=lambda x: UserQueryType(x).old_api_name,  # type: ignore
+        )
         json = await self._request("GET", url, params=params)
         if not json:
             raise APIException(404, "User not found")
@@ -175,12 +180,16 @@ class Client:
         }
         mode = Gamemode(kwargs.pop("mode", 0))  # type: ignore
         params["m"] = int(mode)
-        if "qtype" in kwargs:
-            qtype = UserQueryType(kwargs.pop("qtype"))  # type: ignore
-            params["type"] = qtype.old_api_name
+        add_param(
+            params,
+            kwargs,
+            key="qtype",
+            param_name="type",
+            converter=lambda x: UserQueryType(x).old_api_name,  # type: ignore
+        )
         json = await self._request("GET", url, params=params)
         score_conv = lambda x: Score._from_api_v1(x, mode)
-        return helpers.from_list(score_conv, json)
+        return from_list(score_conv, json)
 
     async def get_user_recents(
         self, user_query: Union[str, int], **kwargs: Any
@@ -205,8 +214,7 @@ class Client:
         :return: List of requested scores
         :rtype: list[aiosu.models.score.Score]
         """
-        limit = kwargs.pop("limit", 50)
-        if not 1 <= limit <= 50:
+        if not 1 <= (limit := kwargs.pop("limit", 50)) <= 50:
             raise ValueError("Invalid limit specified. Limit must be between 1 and 50")
         return await self.__get_type_scores(user_query, "recent", limit=limit, **kwargs)
 
@@ -233,8 +241,7 @@ class Client:
         :return: List of requested scores
         :rtype: list[aiosu.models.score.Score]
         """
-        limit = kwargs.pop("limit", 100)
-        if not 1 <= limit <= 100:
+        if not 1 <= (limit := kwargs.pop("limit", 100)) <= 100:
             raise ValueError("Invalid limit specified. Limit must be between 1 and 100")
         return await self.__get_type_scores(user_query, "best", limit=limit, **kwargs)
 
@@ -272,37 +279,35 @@ class Client:
         :return: List of beatmapsets each containing one difficulty of the result
         :rtype: list[aiosu.models.beatmap.Beatmapset]
         """
-        if not 1 <= kwargs.get("limit", 500) <= 500:
+        if not 1 <= (limit := kwargs.get("limit", 500)) <= 500:
             raise ValueError("Invalid limit specified. Limit must be between 1 and 500")
         url = f"{self.base_url}/api/get_beatmaps"
         params = {
             "k": self.token,
-            "limit": kwargs.pop("limit", 500),
+            "limit": limit,
             "a": int(kwargs.pop("converts", False)),
+            "m": int(Gamemode(kwargs.pop("mode", 0))),  # type: ignore
         }
-        params["m"] = int(Gamemode(kwargs.pop("mode", 0)))  # type: ignore
-        if "mods" in kwargs:
-            mods = Mods(kwargs.pop("mods"))
-            params["mode"] = str(mods)
-        if "beatmap_id" in kwargs:
-            params["b"] = kwargs.pop("beatmap_id")
-        elif "beatmapset_id" in kwargs:
-            params["s"] = kwargs.pop("beatmapset_id")
-        elif "user_query" in kwargs:
-            params["u"] = kwargs.pop("user_query")
-            if "qtype" in kwargs:
-                qtype = UserQueryType(kwargs.pop("qtype"))  # type: ignore
-                params["type"] = qtype.old_api_name
-        elif "since" in kwargs:
-            params["since"] = kwargs.pop("since")
-        elif "hash" in kwargs:
-            params["h"] = kwargs.pop("hash")
-        else:
+        added = add_param(params, kwargs, key="mods", converter=lambda x: str(Mods(x)))
+        added |= add_param(params, kwargs, key="beatmap_id", param_name="b")
+        added |= add_param(params, kwargs, key="beatmapset_id", param_name="s")
+        if add_param(params, kwargs, key="user_query", param_name="u"):
+            added = True
+            add_param(
+                params,
+                kwargs,
+                key="qtype",
+                param_name="type",
+                converter=lambda x: UserQueryType(x).old_api_name,  # type: ignore
+            )
+        added |= add_param(params, kwargs, key="since", param_name="since")
+        added |= add_param(params, kwargs, key="hash", param_name="h")
+        if not added:
             raise ValueError(
                 "Either hash, since, user_query, beatmap_id or beatmapset_id must be specified.",
             )
         json = await self._request("GET", url, params=params)
-        return helpers.from_list(Beatmapset._from_api_v1, json)
+        return from_list(Beatmapset._from_api_v1, json)
 
     async def get_beatmap_scores(self, beatmap_id: int, **kwargs: Any) -> list[Score]:
         r"""Get a user's best scores.
@@ -339,17 +344,18 @@ class Client:
         }
         mode = Gamemode(kwargs.pop("mode", 0))  # type: ignore
         params["m"] = int(mode)
-        if "user_query" in kwargs:
-            params["u"] = kwargs.pop("user_query")
-            if "qtype" in kwargs:
-                qtype = UserQueryType(kwargs.pop("qtype"))  # type: ignore
-                params["type"] = qtype.old_api_name
-        if "mods" in kwargs:
-            mods = Mods(kwargs.pop("mods"))
-            params["mode"] = str(mods)
+        if add_param(params, kwargs, key="user_query", param_name="u"):
+            add_param(
+                params,
+                kwargs,
+                key="qtype",
+                param_name="type",
+                converter=lambda x: UserQueryType(x).old_api_name,  # type: ignore
+            )
+        add_param(params, kwargs, key="mods", converter=lambda x: str(Mods(x)))
         json = await self._request("GET", url, params=params)
         score_conv = lambda x: _beatmap_score_conv(x, mode, beatmap_id)
-        return helpers.from_list(score_conv, json)
+        return from_list(score_conv, json)
 
     async def get_match(self, match_id: int) -> Match:
         r"""Gets a multiplayer match. (WIP, currently returns raw JSON)
@@ -394,23 +400,30 @@ class Client:
         :rtype: aiosu.models.legacy.replay.Replay
         """
         url = f"{self.base_url}/api/get_replay"
-        params = {"k": self.token}
-        params["m"] = int(Gamemode(kwargs.pop("mode", 0)))  # type: ignore
-        if "score_id" in kwargs:
-            params["s"] = kwargs.pop("score_id")
-        elif "beatmap_id" in kwargs and "user_query" in kwargs:
-            params["b"] = kwargs.pop("beatmap_id")
-            params["u"] = kwargs.pop("user_query")
-            if "qtype" in kwargs:
-                qtype = UserQueryType(kwargs.pop("qtype"))  # type: ignore
-                params["type"] = qtype.old_api_name
-        else:
+        params = {
+            "k": self.token,
+            "m": int(Gamemode(kwargs.pop("mode", 0))),  # type: ignore
+        }
+        added = add_param(params, kwargs, key="score_id", param_name="s")
+        if add_param(params, kwargs, key="beatmap_id", param_name="b") and add_param(
+            params,
+            kwargs,
+            key="user_query",
+            param_name="u",
+        ):
+            added = True
+            add_param(
+                params,
+                kwargs,
+                key="qtype",
+                param_name="type",
+                converter=lambda x: UserQueryType(x).old_api_name,  # type: ignore
+            )
+        if not added:
             raise ValueError(
                 "Either score_id or beatmap_id + user_id must be specified.",
             )
-        if "mods" in kwargs:
-            mods = Mods(kwargs.pop("mods"))
-            params["mode"] = str(mods)
+        add_param(params, kwargs, key="mods", converter=lambda x: str(Mods(x)))
         json = await self._request("GET", url, params=params)
         return ReplayCompact.parse_obj(json)
 
