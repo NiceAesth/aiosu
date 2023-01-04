@@ -14,7 +14,7 @@ from ..models.oauthtoken import OAuthToken
 from ..models.scopes import Scopes
 
 __all__ = (
-    "get_authorization_url",
+    "generate_url",
     "process_code",
 )
 
