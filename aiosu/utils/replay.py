@@ -6,10 +6,10 @@ from __future__ import annotations
 from typing import Any
 from typing import BinaryIO
 
-from ..models import Mod
-from ..models import Replay
-from ..models import ReplayEvent
-from ..models import ReplayLifebarEvent
+from ..models.mods import Mod
+from ..models.replay import Replay
+from ..models.replay import ReplayEvent
+from ..models.replay import ReplayLifebarEvent
 from .binary import pack_byte
 from .binary import pack_float64
 from .binary import pack_int

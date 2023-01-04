@@ -10,8 +10,8 @@ import aiohttp
 import orjson
 
 from ..exceptions import APIException
-from ..models import OAuthToken
-from ..models import Scopes
+from ..models.oauthtoken import OAuthToken
+from ..models.scopes import Scopes
 
 __all__ = (
     "get_authorization_url",

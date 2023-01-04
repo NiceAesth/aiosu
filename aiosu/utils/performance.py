@@ -19,10 +19,9 @@ from .accuracy import OsuAccuracyCalculator
 from .accuracy import TaikoAccuracyCalculator
 
 if TYPE_CHECKING:
-    from ..models import Score
-    from ..models import BeatmapDifficultyAttributes
-
-    from ..models import PerformanceAttributes
+    from ..models.score import Score
+    from ..models.beatmap import BeatmapDifficultyAttributes
+    from ..models.performance import PerformanceAttributes
 
 
 __all__ = [
