@@ -20,8 +20,8 @@ class Scopes(IntFlag):
     def __flags__(self) -> list[Scopes]:
         scopes_list = [scope for scope in Scopes if self & scope]
         if self.PUBLIC not in scopes_list:
-            scopes_list.append(self.PUBLIC)
+            scopes_list.append(Scopes.PUBLIC)
         return scopes_list
 
     def __str__(self) -> str:
-        return " ".join(scope.name.lower() for scope in self.__flags__())
+        return " ".join(scope.name.lower() for scope in self.__flags__())  # type: ignore
