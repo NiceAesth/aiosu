@@ -59,11 +59,10 @@ EventType = Literal[
 
 
 class Event(BaseModel):
-    r"""Information on types: https://osu.ppy.sh/docs/index.html#event"""
-
     created_at: datetime
     id: int
     type: EventType
+    r"""Information on types: https://github.com/ppy/osu-web/blob/master/resources/assets/lib/interfaces/event-json.ts"""
     parse_error: Optional[bool]
     achievment: Optional[Achievement]
     user: Optional[EventUser]
