@@ -16,3 +16,12 @@ class Scopes(IntFlag):
     DELEGATE = 1 << 3
     CHAT_WRITE = 1 << 4
     LAZER = 1 << 5  # unused, lazer endpoints are not planned for support
+
+    def __flags__(self) -> list[Scopes]:
+        scopes_list = [scope for scope in Scopes if self & scope]
+        if self.PUBLIC not in scopes_list:
+            scopes_list.append(self.PUBLIC)
+        return scopes_list
+
+    def __str__(self) -> str:
+        return " ".join(scope.name.lower() for scope in self.__flags__())
