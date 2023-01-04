@@ -16,6 +16,13 @@ from .beatmap import BeatmapHype
 from .beatmap import BeatmapNominations
 from .beatmap import BeatmapRankStatus
 from .beatmap import Beatmapset
+from .beatmap import BeatmapsetDiscussion
+from .beatmap import BeatmapsetDiscussionPost
+from .beatmap import BeatmapsetDisscussionType
+from .beatmap import BeatmapsetEvent
+from .beatmap import BeatmapsetEventComment
+from .beatmap import BeatmapsetEventType
+from .beatmap import BeatmapsetVoteEvent
 from .changelog import Build
 from .changelog import ChangelogEntry
 from .changelog import GithubUser

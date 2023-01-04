@@ -195,6 +195,13 @@ def events():
 
 
 @pytest.fixture
+def beatmapset_events():
+    with open("tests/data/v2/multiple_beatmapset_event.json", "rb") as f:
+        data = f.read()
+    return data
+
+
+@pytest.fixture
 def difficulty_attributes():
     def _difficulty_attributes(mode="osu"):
         with open(f"tests/data/v2/difficulty_attributes_{mode}.json", "rb") as f:
@@ -548,6 +555,17 @@ class TestClient:
         data = await client.search_beatmapsets()
         assert isinstance(data, list) and all(
             isinstance(x, aiosu.models.Beatmapset) for x in data
+        )
+        await client.close()
+
+    @pytest.mark.asyncio
+    async def test_get_beatmapset_events(self, mocker, token, beatmapset_events):
+        client = aiosu.v2.Client(token=token)
+        resp = MockResponse(beatmapset_events, 200)
+        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
+        data = await client.get_beatmapset_events()
+        assert isinstance(data, list) and all(
+            isinstance(x, aiosu.models.BeatmapsetEvent) for x in data
         )
         await client.close()
 

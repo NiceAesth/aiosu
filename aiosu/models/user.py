@@ -188,6 +188,11 @@ class UserStats(BaseModel):
         )
 
 
+class UserAchievmement(BaseModel):
+    achieved_at: datetime
+    achievement_id: int
+
+
 class User(BaseModel):
     avatar_url: str
     country_code: str
@@ -241,7 +246,7 @@ class User(BaseModel):
     scores_recent_count: Optional[int] = None
     statistics: Optional[UserStats] = None
     support_level: Optional[int] = None
-    user_achievements: Optional[list[Achievement]] = None
+    user_achievements: Optional[list[UserAchievmement]] = None
     rank_history: Optional[UserRankHistoryElement] = None
 
     @property
