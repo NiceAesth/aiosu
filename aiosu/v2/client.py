@@ -23,6 +23,8 @@ from ..helpers import from_list
 from ..models import Beatmap
 from ..models import BeatmapDifficultyAttributes
 from ..models import Beatmapset
+from ..models import BeatmapsetEvent
+from ..models import BeatmapsetEventType
 from ..models import Build
 from ..models import CommentBundle
 from ..models import Event
@@ -896,7 +898,7 @@ class Client(Eventable):
         return from_list(Beatmapset.parse_obj, json.get("beatmapsets", []))
 
     @check_token
-    async def get_beatmapset_events(self, **kwargs: Any) -> list[Event]:
+    async def get_beatmapset_events(self, **kwargs: Any) -> list[BeatmapsetEvent]:
         r"""Get beatmapset events.
 
         :param \**kwargs:
@@ -913,7 +915,7 @@ class Client(Eventable):
                 Optional, minimum date
             * *max_date* (``datetime.datetime``) --
                 Optional, maximum date
-            * *types* (``list[aiosu.models.event.EventType]``) --
+            * *types* (``list[aiosu.models.beatmap.BeatmapsetEventType]``) --
                 Optional, event types
 
         :raises APIException: Contains status code and error message
@@ -929,7 +931,7 @@ class Client(Eventable):
         add_param(params, kwargs, key="max_date")
         add_param(params, kwargs, key="types")
         json = await self._request("GET", url, params=params)
-        return from_list(Event.parse_obj, json)
+        return from_list(BeatmapsetEvent.parse_obj, json.get("events", []))
 
     @check_token
     async def get_score(

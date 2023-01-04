@@ -294,7 +294,7 @@ BeatmapsetDisscussionType = Literal[
 ]
 
 
-BeatmapEventType = Literal[
+BeatmapsetEventType = Literal[
     "approve",
     "beatmap_owner_change",
     "discussion_delete",
@@ -327,11 +327,11 @@ BeatmapEventType = Literal[
 
 class BeatmapsetDiscussionPost(BaseModel):
     id: int
-    beatmap_discussion_id: int
     user_id: int
     system: bool
     message: str
     created_at: datetime
+    beatmap_discussion_id: Optional[int]
     last_editor_id: Optional[int]
     deleted_by_id: Optional[int]
     updated_at: Optional[datetime]
@@ -381,7 +381,7 @@ class BeatmapsetEventComment(BaseModel):
 
 class BeatmapsetEvent(BaseModel):
     id: int
-    type: BeatmapEventType
+    type: BeatmapsetEventType
     r"""Information on types: https://github.com/ppy/osu-web/blob/master/resources/assets/lib/interfaces/beatmapset-event-json.ts"""
     created_at: datetime
     user_id: int
