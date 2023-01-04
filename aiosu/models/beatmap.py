@@ -5,6 +5,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from enum import Enum
+from typing import Literal
 from typing import Optional
 from typing import TYPE_CHECKING
 
@@ -281,6 +282,111 @@ class Beatmapset(BaseModel):
                 "beatmaps": [Beatmap._from_api_v1(data)],
             },
         )
+
+
+BeatmapsetDisscussionType = Literal[
+    "hype",
+    "praise",
+    "problem",
+    "review",
+    "suggestion",
+    "mapper_note",
+]
+
+
+BeatmapEventType = Literal[
+    "approve",
+    "beatmap_owner_change",
+    "discussion_delete",
+    "discussion_post_delete",
+    "discussion_post_restore",
+    "discussion_restore",
+    "discussion_lock",
+    "discussion_unlock",
+    "disqualify",
+    "genre_edit",
+    "issue_reopen",
+    "issue_resolve",
+    "kudosu_allow",
+    "kudosu_deny",
+    "kudosu_gain",
+    "kudosu_lost",
+    "kudosu_recalculate",
+    "language_edit",
+    "love",
+    "nominate",
+    "nomination_reset",
+    "nomination_reset_received",
+    "nsfw_toggle",
+    "offset_edit",
+    "qualify",
+    "rank",
+    "remove_from_loved",
+]
+
+
+class BeatmapsetDiscussionPost(BaseModel):
+    id: int
+    beatmap_discussion_id: int
+    user_id: int
+    system: bool
+    message: str
+    created_at: datetime
+    last_editor_id: Optional[int]
+    deleted_by_id: Optional[int]
+    updated_at: Optional[datetime]
+    deleted_at: Optional[datetime]
+
+
+class BeatmapsetDiscussion(BaseModel):
+    id: int
+    beatmapset_id: int
+    user_id: int
+    message_type: BeatmapsetDisscussionType
+    resolved: bool
+    can_be_resolved: bool
+    can_grant_kudosu: bool
+    created_at: datetime
+    beatmap_id: Optional[int]
+    deleted_by_id: Optional[int]
+    parent_id: Optional[int]
+    timestamp: Optional[int]
+    updated_at: Optional[datetime]
+    deleted_at: Optional[datetime]
+    last_post_at: Optional[datetime]
+    kudosu_denied: Optional[bool]
+    starting_post: Optional[BeatmapsetDiscussionPost]
+
+
+class BeatmapsetVoteEvent(BaseModel):
+    score: int
+    user_id: int
+
+
+class BeatmapsetEventComment(BaseModel):
+    beatmap_discussion_id: Optional[int]
+    beatmap_discussion_post_id: Optional[int]
+    new_vote: Optional[BeatmapsetVoteEvent]
+    votes: Optional[list[BeatmapsetVoteEvent]]
+    mode: Optional[Gamemode]
+    reason: Optional[str]
+    source_user_id: Optional[int]
+    source_user_username: Optional[str]
+    nominator_ids: Optional[list[int]]
+    new: Optional[str]
+    old: Optional[str]
+    new_user_id: Optional[int]
+    new_user_username: Optional[str]
+
+
+class BeatmapsetEvent(BaseModel):
+    id: int
+    type: BeatmapEventType
+    created_at: datetime
+    user_id: int
+    beatmapset: Optional[Beatmapset]
+    discussion: Optional[BeatmapsetDiscussion]
+    comment: Optional[dict]
 
 
 Beatmap.update_forward_refs()

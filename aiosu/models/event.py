@@ -4,6 +4,7 @@ This module contains models for API events.
 from __future__ import annotations
 
 from datetime import datetime
+from typing import Literal
 from typing import Optional
 from typing import TYPE_CHECKING
 
@@ -40,12 +41,30 @@ class EventUser(BaseModel):
         return values
 
 
+EventType = Literal[
+    "achievement",
+    "beatmapPlaycount",
+    "beatmapsetApprove",
+    "beatmapsetDelete",
+    "beatmapsetRevive",
+    "beatmapsetUpdate",
+    "beatmapsetUpload",
+    "rank",
+    "rankLost",
+    "usernameChange",
+    "userSupportAgain",
+    "userSupportFirst",
+    "userSupportGift",
+]
+
+
 class Event(BaseModel):
     r"""Information on types: https://osu.ppy.sh/docs/index.html#event"""
 
     created_at: datetime
     id: int
-    type: str
+    type: EventType
+    parse_error: Optional[bool]
     achievment: Optional[Achievement]
     user: Optional[EventUser]
     beatmap: Optional[EventBeatmap]

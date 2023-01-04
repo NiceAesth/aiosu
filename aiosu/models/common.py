@@ -10,6 +10,7 @@ from emojiflags.lookup import lookup as flag_lookup  # type: ignore
 from pydantic import validator
 
 from .base import BaseModel
+from .gamemode import Gamemode
 
 
 class TimestampedCount(BaseModel):
@@ -22,8 +23,15 @@ class TimestampedCount(BaseModel):
 
 
 class Achievement(BaseModel):
-    achieved_at: datetime
-    achievement_id: int
+    id: int
+    name: str
+    slug: str
+    desciption: str
+    grouping: str
+    icon_url: str
+    mode: Gamemode
+    ordering: int
+    instructions: Optional[str]
 
 
 class Country(BaseModel):
