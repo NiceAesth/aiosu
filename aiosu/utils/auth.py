@@ -3,11 +3,15 @@ This module contains authorization functions.
 """
 from __future__ import annotations
 
+import urllib.parse
+from typing import Optional
+
 import aiohttp
 import orjson
 
 from ..exceptions import APIException
-from ..models.token import OAuthToken
+from ..models import OAuthToken
+from ..models import Scopes
 
 
 async def process_code(
@@ -16,6 +20,7 @@ async def process_code(
     redirect_uri: str,
     code: str,
     base_url: str = "https://osu.ppy.sh",
+    scopes: Scopes = Scopes.PUBLIC | Scopes.IDENTIFY,
 ) -> OAuthToken:
     r"""Creates an OAuth Token from an authorization code.
 
@@ -29,6 +34,8 @@ async def process_code(
     :type code: str
     :param base_url: The base URL of the API, defaults to "https://osu.ppy.sh"
     :type base_url: Optional[str]
+    :param scopes: The scopes to request, defaults to Scopes.PUBLIC | Scopes.IDENTIFY
+    :type scopes: Optional[Scopes]
     :return: The OAuth token
     :rtype: aiosu.models.token.OAuthToken
     """
@@ -49,6 +56,41 @@ async def process_code(
                 json = orjson.loads(body)
                 if resp.status != 200:
                     raise APIException(resp.status, json.get("error", ""))
-                return OAuthToken.parse_obj(json)
+                token = OAuthToken.parse_obj(json)
+                token.scopes = scopes
+                return token
             except aiohttp.client_exceptions.ContentTypeError:
                 raise APIException(403, "Invalid code specified.")
+
+
+def generate_url(
+    client_id: int,
+    redirect_uri: str,
+    base_url: str = "https://osu.ppy.sh",
+    scopes: Scopes = Scopes.PUBLIC | Scopes.IDENTIFY,
+    state: Optional[str] = None,
+) -> str:
+    r"""Generates an OAuth URL.
+
+    :param client_id: The ID of the client
+    :type client_id: int
+    :param redirect_uri: The URL to redirect to
+    :type redirect_uri: str
+    :param base_url: The base URL of the API, defaults to "https://osu.ppy.sh"
+    :type base_url: Optional[str]
+    :param scopes: The scopes to request, defaults to Scopes.PUBLIC | Scopes.IDENTIFY
+    :type scopes: Optional[Scopes]
+    :param state: The state to pass to the API, defaults to None
+    :type state: Optional[str]
+    :return: The OAuth URL
+    :rtype: str
+    """
+    params = {
+        "client_id": client_id,
+        "redirect_uri": redirect_uri,
+        "response_type": "code",
+        "scope": str(scopes),
+    }
+    if state:
+        params["state"] = state
+    return f"{base_url}/oauth/authorize?{urllib.parse.urlencode(params)}"

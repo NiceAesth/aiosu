@@ -100,7 +100,7 @@ class Replay(BaseModel):
         return f"{self.player_name} {self.played_at} {self.map_md5} +{self.mods}"
 
     @root_validator
-    def add_skip_offset(cls, values: dict[str, Any]) -> dict[str, Any]:
+    def _add_skip_offset(cls, values: dict[str, Any]) -> dict[str, Any]:
         if not values["skip_offset"]:
             values["skip_offset"] = _parse_skip_offset(
                 values["replay_data"],
@@ -109,7 +109,7 @@ class Replay(BaseModel):
         return values
 
     @root_validator
-    def add_rng_seed(cls, values: dict[str, Any]) -> dict[str, Any]:
+    def _add_rng_seed(cls, values: dict[str, Any]) -> dict[str, Any]:
         if not values["rng_seed"] and values["version"] >= 2013_03_19:
             values["rng_seed"] = _parse_rng_seed(values["replay_data"])
         return values

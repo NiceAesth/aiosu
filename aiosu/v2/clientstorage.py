@@ -11,6 +11,7 @@ from ..events import ClientAddEvent
 from ..events import ClientUpdateEvent
 from ..events import Eventable
 from ..models import OAuthToken
+from ..models import Scopes
 
 if TYPE_CHECKING:
     from types import TracebackType
@@ -34,6 +35,8 @@ class ClientStorage(Eventable):
             Optional, base API URL, defaults to "https://osu.ppy.sh"
         * *create_app_client* (``bool``) --
             Optional, whether to automatically create guest clients, defaults to True
+        * *default_scopes* (``Scopes``) --
+            Optional, default scopes to use when creating a client, defaults to Scopes.PUBLIC | Scopes.IDENTIFY
     """
 
     def __init__(self, **kwargs: Any) -> None:
@@ -43,8 +46,9 @@ class ClientStorage(Eventable):
         self.client_secret: str = kwargs.pop("client_secret", None)
         self.client_id: int = kwargs.pop("client_id", None)
         self.base_url: str = kwargs.pop("base_url", "https://osu.ppy.sh")
-        self.clients: dict[int, Client] = {}
         self.__create_app_client: bool = kwargs.pop("create_app_client", True)
+        self.default_scopes: Scopes = Scopes.PUBLIC | Scopes.IDENTIFY
+        self.clients: dict[int, Client] = {}
 
     async def __aenter__(self) -> ClientStorage:
         return self
@@ -141,12 +145,15 @@ class ClientStorage(Eventable):
         :Keyword Arguments:
             * *id* (``int``) --
                 Optional, the ID of the client, defaults to None
+            * *scopes* (``Scopes``) --
+                Optional, the scopes of the client, defaults to storage default scopes
 
         :return: The added client
         :rtype: aiosu.v2.client.Client
         """
-        client_id: int = kwargs.get("id", None)
-        client = Client(token=token, **self._get_client_args())
+        scopes = kwargs.pop("scopes", self.default_scopes)
+        client_id: int = kwargs.pop("id", None)
+        client = Client(token=token, **self._get_client_args(), scopes=scopes)
         client._register_listener(self._process_event, ClientUpdateEvent)
         if client_id is None:
             client_user = await client.get_me()
