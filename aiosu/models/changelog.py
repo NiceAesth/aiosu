@@ -4,9 +4,13 @@ This module contains models for changelog objects.
 from __future__ import annotations
 
 from datetime import datetime
+from typing import Literal
 from typing import Optional
 
+from pydantic import Field
+
 from .base import BaseModel
+from .common import CursorModel
 
 
 __all__ = (
@@ -15,7 +19,12 @@ __all__ = (
     "GithubUser",
     "UpdateStream",
     "Version",
+    "ChangelogListing",
+    "ChangelogSearch",
+    "ChangelogMessageFormats",
 )
+
+ChangelogMessageFormats = Literal["markdown", "html"]
 
 
 class GithubUser(BaseModel):
@@ -66,6 +75,20 @@ class Build(BaseModel):
     update_stream: Optional[UpdateStream]
     changelog_entries: Optional[list[ChangelogEntry]]
     versions: Optional[Version]
+
+
+class ChangelogSearch(BaseModel):
+    limit: int
+    fro: Optional[str] = Field(alias="from")
+    to: Optional[str]
+    max_id: Optional[int]
+    stream: Optional[str]
+
+
+class ChangelogListing(CursorModel):
+    builds: list[Build]
+    search: ChangelogSearch
+    streams: list[UpdateStream]
 
 
 Version.update_forward_refs()

@@ -4,9 +4,12 @@ This module contains models for miscellaneous objects.
 from __future__ import annotations
 
 from datetime import datetime
+from functools import partial
+from typing import Literal
 from typing import Optional
 
 from emojiflags.lookup import lookup as flag_lookup  # type: ignore
+from pydantic import Field
 from pydantic import validator
 
 from .base import BaseModel
@@ -17,8 +20,13 @@ __all__ = (
     "Country",
     "CurrentUserAttributes",
     "TimestampedCount",
-    "Cursor",
+    "CursorModel",
+    "SortTypes",
+    "HTMLBody",
 )
+
+
+SortTypes = Literal["id_asc", "id_desc"]
 
 
 class TimestampedCount(BaseModel):
@@ -48,12 +56,18 @@ class Country(BaseModel):
 
     @property
     def flag_emoji(self) -> str:
-        """Emoji for the flag.
+        r"""Emoji for the flag.
 
         :return: Unicode emoji representation of the country's flag
         :rtype: str
         """
         return flag_lookup(self.code)
+
+
+class HTMLBody(BaseModel):
+    html: str
+    raw: Optional[str]
+    bbcode: Optional[str]
 
 
 class CurrentUserAttributes(BaseModel):
@@ -69,5 +83,12 @@ class CurrentUserAttributes(BaseModel):
     can_new_comment_reason: Optional[str]
 
 
-class Cursor(BaseModel):
-    ...
+class CursorModel(BaseModel):
+    r"""NOTE: This model is not serializable by orjson directly.
+
+    Use the provided .json() or .dict() methods instead.
+    """
+
+    cursor_string: Optional[str]
+    next: Optional[partial] = Field(exclude=True)
+    """Partial function to get the next page of results."""

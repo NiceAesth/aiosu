@@ -4,18 +4,22 @@ This module contains models for comment objects.
 from __future__ import annotations
 
 from datetime import datetime
+from typing import Literal
 from typing import Optional
 
 from .base import BaseModel
 from .common import CurrentUserAttributes
-from .common import Cursor
+from .common import CursorModel
 from .user import User
 
 __all__ = (
     "Commentable",
     "Comment",
     "CommentBundle",
+    "CommentSortType",
 )
+
+CommentSortType = Literal["new", "old", "top"]
 
 
 class Commentable(BaseModel):
@@ -47,8 +51,7 @@ class Comment(BaseModel):
     user_id: Optional[int]
 
 
-class CommentBundle(BaseModel):
-    cursor: Cursor
+class CommentBundle(CursorModel):
     commentable_meta: list[Commentable]
     comments: list[Comment]
     has_more: bool

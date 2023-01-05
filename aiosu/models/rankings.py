@@ -6,24 +6,26 @@ from __future__ import annotations
 from typing import Literal
 from typing import Optional
 
-from .base import BaseModel
 from .beatmap import Beatmapset
-from .common import Cursor
+from .common import CursorModel
 from .spotlight import Spotlight
 from .user import UserStats
 
 
 __all__ = (
+    "RankingFilter",
+    "RankingVariant",
     "RankingType",
     "Rankings",
 )
 
+RankingFilter = Literal["all", "friends"]
 RankingType = Literal["performance", "score", "country", "charts"]
+RankingVariant = Literal["4k", "7k"]
 
 
-class Rankings(BaseModel):
-    ranking: UserStats
-    cursor: Cursor
-    total: int
+class Rankings(CursorModel):
+    ranking: list[UserStats]
+    total: Optional[int]
     spotlight: Optional[Spotlight]
     beatmapsets: Optional[list[Beatmapset]]

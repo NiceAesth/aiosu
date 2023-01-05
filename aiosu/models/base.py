@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING
 import orjson
 import pydantic
 
+from .gamemode import Gamemode
 from .mods import Mods
 
 if TYPE_CHECKING:
@@ -26,11 +27,13 @@ def orjson_dumps(v: object, *, default: Any) -> str:
 
 class BaseModel(pydantic.BaseModel):
     class Config:
+        arbitrary_types_allowed = True
         allow_population_by_field_name = True
         json_loads = orjson.loads
         json_dumps = orjson_dumps
         json_encoders = {
             Mods: lambda v: str(v),
+            Gamemode: lambda v: str(v),
         }
 
 

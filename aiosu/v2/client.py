@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import functools
 from datetime import datetime
+from functools import partial
 from io import BytesIO
 from typing import Literal
 from typing import TYPE_CHECKING
@@ -20,26 +21,46 @@ from ..events import Eventable
 from ..exceptions import APIException
 from ..helpers import add_param
 from ..helpers import from_list
+from ..models import ArtistResponse
 from ..models import Beatmap
 from ..models import BeatmapDifficultyAttributes
 from ..models import Beatmapset
+from ..models import BeatmapsetDiscussionPostResponse
+from ..models import BeatmapsetDiscussionResponse
+from ..models import BeatmapsetDiscussionVoteResponse
 from ..models import BeatmapsetEvent
-from ..models import BeatmapsetEventType
+from ..models import BeatmapsetSearchResponse
+from ..models import BeatmapUserPlaycount
 from ..models import Build
+from ..models import ChangelogListing
+from ..models import ChatChannel
+from ..models import ChatMessageCreateResponse
 from ..models import CommentBundle
 from ..models import Event
+from ..models import ForumCreateTopicResponse
+from ..models import ForumPost
+from ..models import ForumTopic
+from ..models import ForumTopicResponse
 from ..models import Gamemode
 from ..models import KudosuHistory
 from ..models import Mods
+from ..models import MultiplayerLeaderboardResponse
+from ..models import MultiplayerMatchesResponse
+from ..models import MultiplayerMatchResponse
+from ..models import MultiplayerRoom
+from ..models import MultiplayerRoomMode
+from ..models import MultiplayerScoresResponse
+from ..models import NewsListing
 from ..models import NewsPost
 from ..models import OAuthToken
+from ..models import Rankings
+from ..models import RankingType
 from ..models import Scopes
 from ..models import Score
 from ..models import SearchResponse
 from ..models import SeasonalBackgroundSet
 from ..models import Spotlight
 from ..models import User
-from ..models import UserBeatmapPlaycount
 from ..models import UserQueryType
 from ..models import WikiPage
 
@@ -52,6 +73,8 @@ if TYPE_CHECKING:
     from typing import Union
 
 __all__ = ("Client",)
+
+ClientRequestType = Literal["GET", "POST", "DELETE", "PUT", "PATCH"]
 
 
 def check_token(func: Callable) -> Callable:
@@ -105,7 +128,7 @@ class Client(Eventable):
         * *base_url* (``str``) --
             Optional, base API URL, defaults to "https://osu.ppy.sh"
         * *scopes* (``aiosu.models.Scopes``) --
-            Optional, defaults to ``Scopes.PUBLIC | Scopes.IDENTIFY``
+            Optional, defaults to ``Scopes.PUBLIC | Scopes.IDENTIFY``. Ignored if token is provided.
         * *token* (``aiosu.models.oauthtoken.OAuthToken``) --
             Optional, defaults to client credentials if not provided
         * *limiter* (``tuple[int, int]``) --
@@ -117,8 +140,9 @@ class Client(Eventable):
         self._register_event(ClientUpdateEvent)
         self.client_id: int = kwargs.pop("client_id", None)
         self.client_secret: str = kwargs.pop("client_secret", None)
-        self.scopes: Scopes = kwargs.pop("scopes", Scopes.PUBLIC | Scopes.IDENTIFY)
-        self.token: OAuthToken = kwargs.pop("token", OAuthToken(scopes=self.scopes))
+        unsafe_scopes: Scopes = kwargs.pop("scopes", Scopes.PUBLIC | Scopes.IDENTIFY)
+        self.token: OAuthToken = kwargs.pop("token", OAuthToken(scopes=unsafe_scopes))
+        self.scopes = self.token.scopes
         self.base_url: str = kwargs.pop("base_url", "https://osu.ppy.sh")
         self._limiter: AsyncLimiter = AsyncLimiter(
             *kwargs.pop(
@@ -179,7 +203,7 @@ class Client(Eventable):
         }
 
     async def _request(
-        self, request_type: Literal["GET", "POST", "DELETE"], *args: Any, **kwargs: Any
+        self, request_type: ClientRequestType, *args: Any, **kwargs: Any
     ) -> Any:
         if self._session is None:
             self._session = aiohttp.ClientSession(
@@ -190,6 +214,8 @@ class Client(Eventable):
             "GET": self._session.get,
             "POST": self._session.post,
             "DELETE": self._session.delete,
+            "PUT": self._session.put,
+            "PATCH": self._session.patch,
         }
 
         async with self._limiter:
@@ -227,6 +253,9 @@ class Client(Eventable):
                 async with temp_session.post(url, data=data) as resp:
                     try:
                         body = await resp.read()
+                        content_type = resp.headers.get("content-type", "")
+                        if content_type != "application/json":
+                            raise APIException(415, "Unhandled Content Type")
                         json = orjson.loads(body)
                         if resp.status != 200:
                             raise APIException(resp.status, json.get("error", ""))
@@ -244,6 +273,55 @@ class Client(Eventable):
             ClientUpdateEvent(client=self, old_token=old_token, new_token=self.token),
         )
 
+    async def get_featured_artists(self, **kwargs: Any) -> ArtistResponse:
+        r"""Gets the current featured artists.
+
+        :param \**kwargs:
+            See below
+
+        :Keyword Arguments:
+            * *limit* (``int``) --
+                Optional, the number of featured artists to return.
+            * *album* (``str``) --
+                Optional, the album to filter by.
+            * *artist* (``str``) --
+                Optional, the artist to filter by.
+            * *genre* (``int``) --
+                Optional, the genre ID to filter by.
+            * *length* (``list[int]``) --
+                Optional, the length range to filter by.
+            * *bpm* (``list[int]``) --
+                Optional, The BPM range to filter by.
+            * *query* (``str``) --
+                Optional, the search query to filter by.
+            * *is_default_sort* (``bool``) --
+                Optional, whether to sort by the default sort.
+            * *sort* (``str``) --
+                Optional, the sort to use.
+
+        :raises APIException: Contains status code and error message
+        :return: Featured artist response object
+        :rtype: aiosu.models.artist.ArtistResponse
+        """
+        url = f"{self.base_url}/beatmaps/artists/tracks"
+        params: dict[str, Any] = {}
+        add_param(params, kwargs, key="limit")
+        add_param(params, kwargs, key="album")
+        add_param(params, kwargs, key="artist")
+        add_param(params, kwargs, key="genre")
+        add_param(params, kwargs, key="length")
+        add_param(params, kwargs, key="bpm")
+        add_param(params, kwargs, key="query")
+        add_param(params, kwargs, key="is_default_sort")
+        add_param(params, kwargs, key="sort")
+        add_param(params, kwargs, key="cursor_string")
+        json = await self._request("GET", url)
+        resp = ArtistResponse.parse_obj(json)
+        if resp.cursor_string:
+            kwargs["cursor_string"] = resp.cursor_string
+            resp.next = partial(self.get_featured_artists, **kwargs)
+        return resp
+
     async def get_seasonal_backgrounds(self) -> SeasonalBackgroundSet:
         r"""Gets the current seasonal background set.
 
@@ -254,6 +332,51 @@ class Client(Eventable):
         url = f"{self.base_url}/api/v2/seasonal-backgrounds"
         json = await self._request("GET", url)
         return SeasonalBackgroundSet.parse_obj(json)
+
+    async def get_changelog_listing(self, **kwargs: Any) -> ChangelogListing:
+        r"""Gets the changelog listing.
+
+        :param \**kwargs:
+            See below
+
+        :Keyword Arguments:
+            * *message_formats* (``list[str]``) --
+                Optional, the message formats to return.
+            * *from* (``str``) --
+                Optional, the start date to return.
+            * *to* (``str``) --
+                Optional, the end date to return.
+            * *max_id* (``int``) --
+                Optional, the maximum ID to return.
+            * *stream* (``str``) --
+                Optional, the stream to return.
+            * *cursor_string* (``str``) --
+                Optional, the cursor string to use.
+
+        :raises APIException: Contains status code and error message
+        :return: Changelog listing object
+        :rtype: aiosu.models.changelog.ChangelogListing
+        """
+        url = f"{self.base_url}/api/v2/changelog"
+        params: dict[str, Any] = {
+            "message_formats": kwargs.pop("message_formats", ["html", "markdown"]),
+        }
+        add_param(params, kwargs, key="from")
+        add_param(params, kwargs, key="to")
+        add_param(params, kwargs, key="max_id")
+        add_param(params, kwargs, key="stream")
+        add_param(params, kwargs, key="cursor_string")
+        json = await self._request("GET", url, params=params)
+        resp = ChangelogListing.parse_obj(json)
+        if resp.cursor_string:
+            kwargs["cursor_string"] = resp.cursor_string
+            resp.next = partial(self.get_changelog_listing, **kwargs)
+        else:  # TODO: Figure this out / remove on cursor string support
+            resp.next = partial(
+                self.get_changelog_listing,
+                **resp.search.dict(by_alias=True, exclude_none=True),
+            )
+        return resp
 
     async def get_changelog_build(self, stream: str, build: str) -> Build:
         r"""Gets a specific build from the changelog.
@@ -281,7 +404,7 @@ class Client(Eventable):
         :Keyword Arguments:
             * *is_id* (``bool``) --
                 Optional, whether the query is an ID or not, defaults to ``True`` if the query is an int
-            * *message_formats* (``list[Literal["html", "markdown"]]``) --
+            * *message_formats* (``list[aiosu.models.news.ChangelogMessageFormats]``) --
                 Optional, message formats to get, defaults to ``["html", "markdown"]``
 
         :raises APIException: Contains status code and error message
@@ -296,6 +419,39 @@ class Client(Eventable):
             params["key"] = "id"
         json = await self._request("GET", url, params=params)
         return Build.parse_obj(json)
+
+    async def get_news_listing(self, **kwargs: Any) -> NewsListing:
+        r"""Gets the news listing.
+
+        :param \**kwargs:
+            See below
+
+        :Keyword Arguments:
+            * *limit* (``int``) --
+                Optional, the number of news posts to return. Min: 1, Max: 21, defaults to 12
+            * *year* (``int``) --
+                Optional, the year to filter by.
+            * *cursor_string* (``str``) --
+                Optional, the cursor string to use for pagination.
+
+        :raises APIException: Contains status code and error message
+        :return: News listing object
+        :rtype: aiosu.models.news.NewsListing
+        """
+        url = f"{self.base_url}/api/v2/news"
+        if not 1 <= (limit := kwargs.pop("limit", 12)) <= 21:
+            raise ValueError("Invalid limit specified. Limit must be between 1 and 21")
+        params: dict[str, Any] = {
+            "limit": limit,
+        }
+        add_param(params, kwargs, key="year")
+        add_param(params, kwargs, key="cursor_string")
+        json = await self._request("GET", url, params=params)
+        resp = NewsListing.parse_obj(json)
+        if resp.cursor_string:
+            kwargs["cursor_string"] = resp.cursor_string
+            resp.next = partial(self.get_news_listing, **kwargs)
+        return resp
 
     async def get_news_post(
         self, news_query: Union[str, int], **kwargs: Any
@@ -339,18 +495,67 @@ class Client(Eventable):
         json = await self._request("GET", url)
         return WikiPage.parse_obj(json)
 
-    async def get_comment(self, comment_id: int) -> CommentBundle:
+    async def get_comment(self, comment_id: int, **kwargs: Any) -> CommentBundle:
         r"""Gets a comment.
 
         :param comment_id: The ID of the comment
         :type comment_id: int
+        :param \**kwargs:
+            See below
+
+        :Keyword Arguments:
+            * *cursor_string* (``str``) --
+                Optional, cursor string to get the next page of comments
+
         :raises APIException: Contains status code and error message
         :return: Comment bundle object
         :rtype: aiosu.models.comment.CommentBundle
         """
         url = f"{self.base_url}/api/v2/comments/{comment_id}"
-        json = await self._request("GET", url)
-        return CommentBundle.parse_obj(json)
+        params: dict[str, Any] = {}
+        add_param(params, kwargs, key="cursor_string")
+        json = await self._request("GET", url, params=params)
+        resp = CommentBundle.parse_obj(json)
+        if resp.cursor_string:
+            kwargs["cursor_string"] = resp.cursor_string
+            resp.next = partial(self.get_comment, comment_id=comment_id, **kwargs)
+        return resp
+
+    async def get_comments(self, **kwargs: Any) -> CommentBundle:
+        r"""Gets comments.
+
+        :param \**kwargs:
+            See below
+
+        :Keyword Arguments:
+            * *commentable_type* (``Literal["beatmapset", "build", "news_post", "user"]``) --
+                Optional, commentable type to get comments from
+            * *commentable_id* (``int``) --
+                Optional, commentable ID to get comments from
+            * *parent_id* (``int``) --
+                Optional, parent ID to get comments from
+            * *sort* (aiosu.models.comment.CommentSortType) --
+                Optional, sort order of comments, defaults to ``"new"``
+            * *cursor_string* (``str``) --
+                Optional, cursor string to get the next page of comments
+
+        :raises APIException: Contains status code and error message
+        :return: Comment bundle object
+        :rtype: aiosu.models.comment.CommentBundle
+        """
+        url = f"{self.base_url}/api/v2/comments"
+        params: dict[str, Any] = {}
+        add_param(params, kwargs, key="commentable_type")
+        add_param(params, kwargs, key="commentable_id")
+        add_param(params, kwargs, key="parent_id")
+        add_param(params, kwargs, key="sort")
+        add_param(params, kwargs, key="cursor_string")
+        json = await self._request("GET", url, params=params)
+        resp = CommentBundle.parse_obj(json)
+        if resp.cursor_string:
+            kwargs["cursor_string"] = resp.cursor_string
+            resp.next = partial(self.get_comments, **kwargs)
+        return resp
 
     @check_token
     async def search(self, query: str, **kwargs: Any) -> SearchResponse:
@@ -522,7 +727,7 @@ class Client(Eventable):
         :return: List of requested scores
         :rtype: list[aiosu.models.score.Score]
         """
-        if not 1 <= kwargs.get("limit", 100) <= 100:
+        if not 1 <= (limit := kwargs.pop("limit", 100)) <= 100:
             raise ValueError("Invalid limit specified. Limit must be between 1 and 100")
         if request_type not in ("recent", "best", "firsts"):
             raise ValueError(
@@ -531,7 +736,7 @@ class Client(Eventable):
         url = f"{self.base_url}/api/v2/users/{user_id}/scores/{request_type}"
         params: dict[str, Any] = {
             "include_fails": kwargs.pop("include_fails", False),
-            "limit": kwargs.pop("limit", 100),
+            "limit": limit,
             "offset": kwargs.pop("offset", 0),
         }
         add_param(params, kwargs, key="mode", converter=lambda x: str(Gamemode(x)))  # type: ignore
@@ -672,7 +877,7 @@ class Client(Eventable):
     @check_token
     async def get_user_most_played(
         self, user_id: int, **kwargs: Any
-    ) -> list[UserBeatmapPlaycount]:
+    ) -> list[BeatmapUserPlaycount]:
         r"""Get a user's most played beatmaps.
 
         :param user_id: ID of the user
@@ -688,14 +893,14 @@ class Client(Eventable):
 
         :raises APIException: Contains status code and error message
         :return: List of user playcount objects
-        :rtype: list[aiosu.models.user.UserBeatmapPlaycount]
+        :rtype: list[aiosu.models.beatmap.BeatmapUserPlaycount]
         """
         url = f"{self.base_url}/api/v2/users/{user_id}/beatmapsets/most_played"
         params: dict[str, Any] = {}
         add_param(params, kwargs, key="limit")
         add_param(params, kwargs, key="offset")
         json = await self._request("GET", url, params=params)
-        return from_list(UserBeatmapPlaycount.parse_obj, json)
+        return from_list(BeatmapUserPlaycount.parse_obj, json)
 
     @check_token
     async def get_user_recent_activity(
@@ -885,19 +1090,32 @@ class Client(Eventable):
     async def search_beatmapsets(
         self,
         search_filter: Optional[str] = "",
-    ) -> list[Beatmapset]:
+        **kwargs: Any,
+    ) -> BeatmapsetSearchResponse:
         r"""Search beatmapset by filter.
 
         :param search_filter: The search filter.
         :type search_filter: str
+        :param \**kwargs:
+            See below
+
+        :Keyword Arguments:
+            * *cursor_string* (``str``) --
+                Optional, cursor string to get the next page of results
 
         :raises APIException: Contains status code and error message
-        :return: List of beatmapset data objects
-        :rtype: list[aiosu.models.beatmap.Beatmapset]
+        :return: Beatmapset search response
+        :rtype: list[aiosu.models.beatmap.BeatmapsetSearchResponse]
         """
         url = f"{self.base_url}/api/v2/beatmapsets/search/{search_filter}"
+        params: dict[str, Any] = {}
+        add_param(params, kwargs, key="cursor_string")
         json = await self._request("GET", url)
-        return from_list(Beatmapset.parse_obj, json.get("beatmapsets", []))
+        resp = BeatmapsetSearchResponse.parse_obj(json)
+        if resp.cursor_string:
+            kwargs["cursor_string"] = resp.cursor_string
+            resp.next = partial(self.search_beatmapsets, **kwargs)
+        return resp
 
     @check_token
     async def get_beatmapset_events(self, **kwargs: Any) -> list[BeatmapsetEvent]:
@@ -934,6 +1152,162 @@ class Client(Eventable):
         add_param(params, kwargs, key="types")
         json = await self._request("GET", url, params=params)
         return from_list(BeatmapsetEvent.parse_obj, json.get("events", []))
+
+    @check_token
+    async def get_beatmapset_discussions(
+        self, **kwargs: Any
+    ) -> BeatmapsetDiscussionResponse:
+        r"""Get beatmapset discussions.
+
+        :param \**kwargs:
+            See below
+
+        :Keyword Arguments:
+            * *beatmap_id* (``int``) --
+                Optional, beatmap ID
+            * *beatmapset_id* (``int``) --
+                Optional, beatmapset ID
+            * *beatmapset_status* (``aiosu.models.beatmap.BeatmapsetRequestStatus``) --
+                Optional, beatmapset status
+            * *limit* (``int``) --
+                Optional, number of results per page
+            * *page* (``int``) --
+                Optional, page number
+            * *message_types* (``list[aiosu.models.beatmap.BeatmapsetDisscussionType]``) --
+                Optional, message types
+            * *only_unresolved* (``bool``) --
+                Optional, only unresolved discussions
+            * *sort* (``aiosu.models.common.SortTypes``) --
+                Optional, sort order, defaults to ``id_desc``
+            * *user_id* (``int``) --
+                Optional, user ID
+            * with_deleted (``bool``) --
+                Optional, include deleted discussions
+            * cursor_string (``str``) --
+                Optional, cursor string
+
+        :raises APIException: Contains status code and error message
+        :return: Beatmapset discussion response
+        :rtype: aiosu.models.beatmap.BeatmapsetDiscussionResponse
+        """
+        url = f"{self.base_url}/api/v2/beatmapsets/discussions"
+        params: dict[str, Any] = {}
+        add_param(params, kwargs, key="beatmap_id")
+        add_param(params, kwargs, key="beatmapset_id")
+        add_param(params, kwargs, key="beatmapset_status")
+        add_param(params, kwargs, key="limit")
+        add_param(params, kwargs, key="page")
+        add_param(params, kwargs, key="message_types")
+        add_param(params, kwargs, key="only_unresolved")
+        add_param(params, kwargs, key="sort")
+        add_param(params, kwargs, key="user", param_name="user_id")
+        add_param(params, kwargs, key="with_deleted")
+        add_param(params, kwargs, key="cursor_string")
+        json = await self._request("GET", url, params=params)
+        resp = BeatmapsetDiscussionResponse.parse_obj(json)
+        if resp.cursor_string:
+            kwargs["cursor_string"] = resp.cursor_string
+            resp.next = partial(self.get_beatmapset_discussions, **kwargs)
+        return resp
+
+    @check_token
+    async def get_beatmapset_discussion_posts(
+        self, **kwargs: Any
+    ) -> BeatmapsetDiscussionPostResponse:
+        r"""Get beatmapset discussion posts.
+
+        :param \**kwargs:
+            See below
+
+        :Keyword Arguments:
+            * *beatmapset_discussion_id* (``int``) --
+                Optional, beatmapset discussion ID
+            * *limit* (``int``) --
+                Optional, number of results per page
+            * *page* (``int``) --
+                Optional, page number
+            * *sort* (``aiosu.models.common.SortTypes``) --
+                Optional, sort order, defaults to ``id_desc``
+            * *types* (``list[str]``) --
+                Optional, post types
+            * *user_id* (``int``) --
+                Optional, user ID
+            * with_deleted (``bool``) --
+                Optional, include deleted discussions
+            * cursor_string (``str``) --
+                Optional, cursor string
+
+        :raises APIException: Contains status code and error message
+        :return: Beatmapset discussion post response
+        :rtype: aiosu.models.beatmap.BeatmapsetDiscussionPostResponse
+        """
+        url = f"{self.base_url}/api/v2/beatmapsets/discussions/posts"
+        params: dict[str, Any] = {}
+        add_param(params, kwargs, key="beatmapset_discussion_id")
+        add_param(params, kwargs, key="limit")
+        add_param(params, kwargs, key="page")
+        add_param(params, kwargs, key="sort")
+        add_param(params, kwargs, key="types")
+        add_param(params, kwargs, key="user", param_name="user_id")
+        add_param(params, kwargs, key="with_deleted")
+        add_param(params, kwargs, key="cursor_string")
+        json = await self._request("GET", url, params=params)
+        resp = BeatmapsetDiscussionPostResponse.parse_obj(json)
+        if resp.cursor_string:
+            kwargs["cursor_string"] = resp.cursor_string
+            resp.next = partial(self.get_beatmapset_discussion_posts, **kwargs)
+        return resp
+
+    @check_token
+    async def get_beatmapset_discussion_votes(
+        self, **kwargs: Any
+    ) -> BeatmapsetDiscussionVoteResponse:
+        r"""Get beatmapset discussion votes.
+
+        :param \**kwargs:
+            See below
+
+        :Keyword Arguments:
+            * *beatmapset_discussion_id* (``int``) --
+                Optional, beatmapset discussion ID
+            * *limit* (``int``) --
+                Optional, number of results per page
+            * *page* (``int``) --
+                Optional, page number
+            * *receiver_id* (``int``) --
+                Optional, receiver ID
+            * *score* (``aiosu.models.beatmap.BeatmapsetDiscussionVoteScore``) --
+                Optional, vote score
+            * *sort* (``aiosu.models.common.SortTypes``) --
+                Optional, sort order, defaults to ``id_desc``
+            * *user_id* (``int``) --
+                Optional, user ID
+            * with_deleted (``bool``) --
+                Optional, include deleted discussions
+            * cursor_string (``str``) --
+                Optional, cursor string
+
+        :raises APIException: Contains status code and error message
+        :return: Beatmapset discussion vote response
+        :rtype: aiosu.models.beatmap.BeatmapsetDiscussionVoteResponse
+        """
+        url = f"{self.base_url}/api/v2/beatmapsets/discussions/votes"
+        params: dict[str, Any] = {}
+        add_param(params, kwargs, key="beatmapset_discussion_id")
+        add_param(params, kwargs, key="limit")
+        add_param(params, kwargs, key="page")
+        add_param(params, kwargs, key="receiver", param_name="receiver_id")
+        add_param(params, kwargs, key="score")
+        add_param(params, kwargs, key="sort")
+        add_param(params, kwargs, key="user", param_name="user_id")
+        add_param(params, kwargs, key="with_deleted")
+        add_param(params, kwargs, key="cursor_string")
+        json = await self._request("GET", url, params=params)
+        resp = BeatmapsetDiscussionVoteResponse.parse_obj(json)
+        if resp.cursor_string:
+            kwargs["cursor_string"] = resp.cursor_string
+            resp.next = partial(self.get_beatmapset_discussion_votes, **kwargs)
+        return resp
 
     @check_token
     async def get_score(
@@ -978,6 +1352,49 @@ class Client(Eventable):
         return await self._request("GET", url)
 
     @check_token
+    async def get_rankings(
+        self, mode: Gamemode, type: RankingType, **kwargs: Any
+    ) -> Rankings:
+        r"""Get rankings.
+
+        :param mode: The gamemode to search for
+        :type mode: aiosu.models.gamemode.Gamemode
+        :param type: The ranking type to search for
+        :type type: aiosu.models.rankings.RankingType
+        :param \**kwargs:
+            See below
+
+        :Keyword Arguments:
+            * *country* (``str``) --
+                Optional, country code
+            * *filter* (``aiosu.models.rankings.RankingFilter``) --
+                Optional, ranking filter
+            * *spotlight* (``int``) --
+                Optional, spotlight ID
+            * *variant* (``aiosu.models.rankings.RankingVariant``) --
+                Optional, ranking variant
+            * *cursor_string* (``str``) --
+                Optional, cursor string
+
+        :raises APIException: Contains status code and error message
+        :return: Rankings
+        :rtype: aiosu.models.rankings.Rankings
+        """
+        url = f"{self.base_url}/api/v2/rankings/{mode}/{type}"
+        params: dict[str, Any] = {}
+        add_param(params, kwargs, key="country")
+        add_param(params, kwargs, key="filter")
+        add_param(params, kwargs, key="spotlight")
+        add_param(params, kwargs, key="variant")
+        add_param(params, kwargs, key="cursor_string")
+        json = await self._request("GET", url, params=params)
+        resp = Rankings.parse_obj(json)
+        if resp.cursor_string:
+            kwargs["cursor_string"] = resp.cursor_string
+            resp.next = partial(self.get_rankings, mode=mode, type=type, **kwargs)
+        return resp
+
+    @check_token
     async def get_spotlights(self) -> list[Spotlight]:
         r"""Gets the current spotlights.
 
@@ -988,6 +1405,452 @@ class Client(Eventable):
         url = f"{self.base_url}/api/v2/spotlights"
         json = await self._request("GET", url)
         return from_list(Spotlight.parse_obj, json.get("spotlights", []))
+
+    @check_token
+    async def get_forum_topic(self, topic_id: int, **kwargs: Any) -> ForumTopicResponse:
+        r"""Gets a forum topic.
+
+        :param topic_id: The ID of the topic
+        :type topic_id: int
+        :param \**kwargs:
+            See below
+
+        :Keyword Arguments:
+            * *limit* (``int``) --
+                Optional, the number of posts to return. Min: 1, Max: 50, defaults to 20
+            * *sort* (``aiosu.models.common.SortTypes``) --
+                Optional, the sort type to use. Defaults to ``id_asc``
+            * *start* (``int``) --
+                Optional, the start post ID to use for pagination.
+            * *end* (``int``) --
+                Optional, the end post ID to use for pagination.
+            * *cursor_string* (``str``) --
+                Optional, the cursor string to use for pagination.
+
+        :raises APIException: Contains status code and error message
+        :return: Forum topic response object
+        :rtype: aiosu.models.forum.ForumTopicResponse
+        """
+        if not 1 <= (limit := kwargs.pop("limit", 20)) <= 50:
+            raise ValueError("Invalid limit specified. Limit must be between 1 and 50")
+        url = f"{self.base_url}/api/v2/forums/topics/{topic_id}"
+        params: dict[str, Any] = {
+            "limit": limit,
+        }
+        add_param(params, kwargs, key="sort")
+        add_param(params, kwargs, key="start")
+        add_param(params, kwargs, key="end")
+        add_param(params, kwargs, key="cursor_string")
+        json = await self._request("GET", url, params=params)
+        resp = ForumTopicResponse.parse_obj(json)
+        if resp.cursor_string:
+            kwargs["cursor_string"] = resp.cursor_string
+            resp.next = partial(self.get_forum_topic, topic_id, **kwargs)
+        return resp
+
+    @check_token
+    @requires_scope(Scopes.FORUM_WRITE)
+    async def create_forum_topic(
+        self, forum_id: int, title: str, content: str, **kwargs: Any
+    ) -> ForumCreateTopicResponse:
+        r"""Creates a forum topic.
+
+        :param forum_id: The ID of the forum to create the topic in
+        :type forum_id: int
+        :param title: The title of the topic
+        :type title: str
+        :param content: The content of the topic
+        :type content: str
+        :param \**kwargs:
+            See below
+
+        :Keyword Arguments:
+            * *with_poll* (``bool``) --
+                Optional, whether to create a poll with the topic. Defaults to ``False``
+            * *poll_title* (``str``) --
+                Optional, the title of the poll
+            * *poll_options* (``list[str]``) --
+                Optional, the options for the poll
+            * *poll_length_days* (``int``) --
+                Optional, the length of the poll in days. Defaults to 0
+            * *poll_vote_change* (``bool``) --
+                Optional, whether to allow users to change their vote. Defaults to ``False``
+            * *poll_hide_results* (``bool``) --
+                Optional, whether to hide the results of the poll. Defaults to ``False``
+            * *poll_max_votes* (``int``) --
+                Optional, the maximum number of votes a user can make. Defaults to 1
+
+        :raises APIException: Contains status code and error message
+        :return: Forum create topic response object
+        :rtype: aiosu.models.forum.ForumCreateTopicResponse
+        """
+        url = f"{self.base_url}/api/v2/forums/topics"
+        data: dict[str, Any] = {
+            "forum_id": forum_id,
+            "title": title,
+            "body": content,
+        }
+        add_param(data, kwargs, key="with_poll")
+        if data.get("with_poll"):
+            forum_topic_poll: dict[str, Any] = {
+                "title": kwargs["poll_title"],
+                "length_days": kwargs.pop("poll_length_days", 0),
+                "vote_change": kwargs.pop("poll_vote_change", False),
+                "hide_results": kwargs.pop("poll_hide_results", False),
+                "max_votes": kwargs.pop("poll_max_votes", 1),
+            }
+            add_param(
+                forum_topic_poll,
+                kwargs,
+                key="options",
+                param_name="poll_options",
+            )
+            data["forum_topic_poll"] = forum_topic_poll
+        json = await self._request("POST", url, data=data)
+        return ForumCreateTopicResponse.parse_obj(json)
+
+    @check_token
+    @requires_scope(Scopes.FORUM_WRITE)
+    async def reply_forum_topic(self, topic_id: int, content: str) -> ForumPost:
+        r"""Replies to a forum topic.
+
+        :param topic_id: The ID of the topic
+        :type topic_id: int
+        :param content: The content of the post
+        :type content: str
+        :raises APIException: Contains status code and error message
+        :return: Forum post object
+        :rtype: aiosu.models.forum.ForumPost
+        """
+        url = f"{self.base_url}/api/v2/forums/topics/{topic_id}/reply"
+        data: dict[str, str] = {
+            "body": content,
+        }
+        json = await self._request("POST", url, data=data)
+        return ForumPost.parse_obj(json)
+
+    @check_token
+    @requires_scope(Scopes.FORUM_WRITE)
+    async def edit_forum_topic_title(self, topid_id: int, new_title: str) -> ForumTopic:
+        r"""Edits a forum topic's title.
+
+        :param topid_id: The ID of the topic
+        :type topid_id: int
+        :param new_title: The new title of the topic
+        :type new_title: str
+        :raises APIException: Contains status code and error message
+        :return: Forum topic object
+        :rtype: aiosu.models.forum.ForumTopic
+        """
+        url = f"{self.base_url}/api/v2/forums/topics/{topid_id}/title"
+        data: dict[str, dict[str, str]] = {
+            "forum_topic": {
+                "topic_title": new_title,
+            },
+        }
+        json = await self._request("PUT", url, data=data)
+        return ForumTopic.parse_obj(json)
+
+    @check_token
+    @requires_scope(Scopes.FORUM_WRITE)
+    async def edit_forum_post(self, post_id: int, new_content: str) -> ForumPost:
+        r"""Edits a forum post.
+
+        :param post_id: The ID of the post
+        :type post_id: int
+        :param new_content: The new content of the post
+        :type new_content: str
+        :raises APIException: Contains status code and error message
+        :return: Forum post object
+        :rtype: aiosu.models.forum.ForumPost
+        """
+        url = f"{self.base_url}/api/v2/forums/posts/{post_id}"
+        data: dict[str, str] = {
+            "body": new_content,
+        }
+        json = await self._request("PUT", url, data=data)
+        return ForumPost.parse_obj(json)
+
+    @check_token
+    @requires_scope(Scopes.CHAT_WRITE)
+    async def create_chat_channel(
+        self, type: Literal["PM", "ANNOUNCE"], **kwargs: Any
+    ) -> ChatChannel:
+        r"""Creates a chat channel.
+
+        :param type: The type of the channel.
+        :type type: Literal["PM", "ANNOUNCE"]
+        :param \**kwargs:
+            See below
+
+        :Keyword Arguments:
+            * *target_id* (``int``) --
+                Required if type is ``PM``, the ID of the user to send a PM to
+            * *target_ids* (``List[int]``) --
+                Required if type is ``PM``, the IDs of the users to send a PM to
+            * *message* (``str``) --
+                Required if type is ``ANNOUNCE``, the message to send in the PM
+            * *channel_name* (``str``) --
+                Required if type is ``ANNOUNCE``, the name of the channel
+            * *channel_description* (``str``) --
+                Required if type is ``ANNOUNCE``, the description of the channel
+
+        :raises APIException: Contains status code and error message
+        :return: Chat channel object
+        :rtype: aiosu.models.chat.ChatChannel
+        """
+        url = f"{self.base_url}/api/v2/chat/channels"
+        data: dict[str, Any] = {
+            "type": type,
+        }
+        add_param(data, kwargs, key="message")
+        if type == "PM":
+            has_id = add_param(data, kwargs, key="target_id")
+            has_id |= add_param(data, kwargs, key="target_ids")
+            if not has_id:
+                raise ValueError("Missing target ID(s)")
+        elif type == "ANNOUNCE":
+            if not data.get("message"):
+                raise ValueError("Missing message")
+            channel = {
+                "name": kwargs["channel_name"],
+                "description": kwargs["channel_description"],
+            }
+            data["channel"] = channel
+        json = await self._request("POST", url, data=data)
+        return ChatChannel.parse_obj(json)
+
+    @check_token
+    @requires_scope(Scopes.CHAT_WRITE)
+    async def send_message(
+        self, user_id: int, message: str, is_action: bool, **kwargs: Any
+    ) -> ChatMessageCreateResponse:
+        r"""Sends a message to a user.
+
+        :param user_id: The ID of the user
+        :type user_id: int
+        :param message: The message to send
+        :type message: str
+        :param is_action: Whether the message is an action
+        :type is_action: bool
+        :param \**kwargs:
+            See below
+
+        :Keyword Arguments:
+            * *uuid* (``str``) --
+                Optional, the UUID of the message
+
+        :raises APIException: Contains status code and error message
+        :return: Chat message create response object
+        :rtype: aiosu.models.chat.ChatMessageCreateResponse
+        """
+        url = f"{self.base_url}/api/v2/chat/new"
+        data: dict[str, Any] = {
+            "target_id": user_id,
+            "message": message,
+            "is_action": is_action,
+        }
+        add_param(data, kwargs, key="uuid")
+        json = await self._request("POST", url, data=data)
+        return ChatMessageCreateResponse.parse_obj(json)
+
+    @check_token
+    async def get_multiplayer_matches(
+        self, **kwargs: Any
+    ) -> MultiplayerMatchesResponse:
+        r"""Gets the multiplayer matches.
+
+        :param \**kwargs:
+            See below
+
+        :Keyword Arguments:
+            * *sort* (``aiosu.models.common.SortTypes``) --
+                Optional, the sort type
+            * *limit* (``int``) --
+                Optional, number of scores to get. Min: 1, Max: 50, defaults to 50
+            * *cursor_string* (``str``) --
+                Optional, the cursor string to get the next page of results
+
+        :raises ValueError: If limit is not between 1 and 50
+        :raises APIException: Contains status code and error message
+        :return: Multiplayer matches response object
+        :rtype: aiosu.models.multiplayer.MultiplayerMatchesResponse
+        """
+        if not 1 <= (limit := kwargs.pop("limit", 1)) <= 50:
+            raise ValueError("Limit must be between 1 and 50")
+        url = f"{self.base_url}/api/v2/matches"
+        params: dict[str, Any] = {
+            "limit": limit,
+        }
+        add_param(params, kwargs, key="sort")
+        json = await self._request("GET", url, params=params)
+        resp = MultiplayerMatchesResponse.parse_obj(json)
+        if resp.cursor_string:
+            kwargs["cursor_string"] = resp.cursor_string
+            resp.next = partial(self.get_multiplayer_matches, **kwargs)
+        return resp
+
+    @check_token
+    async def get_multiplayer_match(
+        self, match_id: int, **kwargs: Any
+    ) -> MultiplayerMatchResponse:
+        r"""Gets a multiplayer match.
+
+        :param match_id: The ID of the match
+        :type match_id: int
+        :param \**kwargs:
+            See below
+
+        :Keyword Arguments:
+            * *limit* (``int``) --
+                Optional, number of scores to get. Min: 1, Max: 100, defaults to 100
+            * *before* (``int``) --
+                Optional, the ID of the score to get the scores before
+            * *after* (``int``) --
+                Optional, the ID of the score to get the scores after
+
+        :raises ValueError: If limit is not between 1 and 100
+        :raises APIException: Contains status code and error message
+        :return: Multiplayer match response object
+        :rtype: aiosu.models.multiplayer.MultiplayerMatchResponse
+        """
+        if not 1 <= (limit := kwargs.pop("limit", 1)) <= 100:
+            raise ValueError("Limit must be between 1 and 100")
+        url = f"{self.base_url}/api/v2/matches/{match_id}"
+        params: dict[str, Any] = {
+            "limit": limit,
+        }
+        add_param(params, kwargs, key="before")
+        add_param(params, kwargs, key="after")
+        json = await self._request("GET", url)
+        return MultiplayerMatchResponse.parse_obj(json)
+
+    @check_token
+    async def get_multiplayer_rooms(self, **kwargs: Any) -> list[MultiplayerRoom]:
+        r"""Gets the multiplayer rooms.
+
+        :param \**kwargs:
+            See below
+
+        :Keyword Arguments:
+            * *mode* (``aiosu.models.multiplayer.MultiplayerRoomMode``) --
+                Optional, the multiplayer room mode
+            * *limit* (``int``) --
+                Optional, number of scores to get. Min: 1, Max: 50, defaults to 50
+            * *sort* (``aiosu.models.common.SortTypes``) --
+                Optional, the sort type
+            * *category* (``aiosu.models.multiplayer.MultiplayerRoomCategories``) --
+                Optional, the multiplayer room category
+            * *type* (``aiosu.models.multiplayer.MultiplayerRoomTypeGroups``) --
+                Optional, the multiplayer room type group
+
+        :raises ValueError: If limit is not between 1 and 50
+        :raises APIException: Contains status code and error message
+        :return: List of multiplayer rooms
+        :rtype: list[aiosu.models.multiplayer.MultiplayerRoom]
+        """
+        if not 1 <= (limit := kwargs.pop("limit", 50)) <= 50:
+            raise ValueError("Limit must be between 1 and 50")
+        url = f"{self.base_url}/api/v2/rooms"
+        if "mode" in kwargs:
+            mode: MultiplayerRoomMode = kwargs.pop("mode")
+            url += f"/{mode}"
+        params: dict[str, Any] = {
+            "limit": limit,
+        }
+        add_param(params, kwargs, key="sort")
+        add_param(params, kwargs, key="category")
+        add_param(params, kwargs, key="type", param_name="type_group")
+        json = await self._request("GET", url, params=params)
+        return from_list(MultiplayerRoom.parse_obj, json)
+
+    @check_token
+    async def get_multiplayer_room(self, room_id: int) -> MultiplayerRoom:
+        r"""Gets a multiplayer room.
+
+        :param room_id: The ID of the room
+        :type room_id: int
+
+        :raises APIException: Contains status code and error message
+        :return: Multiplayer room object
+        :rtype: aiosu.models.multiplayer.MultiplayerRoom
+        """
+        url = f"{self.base_url}/api/v2/rooms/{room_id}"
+        json = await self._request("GET", url)
+        return MultiplayerRoom.parse_obj(json)
+
+    @check_token
+    async def get_multiplayer_leaderboard(
+        self, room_id: int, **kwargs: Any
+    ) -> MultiplayerLeaderboardResponse:
+        r"""Gets the multiplayer leaderboard for a room.
+
+        :param room_id: The ID of the room
+        :type room_id: int
+        :param \**kwargs:
+            See below
+
+        :Keyword Arguments:
+            * *limit* (``int``) --
+                Optional, number of scores to get. Min: 1, Max: 50, defaults to 50
+
+        :raises ValueError: If limit is not between 1 and 50
+        :raises APIException: Contains status code and error message
+        :return: Multiplayer leaderboard response object
+        :rtype: aiosu.models.multiplayer.MultiplayerLeaderboardResponse
+        """
+        if not 1 <= (limit := kwargs.pop("limit", 50)) <= 50:
+            raise ValueError("Limit must be between 1 and 50")
+        url = f"{self.base_url}/api/v2/rooms/{room_id}/leaderboard"
+        params: dict[str, Any] = {
+            "limit": limit,
+        }
+        json = await self._request("GET", url, params=params)
+        return MultiplayerLeaderboardResponse.parse_obj(json)
+
+    @check_token
+    @requires_scope(Scopes.IDENTIFY | Scopes.DELEGATE, any_scope=True)
+    async def get_multiplayer_scores(
+        self, room_id: int, playlist_id: int, **kwargs: Any
+    ) -> MultiplayerScoresResponse:
+        r"""Gets the multiplayer scores for a room.
+
+        :param room_id: The ID of the room
+        :type room_id: int
+        :param playlist_id: The ID of the playlist
+        :type playlist_id: int
+        :param \**kwargs:
+            See below
+
+        :Keyword Arguments:
+            * *limit* (``int``) --
+                Optional, the number of scores to return
+            * *sort* (``aiosu.models.multiplayer.MultiplayerScoreSortType``) --
+                Optional, the sort order of the scores
+            * *cursor_string* (``str``) --
+                Optional, the cursor string to use for pagination
+
+        :raises ValueError: If limit is not between 1 and 100
+        :raises APIException: Contains status code and error message
+        :return: Multiplayer scores response object
+        :rtype: aiosu.models.multiplayer.MultiplayerScoresResponse
+        """
+        if not 1 <= (limit := kwargs.pop("limit", 1)) <= 100:
+            raise ValueError("Limit must be between 1 and 100")
+        url = f"{self.base_url}/api/v2/rooms/{room_id}/playlist/{playlist_id}/scores"
+        params: dict[str, Any] = {
+            "limit": limit,
+        }
+        add_param(params, kwargs, key="sort")
+        add_param(params, kwargs, key="cursor_string")
+        json = await self._request("GET", url, params=params)
+        resp = MultiplayerScoresResponse.parse_obj(json)
+        if resp.cursor_string:
+            kwargs["cursor_string"] = resp.cursor_string
+            resp.next = partial(
+                self.get_multiplayer_scores, room_id, playlist_id, **kwargs
+            )
+        return resp
 
     @check_token
     async def revoke_token(self) -> None:

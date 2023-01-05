@@ -9,6 +9,7 @@ from enum import unique
 from functools import reduce
 from typing import TYPE_CHECKING
 
+
 if TYPE_CHECKING:
     from collections.abc import Generator
 
@@ -18,6 +19,10 @@ if TYPE_CHECKING:
 __all__ = (
     "Mod",
     "Mods",
+    "KeyMod",
+    "FreemodAllowed",
+    "ScoreIncreaseMods",
+    "SpeedChangingMods",
 )
 
 _mod_short_names = {
@@ -205,7 +210,7 @@ KeyMod = (
     | Mod.Key9
     | Mod.KeyCoop
 )
-FreeModAllowed = (
+FreemodAllowed = (
     Mod.NoFail
     | Mod.Easy
     | Mod.Hidden

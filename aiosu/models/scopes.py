@@ -6,7 +6,10 @@ from __future__ import annotations
 from enum import IntFlag
 from enum import unique
 
-__all__ = ("Scopes",)
+__all__ = (
+    "Scopes",
+    "VALID_CLIENT_SCOPES",
+)
 
 
 @unique
@@ -27,3 +30,6 @@ class Scopes(IntFlag):
 
     def __str__(self) -> str:
         return " ".join(scope.name.lower() for scope in self.__flags__())  # type: ignore
+
+
+VALID_CLIENT_SCOPES = Scopes.PUBLIC | Scopes.DELEGATE

@@ -6,14 +6,13 @@ from __future__ import annotations
 from datetime import datetime
 from enum import Enum
 from typing import Any
+from typing import Literal
 from typing import Optional
 from typing import TYPE_CHECKING
 
 from .base import BaseModel
-from .beatmap import Beatmap
-from .beatmap import Beatmapset
-from .common import Achievement
 from .common import Country
+from .common import HTMLBody
 from .common import TimestampedCount
 from .gamemode import Gamemode
 
@@ -24,29 +23,28 @@ __all__ = (
     "User",
     "UserAccountHistory",
     "UserBadge",
-    "UserBeatmapPlaycount",
     "UserGradeCounts",
     "UserGroup",
     "UserKudosu",
     "UserLevel",
-    "Userpage",
     "UserProfileCover",
     "UserProfileTournamentBanner",
     "UserQueryType",
     "UserRankHistoryElement",
     "UserStats",
+    "UserAccountHistoryType",
 )
 
 
 cast_int: Callable[..., int] = lambda x: int(x or 0)
 cast_float: Callable[..., float] = lambda x: float(x or 0)
 
-
-class UserBeatmapPlaycount(BaseModel):
-    count: int
-    beatmap_id: int
-    beatmap: Optional[Beatmap]
-    beatmapset: Optional[Beatmapset]
+UserAccountHistoryType = Literal[
+    "note",
+    "restriction",
+    "silence",
+    "tournament_ban",
+]
 
 
 class UserQueryType(Enum):
@@ -63,11 +61,6 @@ class UserQueryType(Enum):
             if query in q.value:
                 return q
         raise ValueError(f"UserQueryType {query} does not exist.")
-
-
-class Userpage(BaseModel):
-    html: str
-    raw: Optional[str] = None
 
 
 class UserLevel(BaseModel):
@@ -103,14 +96,14 @@ class UserRankHistoryElement(BaseModel):
 
 class UserProfileCover(BaseModel):
     url: str
-    custom_url: Optional[str] = None
-    id: Optional[str] = None
+    custom_url: Optional[str]
+    id: Optional[str]
 
 
 class UserProfileTournamentBanner(BaseModel):
     tournament_id: int
     image: str
-    id: Optional[int] = None
+    id: Optional[int]
 
 
 class UserBadge(BaseModel):
@@ -122,22 +115,23 @@ class UserBadge(BaseModel):
 
 class UserAccountHistory(BaseModel):
     id: int
-    description: str
-    length: int
     timestamp: datetime
-    type: str
+    length: int
+    permanent: bool
+    type: UserAccountHistoryType
+    description: Optional[str]
 
 
 class UserGradeCounts(BaseModel):
-    ssh: int
+    ssh: Optional[int]
     """Number of Silver SS ranks achieved."""
-    ss: int
+    ss: Optional[int]
     """Number of SS ranks achieved."""
-    sh: int
+    sh: Optional[int]
     """Number of Silver S ranks achieved."""
-    s: int
+    s: Optional[int]
     """Number of S ranks achieved."""
-    a: int
+    a: Optional[int]
     """Number of A ranks achieved."""
 
     @classmethod
@@ -158,30 +152,34 @@ class UserGroup(BaseModel):
     identifier: str
     name: str
     short_name: str
-    colour: str
     has_listing: bool
     has_playmodes: bool
     is_probationary: bool
-    playmodes: Optional[list[Gamemode]] = None
-    description: Optional[str] = None
+    colour: Optional[str]
+    playmodes: Optional[list[Gamemode]]
+    description: Optional[str]
 
 
 class UserStats(BaseModel):
-    level: UserLevel
-    pp: float
-    ranked_score: int
-    hit_accuracy: float
-    play_count: int
-    play_time: int
-    total_score: int
-    total_hits: int
-    is_ranked: bool
-    grade_counts: UserGradeCounts
+    """Fields are marked as optional since they might be missing from rankings other than performance."""
+
+    ranked_score: Optional[int]
+    play_count: Optional[int]
+    grade_counts: Optional[UserGradeCounts]
+    total_hits: Optional[int]
+    is_ranked: Optional[bool]
+    total_score: Optional[int]
+    level: Optional[UserLevel]
+    hit_accuracy: Optional[float]
+    play_time: Optional[int]
+    pp: Optional[float]
+    pp_exp: Optional[float]
     replays_watched_by_others: Optional[int]
     maximum_combo: Optional[int]
     global_rank: Optional[int]
+    global_rank_exp: Optional[int]
     country_rank: Optional[int]
-    user: Optional[User] = None
+    user: Optional[User]
 
     @classmethod
     def _from_api_v1(cls, data: Any) -> UserStats:
@@ -223,49 +221,49 @@ class User(BaseModel):
     is_supporter: Optional[bool]
     pm_friends_only: Optional[bool]
     profile_colour: Optional[str]
-    is_deleted: Optional[bool] = None
-    last_visit: Optional[datetime] = None
-    discord: Optional[str] = None
-    has_supported: Optional[bool] = None
-    interests: Optional[str] = None
-    join_date: Optional[datetime] = None
-    kudosu: Optional[UserKudosu] = None
-    location: Optional[str] = None
-    max_blocks: Optional[int] = None
-    max_friends: Optional[int] = None
-    occupation: Optional[str] = None
-    playmode: Optional[Gamemode] = None
-    playstyle: Optional[list[str]] = None
-    post_count: Optional[int] = None
-    profile_order: Optional[list[str]] = None
-    title: Optional[str] = None
-    twitter: Optional[str] = None
-    website: Optional[str] = None
-    country: Optional[Country] = None
-    cover: Optional[UserProfileCover] = None
-    is_restricted: Optional[bool] = None
-    account_history: Optional[list[Any]] = None  # Unsure what this is
-    active_tournament_banner: Optional[UserProfileTournamentBanner] = None
-    badges: Optional[list[UserBadge]] = None
-    beatmap_playcounts_count: Optional[int] = None
-    favourite_beatmapset_count: Optional[int] = None
-    follower_count: Optional[int] = None
-    graveyard_beatmapset_count: Optional[int] = None
-    groups: Optional[list[UserGroup]] = None
-    loved_beatmapset_count: Optional[int] = None
-    monthly_playcounts: Optional[list[TimestampedCount]] = None
-    page: Optional[Userpage] = None
-    pending_beatmapset_count: Optional[int] = None
-    previous_usernames: Optional[list[str]] = None
-    ranked_beatmapset_count: Optional[int] = None
-    replays_watched_counts: Optional[list[TimestampedCount]] = None
-    scores_best_count: Optional[int] = None
-    scores_first_count: Optional[int] = None
-    scores_recent_count: Optional[int] = None
-    statistics: Optional[UserStats] = None
-    support_level: Optional[int] = None
-    user_achievements: Optional[list[UserAchievmement]] = None
-    rank_history: Optional[UserRankHistoryElement] = None
+    is_deleted: Optional[bool]
+    last_visit: Optional[datetime]
+    discord: Optional[str]
+    has_supported: Optional[bool]
+    interests: Optional[str]
+    join_date: Optional[datetime]
+    kudosu: Optional[UserKudosu]
+    location: Optional[str]
+    max_blocks: Optional[int]
+    max_friends: Optional[int]
+    occupation: Optional[str]
+    playmode: Optional[Gamemode]
+    playstyle: Optional[list[str]]
+    post_count: Optional[int]
+    profile_order: Optional[list[str]]
+    title: Optional[str]
+    twitter: Optional[str]
+    website: Optional[str]
+    country: Optional[Country]
+    cover: Optional[UserProfileCover]
+    is_restricted: Optional[bool]
+    account_history: Optional[list[UserAccountHistory]]
+    active_tournament_banner: Optional[UserProfileTournamentBanner]
+    badges: Optional[list[UserBadge]]
+    beatmap_playcounts_count: Optional[int]
+    favourite_beatmapset_count: Optional[int]
+    follower_count: Optional[int]
+    graveyard_beatmapset_count: Optional[int]
+    groups: Optional[list[UserGroup]]
+    loved_beatmapset_count: Optional[int]
+    monthly_playcounts: Optional[list[TimestampedCount]]
+    page: Optional[HTMLBody]
+    pending_beatmapset_count: Optional[int]
+    previous_usernames: Optional[list[str]]
+    ranked_beatmapset_count: Optional[int]
+    replays_watched_counts: Optional[list[TimestampedCount]]
+    scores_best_count: Optional[int]
+    scores_first_count: Optional[int]
+    scores_recent_count: Optional[int]
+    statistics: Optional[UserStats]
+    support_level: Optional[int]
+    user_achievements: Optional[list[UserAchievmement]]
+    rank_history: Optional[UserRankHistoryElement]
 
     @property
     def url(self) -> str:
@@ -283,3 +281,6 @@ class User(BaseModel):
                 "statistics": UserStats._from_api_v1(data),
             },
         )
+
+
+UserStats.update_forward_refs()
