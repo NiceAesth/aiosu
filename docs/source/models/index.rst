@@ -8,12 +8,16 @@ Common
     :members:
     :undoc-members:
 
+.. autodata:: aiosu.models.common.SortTypes
+
 Rankings
 --------
 
 .. automodule:: aiosu.models.rankings
     :members:
     :undoc-members:
+
+.. autodata:: aiosu.models.rankings.RankingType
 
 User
 ----
@@ -28,6 +32,12 @@ Beatmap
 .. automodule:: aiosu.models.beatmap
     :members:
     :undoc-members:
+
+.. autodata:: aiosu.models.beatmap.BeatmapsetDisscussionType
+
+.. autodata:: aiosu.models.beatmap.BeatmapsetEventType
+
+.. autodata:: aiosu.models.beatmap.BeatmapsetRequestStatus
 
 Score
 -----
@@ -106,6 +116,8 @@ Kudosu
     :members:
     :undoc-members:
 
+.. autodata:: aiosu.models.kudosu.KudosuAction
+
 Search
 ------
 
@@ -126,6 +138,8 @@ API Events
 .. automodule:: aiosu.models.event
     :members:
     :undoc-members:
+
+.. autodata:: aiosu.models.event.EventType
 
 OAuth Token
 -----------

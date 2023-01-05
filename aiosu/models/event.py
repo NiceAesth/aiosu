@@ -26,6 +26,22 @@ __all__ = (
     "EventType",
 )
 
+EventType = Literal[
+    "achievement",
+    "beatmapPlaycount",
+    "beatmapsetApprove",
+    "beatmapsetDelete",
+    "beatmapsetRevive",
+    "beatmapsetUpdate",
+    "beatmapsetUpload",
+    "rank",
+    "rankLost",
+    "usernameChange",
+    "userSupportAgain",
+    "userSupportFirst",
+    "userSupportGift",
+]
+
 
 class EventBeatmap(BaseModel):
     title: str
@@ -47,23 +63,6 @@ class EventUser(BaseModel):
         if previous_username := values.pop("previousUsername", None):
             values["previous_username"] = previous_username
         return values
-
-
-EventType = Literal[
-    "achievement",
-    "beatmapPlaycount",
-    "beatmapsetApprove",
-    "beatmapsetDelete",
-    "beatmapsetRevive",
-    "beatmapsetUpdate",
-    "beatmapsetUpload",
-    "rank",
-    "rankLost",
-    "usernameChange",
-    "userSupportAgain",
-    "userSupportFirst",
-    "userSupportGift",
-]
 
 
 class Event(BaseModel):
