@@ -13,6 +13,7 @@ from .base import BaseModel
 __all__ = (
     "LazerMod",
     "LazerScoreStatistics",
+    "LazerReplayData",
 )
 
 
