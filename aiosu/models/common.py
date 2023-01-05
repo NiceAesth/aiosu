@@ -22,6 +22,7 @@ __all__ = (
     "TimestampedCount",
     "CursorModel",
     "SortTypes",
+    "HTMLBody",
 )
 
 
@@ -61,6 +62,12 @@ class Country(BaseModel):
         :rtype: str
         """
         return flag_lookup(self.code)
+
+
+class HTMLBody(BaseModel):
+    html: str
+    raw: Optional[str]
+    bbcode: Optional[str]
 
 
 class CurrentUserAttributes(BaseModel):

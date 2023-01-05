@@ -11,6 +11,7 @@ from .changelog import *
 from .comment import *
 from .common import *
 from .event import *
+from .forum import *
 from .gamemode import *
 from .kudosu import *
 from .mods import *

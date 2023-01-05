@@ -35,6 +35,10 @@ from ..models import Build
 from ..models import ChangelogListing
 from ..models import CommentBundle
 from ..models import Event
+from ..models import ForumCreateTopicResponse
+from ..models import ForumPost
+from ..models import ForumTopic
+from ..models import ForumTopicResponse
 from ..models import Gamemode
 from ..models import KudosuHistory
 from ..models import Mods
@@ -199,6 +203,8 @@ class Client(Eventable):
             "GET": self._session.get,
             "POST": self._session.post,
             "DELETE": self._session.delete,
+            "PUT": self._session.put,
+            "PATCH": self._session.patch,
         }
 
         async with self._limiter:
@@ -1385,6 +1391,171 @@ class Client(Eventable):
         url = f"{self.base_url}/api/v2/spotlights"
         json = await self._request("GET", url)
         return from_list(Spotlight.parse_obj, json.get("spotlights", []))
+
+    @check_token
+    async def get_forum_topic(self, topic_id: int, **kwargs: Any) -> ForumTopicResponse:
+        r"""Gets a forum topic.
+
+        :param topic_id: The ID of the topic
+        :type topic_id: int
+        :param \**kwargs:
+            See below
+
+        :Keyword Arguments:
+            * *limit* (``int``) --
+                Optional, the number of posts to return. Min: 1, Max: 50, defaults to 20
+            * *sort* (``aiosu.models.common.SortTypes``) --
+                Optional, the sort type to use. Defaults to ``id_asc``
+            * *start* (``int``) --
+                Optional, the start post ID to use for pagination.
+            * *end* (``int``) --
+                Optional, the end post ID to use for pagination.
+            * *cursor_string* (``str``) --
+                Optional, the cursor string to use for pagination.
+
+        :raises APIException: Contains status code and error message
+        :return: Forum topic response object
+        :rtype: aiosu.models.forum.ForumTopicResponse
+        """
+        if not 1 <= (limit := kwargs.pop("limit", 20)) <= 50:
+            raise ValueError("Invalid limit specified. Limit must be between 1 and 50")
+        url = f"{self.base_url}/api/v2/forums/topics/{topic_id}"
+        params: dict[str, Any] = {
+            "limit": limit,
+        }
+        add_param(params, kwargs, key="sort")
+        add_param(params, kwargs, key="start")
+        add_param(params, kwargs, key="end")
+        add_param(params, kwargs, key="cursor_string")
+        json = await self._request("GET", url, params=params)
+        resp = ForumTopicResponse.parse_obj(json)
+        if resp.cursor_string:
+            kwargs["cursor_string"] = resp.cursor_string
+            resp.next = partial(self.get_forum_topic, topic_id, **kwargs)
+        return resp
+
+    @check_token
+    @requires_scope(Scopes.FORUM_WRITE)
+    async def create_forum_topic(
+        self, forum_id: int, title: str, content: str, **kwargs: Any
+    ) -> ForumCreateTopicResponse:
+        r"""Creates a forum topic.
+
+        :param forum_id: The ID of the forum to create the topic in
+        :type forum_id: int
+        :param title: The title of the topic
+        :type title: str
+        :param content: The content of the topic
+        :type content: str
+        :param \**kwargs:
+            See below
+
+        :Keyword Arguments:
+            * *with_poll* (``bool``) --
+                Optional, whether to create a poll with the topic. Defaults to ``False``
+            * *poll_title* (``str``) --
+                Optional, the title of the poll
+            * *poll_options* (``list[str]``) --
+                Optional, the options for the poll
+            * *poll_length_days* (``int``) --
+                Optional, the length of the poll in days. Defaults to 0
+            * *poll_vote_change* (``bool``) --
+                Optional, whether to allow users to change their vote. Defaults to ``False``
+            * *poll_hide_results* (``bool``) --
+                Optional, whether to hide the results of the poll. Defaults to ``False``
+            * *poll_max_votes* (``int``) --
+                Optional, the maximum number of votes a user can make. Defaults to 1
+
+        :raises APIException: Contains status code and error message
+        :return: Forum create topic response object
+        :rtype: aiosu.models.forum.ForumCreateTopicResponse
+        """
+        url = f"{self.base_url}/api/v2/forums/topics"
+        data: dict[str, Any] = {
+            "forum_id": forum_id,
+            "title": title,
+            "body": content,
+        }
+        add_param(data, kwargs, key="with_poll")
+        if data.get("with_poll"):
+            forum_topic_poll = {
+                "title": kwargs["poll_title"],
+                "length_days": kwargs.pop("poll_length_days", 0),
+                "vote_change": kwargs.pop("poll_vote_change", False),
+                "hide_results": kwargs.pop("poll_hide_results", False),
+                "max_votes": kwargs.pop("poll_max_votes", 1),
+            }
+            add_param(
+                forum_topic_poll,
+                kwargs,
+                key="options",
+                param_name="poll_options",
+            )
+            data["forum_topic_poll"] = forum_topic_poll
+        json = await self._request("POST", url, data=data)
+        return ForumCreateTopicResponse.parse_obj(json)
+
+    @check_token
+    @requires_scope(Scopes.FORUM_WRITE)
+    async def reply_forum_topic(self, topic_id: int, content: str) -> ForumPost:
+        r"""Replies to a forum topic.
+
+        :param topic_id: The ID of the topic
+        :type topic_id: int
+        :param content: The content of the post
+        :type content: str
+        :raises APIException: Contains status code and error message
+        :return: Forum post object
+        :rtype: aiosu.models.forum.ForumPost
+        """
+        url = f"{self.base_url}/api/v2/forums/topics/{topic_id}/reply"
+        data = {
+            "body": content,
+        }
+        json = await self._request("POST", url, data=data)
+        return ForumPost.parse_obj(json)
+
+    @check_token
+    @requires_scope(Scopes.FORUM_WRITE)
+    async def edit_forum_topic_title(self, topid_id: int, new_title: str) -> ForumTopic:
+        r"""Edits a forum topic's title.
+
+        :param topid_id: The ID of the topic
+        :type topid_id: int
+        :param new_title: The new title of the topic
+        :type new_title: str
+        :raises APIException: Contains status code and error message
+        :return: Forum topic object
+        :rtype: aiosu.models.forum.ForumTopic
+        """
+        url = f"{self.base_url}/api/v2/forums/topics/{topid_id}/title"
+        data = {
+            "forum_topic": {
+                "topic_title": new_title,
+            },
+        }
+        json = await self._request("PUT", url, data=data)
+        return ForumTopic.parse_obj(json)
+
+    @check_token
+    @requires_scope(Scopes.FORUM_WRITE)
+    async def edit_forum_post(self, post_id: int, new_content: str) -> ForumPost:
+        r"""Edits a forum post.
+
+        :param post_id: The ID of the post
+        :type post_id: int
+        :param new_content: The new content of the post
+        :type new_content: str
+        :raises APIException: Contains status code and error message
+        :return: Forum post object
+        :rtype: aiosu.models.forum.ForumPost
+        """
+        url = f"{self.base_url}/api/v2/forums/posts/{post_id}"
+        data = {
+            "body": new_content,
+        }
+        json = await self._request("PUT", url, data=data)
+        return ForumPost.parse_obj(json)
 
     @check_token
     async def revoke_token(self) -> None:

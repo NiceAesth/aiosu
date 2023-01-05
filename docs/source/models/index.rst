@@ -143,6 +143,17 @@ News
     :undoc-members:
     :inherited-members: BaseModel
 
+Forum
+-----
+
+.. automodule:: aiosu.models.forum
+    :members:
+    :exclude-members: Config
+    :undoc-members:
+    :inherited-members: BaseModel
+
+.. autodata:: aiosu.models.forum.ForumTopicType
+
 Wiki
 ----
 

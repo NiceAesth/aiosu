@@ -12,6 +12,7 @@ from typing import TYPE_CHECKING
 
 from .base import BaseModel
 from .common import Country
+from .common import HTMLBody
 from .common import TimestampedCount
 from .gamemode import Gamemode
 
@@ -26,7 +27,6 @@ __all__ = (
     "UserGroup",
     "UserKudosu",
     "UserLevel",
-    "Userpage",
     "UserProfileCover",
     "UserProfileTournamentBanner",
     "UserQueryType",
@@ -61,11 +61,6 @@ class UserQueryType(Enum):
             if query in q.value:
                 return q
         raise ValueError(f"UserQueryType {query} does not exist.")
-
-
-class Userpage(BaseModel):
-    html: str
-    raw: Optional[str]
 
 
 class UserLevel(BaseModel):
@@ -257,7 +252,7 @@ class User(BaseModel):
     groups: Optional[list[UserGroup]]
     loved_beatmapset_count: Optional[int]
     monthly_playcounts: Optional[list[TimestampedCount]]
-    page: Optional[Userpage]
+    page: Optional[HTMLBody]
     pending_beatmapset_count: Optional[int]
     previous_usernames: Optional[list[str]]
     ranked_beatmapset_count: Optional[int]
