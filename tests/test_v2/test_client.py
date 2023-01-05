@@ -202,6 +202,27 @@ def beatmapset_events():
 
 
 @pytest.fixture
+def beatmapset_discussions():
+    with open("tests/data/v2/multiple_beatmapset_discussion.json", "rb") as f:
+        data = f.read()
+    return data
+
+
+@pytest.fixture
+def beatmapset_discussion_posts():
+    with open("tests/data/v2/multiple_beatmapset_discussion_post.json", "rb") as f:
+        data = f.read()
+    return data
+
+
+@pytest.fixture
+def beatmapset_discussion_votes():
+    with open("tests/data/v2/multiple_beatmapset_discussion_vote.json", "rb") as f:
+        data = f.read()
+    return data
+
+
+@pytest.fixture
 def difficulty_attributes():
     def _difficulty_attributes(mode="osu"):
         with open(f"tests/data/v2/difficulty_attributes_{mode}.json", "rb") as f:
@@ -567,6 +588,48 @@ class TestClient:
         assert isinstance(data, list) and all(
             isinstance(x, aiosu.models.BeatmapsetEvent) for x in data
         )
+        await client.close()
+
+    @pytest.mark.asyncio
+    async def test_get_beatmapset_discussions(
+        self,
+        mocker,
+        token,
+        beatmapset_discussions,
+    ):
+        client = aiosu.v2.Client(token=token)
+        resp = MockResponse(beatmapset_discussions, 200)
+        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
+        data = await client.get_beatmapset_discussions()
+        assert isinstance(data, aiosu.models.BeatmapsetDiscussionResponse)
+        await client.close()
+
+    @pytest.mark.asyncio
+    async def test_get_beatmapset_discussion_posts(
+        self,
+        mocker,
+        token,
+        beatmapset_discussion_posts,
+    ):
+        client = aiosu.v2.Client(token=token)
+        resp = MockResponse(beatmapset_discussion_posts, 200)
+        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
+        data = await client.get_beatmapset_discussion_posts()
+        assert isinstance(data, aiosu.models.BeatmapsetDiscussionPostResponse)
+        await client.close()
+
+    @pytest.mark.asyncio
+    async def test_get_beatmapset_discussion_votes(
+        self,
+        mocker,
+        token,
+        beatmapset_discussion_votes,
+    ):
+        client = aiosu.v2.Client(token=token)
+        resp = MockResponse(beatmapset_discussion_votes, 200)
+        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
+        data = await client.get_beatmapset_discussion_votes()
+        assert isinstance(data, aiosu.models.BeatmapsetDiscussionVoteResponse)
         await client.close()
 
     @pytest.mark.asyncio
