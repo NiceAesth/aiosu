@@ -78,6 +78,14 @@ Mods
     :undoc-members:
     :inherited-members: BaseModel
 
+.. autodata:: aiosu.models.mods.KeyMod
+
+.. autodata:: aiosu.models.mods.FreemodAllowed
+
+.. autodata:: aiosu.models.mods.ScoreIncreaseMods
+
+.. autodata:: aiosu.models.mods.SpeedChangingMods
+
 Performance
 -----------
 
@@ -96,6 +104,15 @@ Gamemode
     :undoc-members:
     :inherited-members: BaseModel
 
+Lazer
+-----
+
+.. automodule:: aiosu.models.lazer
+    :members:
+    :exclude-members: Config
+    :undoc-members:
+    :inherited-members: BaseModel
+
 Multiplayer
 -----------
 
@@ -108,6 +125,14 @@ Multiplayer
 .. autodata:: aiosu.models.multiplayer.MultiplayerScoreSortType
 
 .. autodata:: aiosu.models.multiplayer.MultiplayerEventTypes
+
+.. autodata:: aiosu.models.multiplayer.MultiplayerRoomMode
+
+.. autodata:: aiosu.models.multiplayer.MultiplayerRoomCategories
+
+.. autodata:: aiosu.models.multiplayer.MultiplayerRoomTypeGroups
+
+.. autodata:: aiosu.models.multiplayer.MultiplayerQueueMode
 
 Featured Artists
 ----------------

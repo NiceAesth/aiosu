@@ -278,6 +278,34 @@ def matches():
     return data
 
 
+@pytest.fixture
+def rooms():
+    with open("tests/data/v2/multiple_room.json", "rb") as f:
+        data = f.read()
+    return data
+
+
+@pytest.fixture
+def room():
+    with open("tests/data/v2/single_room.json", "rb") as f:
+        data = f.read()
+    return data
+
+
+@pytest.fixture
+def room_leaderboard():
+    with open("tests/data/v2/room_leaderboard.json", "rb") as f:
+        data = f.read()
+    return data
+
+
+@pytest.fixture
+def room_scores():
+    with open("tests/data/v2/multiple_room_score.json", "rb") as f:
+        data = f.read()
+    return data
+
+
 class TestCursor:
     @pytest.mark.asyncio
     async def test_get_featured_artists_cursor(self, mocker, token, artist_tracks):
@@ -413,6 +441,17 @@ class TestCursor:
         assert isinstance(data, aiosu.models.MultiplayerMatchesResponse)
         data_next = await data.next()
         assert isinstance(data_next, aiosu.models.MultiplayerMatchesResponse)
+        await client.close()
+
+    @pytest.mark.asyncio
+    async def test_get_multiplayer_scores_cursor(self, mocker, token, room_scores):
+        client = aiosu.v2.Client(token=token)
+        resp = MockResponse(room_scores, 200)
+        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
+        data = await client.get_multiplayer_scores(1, 1)
+        assert isinstance(data, aiosu.models.MultiplayerScoresResponse)
+        data_next = await data.next()
+        assert isinstance(data_next, aiosu.models.MultiplayerScoresResponse)
         await client.close()
 
 
@@ -918,4 +957,42 @@ class TestClient:
         mocker.patch("aiohttp.ClientSession.get", return_value=resp)
         data = await client.get_multiplayer_match(1)
         assert isinstance(data, aiosu.models.MultiplayerMatchResponse)
+        await client.close()
+
+    @pytest.mark.asyncio
+    async def test_get_multiplayer_rooms(self, mocker, token, rooms):
+        client = aiosu.v2.Client(token=token)
+        resp = MockResponse(rooms, 200)
+        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
+        data = await client.get_multiplayer_rooms()
+        assert isinstance(data, list) and all(
+            isinstance(x, aiosu.models.MultiplayerRoom) for x in data
+        )
+        await client.close()
+
+    @pytest.mark.asyncio
+    async def test_get_multiplayer_room(self, mocker, token, room):
+        client = aiosu.v2.Client(token=token)
+        resp = MockResponse(room, 200)
+        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
+        data = await client.get_multiplayer_room(1)
+        assert isinstance(data, aiosu.models.MultiplayerRoom)
+        await client.close()
+
+    @pytest.mark.asyncio
+    async def test_get_multiplayer_leaderboard(self, mocker, token, room_leaderboard):
+        client = aiosu.v2.Client(token=token)
+        resp = MockResponse(room_leaderboard, 200)
+        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
+        data = await client.get_multiplayer_leaderboard(1)
+        assert isinstance(data, aiosu.models.MultiplayerLeaderboardResponse)
+        await client.close()
+
+    @pytest.mark.asyncio
+    async def test_get_multiplayer_scores(self, mocker, token, room_scores):
+        client = aiosu.v2.Client(token=token)
+        resp = MockResponse(room_scores, 200)
+        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
+        data = await client.get_multiplayer_scores(1, 1)
+        assert isinstance(data, aiosu.models.MultiplayerScoresResponse)
         await client.close()

@@ -8,12 +8,15 @@ from typing import Any
 from typing import Literal
 from typing import Optional
 
+from pydantic import Field
 from pydantic import root_validator
 
 from .base import BaseModel
+from .beatmap import Beatmap
 from .common import CursorModel
-from .mods import Mods
-from .score import ScoreStatistics
+from .gamemode import Gamemode
+from .lazer import LazerMod
+from .lazer import LazerScoreStatistics
 from .user import User
 
 __all__ = (
@@ -26,6 +29,14 @@ __all__ = (
     "MultiplayerEvent",
     "MultiplayerMatchResponse",
     "MultiplayerMatchesResponse",
+    "MultiplayerRoomMode",
+    "MultiplayerRoom",
+    "MultiplayerRoomsResponse",
+    "MultiplayerRoomCategories",
+    "MultiplayerRoomTypeGroups",
+    "MultiplayerLeaderboardResponse",
+    "MultiplayerLeaderboardItem",
+    "MultiplayerQueueMode",
 )
 
 MultiplayerScoreSortType = Literal["score_asc", "score_desc"]
@@ -43,6 +54,10 @@ MultiplayerEventTypes = Literal[
     "player-left-no-user",
     "player-kicked-no-user",
 ]
+MultiplayerRoomMode = Literal["owned", "participated", "ended"]
+MultiplayerRoomCategories = Literal["normal", "spotlight", "featured_artists"]
+MultiplayerRoomTypeGroups = Literal["playlists", "realtime"]
+MultiplayerQueueMode = Literal["host_only", "all_players", "all_players_round_robin"]
 
 
 class MultiplayerScoresAround(BaseModel):
@@ -54,16 +69,16 @@ class MultiplayerScore(BaseModel):
     id: int
     user_id: int
     room_id: int
-    playlist_team_id: int
+    playlist_item_id: int
     beatmap_id: int
     rank: str
     total_score: int
     accuracy: float
     max_combo: int
-    mods: Mods
+    mods: list[LazerMod]
     passed: bool
     user: User
-    statistics: ScoreStatistics
+    statistics: LazerScoreStatistics
     position: Optional[int]
     scores_around: Optional[MultiplayerScoresAround]
 
@@ -105,6 +120,63 @@ class MultiplayerMatchResponse(BaseModel):
 
 class MultiplayerMatchesResponse(CursorModel):
     matches: list[MultiplayerMatch]
+
+
+class MultiplayerPlaylistItem(BaseModel):
+    id: int
+    room_id: int
+    beatmap_id: int
+    mode: Gamemode = Field(alias="ruleset_id")
+    allowed_mods: list[LazerMod]
+    required_mods: list[LazerMod]
+    expired: bool
+    owner_id: int
+    beatmap: Beatmap
+    playlist_order: Optional[int]
+    played_at: Optional[datetime]
+
+
+class MultiplayerRoom(BaseModel):
+    id: int
+    name: str
+    category: MultiplayerRoomCategories
+    type: MultiplayerRoomTypeGroups
+    user_id: int
+    channel_id: int
+    active: bool
+    has_password: bool
+    auto_skip: bool
+    host: User
+    queue_mode: MultiplayerQueueMode
+    playlist: list[MultiplayerPlaylistItem]
+    recent_participants: list[User]
+    participant_count: Optional[int]
+    starts_at: Optional[datetime]
+    ends_at: Optional[datetime]
+    max_attempts: Optional[int]
+
+
+class MultiplayerLeaderboardItem(BaseModel):
+    accuracy: float
+    attempts: int
+    completed: int
+    pp: float
+    room_id: int
+    total_score: int
+    user_id: int
+    user: User
+    position: Optional[int]
+
+
+class MultiplayerLeaderboardResponse(BaseModel):
+    leaderboard: list[MultiplayerLeaderboardItem]
+    user_score: Optional[MultiplayerLeaderboardItem]
+
+
+class MultiplayerRoomsResponse(CursorModel):
+    """Currently unused. Relevant for api-version >= 99999999"""
+
+    rooms: list[MultiplayerRoom]
 
 
 MultiplayerScoresAround.update_forward_refs()

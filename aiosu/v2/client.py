@@ -44,8 +44,11 @@ from ..models import ForumTopicResponse
 from ..models import Gamemode
 from ..models import KudosuHistory
 from ..models import Mods
+from ..models import MultiplayerLeaderboardResponse
 from ..models import MultiplayerMatchesResponse
 from ..models import MultiplayerMatchResponse
+from ..models import MultiplayerRoom
+from ..models import MultiplayerRoomMode
 from ..models import MultiplayerScoresResponse
 from ..models import NewsListing
 from ..models import NewsPost
@@ -1723,30 +1726,80 @@ class Client(Eventable):
         return MultiplayerMatchResponse.parse_obj(json)
 
     @check_token
-    async def get_multiplayer_rooms(self, **kwargs: Any) -> MultiplayerRoomsResponse:
+    async def get_multiplayer_rooms(self, **kwargs: Any) -> list[MultiplayerRoom]:
+        r"""Gets the multiplayer rooms.
+
+        :param \**kwargs:
+            See below
+
+        :Keyword Arguments:
+            * *mode* (``aiosu.models.multiplayer.MultiplayerRoomMode``) --
+                Optional, the multiplayer room mode
+            * *limit* (``int``) --
+                Optional, number of scores to get. Min: 1, Max: 50, defaults to 50
+            * *sort* (``aiosu.models.common.SortTypes``) --
+                Optional, the sort type
+            * *category* (``aiosu.models.multiplayer.MultiplayerRoomCategories``) --
+                Optional, the multiplayer room category
+            * *type* (``aiosu.models.multiplayer.MultiplayerRoomTypeGroups``) --
+                Optional, the multiplayer room type group
+
+        :raises ValueError: If limit is not between 1 and 50
+        :raises APIException: Contains status code and error message
+        :return: List of multiplayer rooms
+        :rtype: list[aiosu.models.multiplayer.MultiplayerRoom]
+        """
+        if not 1 <= (limit := kwargs.pop("limit", 50)) <= 50:
+            raise ValueError("Limit must be between 1 and 50")
         url = f"{self.base_url}/api/v2/rooms"
         if "mode" in kwargs:
-            mode = Gamemode(kwargs.pop("mode"))  # type: ignore
+            mode: MultiplayerRoomMode = kwargs.pop("mode")
             url += f"/{mode}"
-        params: dict[str, Any] = {}
-        add_param(params, kwargs, key="cursor_string")
+        params: dict[str, Any] = {
+            "limit": limit,
+        }
+        add_param(params, kwargs, key="sort")
+        add_param(params, kwargs, key="category")
+        add_param(params, kwargs, key="type", param_name="type_group")
         json = await self._request("GET", url, params=params)
-        resp = MultiplayerRoomsResponse.parse_obj(json)
-        if resp.cursor_string:
-            kwargs["cursor_string"] = resp.cursor_string
-            resp.next = partial(self.get_multiplayer_rooms, **kwargs)
+        return from_list(MultiplayerRoom.parse_obj, json)
 
     @check_token
-    async def get_multiplayer_room(self, room_id: int) -> MultiplayerRoomResponse:
+    async def get_multiplayer_room(self, room_id: int) -> MultiplayerRoom:
+        r"""Gets a multiplayer room.
+
+        :param room_id: The ID of the room
+        :type room_id: int
+
+        :raises APIException: Contains status code and error message
+        :return: Multiplayer room object
+        :rtype: aiosu.models.multiplayer.MultiplayerRoom
+        """
         url = f"{self.base_url}/api/v2/rooms/{room_id}"
         json = await self._request("GET", url)
-        return MultiplayerRoomResponse.parse_obj(json)
+        return MultiplayerRoom.parse_obj(json)
 
     @check_token
     async def get_multiplayer_leaderboard(
         self, room_id: int, **kwargs: Any
     ) -> MultiplayerLeaderboardResponse:
-        if 1 <= (limit := kwargs.pop("limit", 1)) <= 50:
+        r"""Gets the multiplayer leaderboard for a room.
+
+        :param room_id: The ID of the room
+        :type room_id: int
+        :param \**kwargs:
+            See below
+
+        :Keyword Arguments:
+            * *limit* (``int``) --
+                Optional, number of scores to get. Min: 1, Max: 50, defaults to 50
+
+        :raises ValueError: If limit is not between 1 and 50
+        :raises APIException: Contains status code and error message
+        :return: Multiplayer leaderboard response object
+        :rtype: aiosu.models.multiplayer.MultiplayerLeaderboardResponse
+        """
+        if not 1 <= (limit := kwargs.pop("limit", 50)) <= 50:
             raise ValueError("Limit must be between 1 and 50")
         url = f"{self.base_url}/api/v2/rooms/{room_id}/leaderboard"
         params: dict[str, Any] = {
