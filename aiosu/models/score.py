@@ -76,17 +76,17 @@ class Score(BaseModel):
     created_at: datetime
     mode: Gamemode
     replay: bool
-    id: Optional[int] = None
+    id: Optional[int]
     """Always present except for API v1 recent scores."""
     pp: Optional[float] = 0
-    best_id: Optional[int] = None
-    beatmap: Optional[Beatmap] = None
-    beatmapset: Optional[Beatmapset] = None
-    weight: Optional[ScoreWeight] = None
-    user: Optional[User] = None
-    rank_global: Optional[int] = None
-    rank_country: Optional[int] = None
-    beatmap_id: Optional[int] = None
+    best_id: Optional[int]
+    beatmap: Optional[Beatmap]
+    beatmapset: Optional[Beatmapset]
+    weight: Optional[ScoreWeight]
+    user: Optional[User]
+    rank_global: Optional[int]
+    rank_country: Optional[int]
+    beatmap_id: Optional[int]
     """Only present on API v1"""
 
     @property

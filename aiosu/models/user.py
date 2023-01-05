@@ -6,6 +6,7 @@ from __future__ import annotations
 from datetime import datetime
 from enum import Enum
 from typing import Any
+from typing import Literal
 from typing import Optional
 from typing import TYPE_CHECKING
 
@@ -31,11 +32,19 @@ __all__ = (
     "UserQueryType",
     "UserRankHistoryElement",
     "UserStats",
+    "UserAccountHistoryType",
 )
 
 
 cast_int: Callable[..., int] = lambda x: int(x or 0)
 cast_float: Callable[..., float] = lambda x: float(x or 0)
+
+UserAccountHistoryType = Literal[
+    "note",
+    "restriction",
+    "silence",
+    "tournament_ban",
+]
 
 
 class UserQueryType(Enum):
@@ -56,7 +65,7 @@ class UserQueryType(Enum):
 
 class Userpage(BaseModel):
     html: str
-    raw: Optional[str] = None
+    raw: Optional[str]
 
 
 class UserLevel(BaseModel):
@@ -111,10 +120,11 @@ class UserBadge(BaseModel):
 
 class UserAccountHistory(BaseModel):
     id: int
-    description: str
-    length: int
     timestamp: datetime
-    type: str
+    length: int
+    permanent: bool
+    type: UserAccountHistoryType
+    description: Optional[str]
 
 
 class UserGradeCounts(BaseModel):
@@ -233,7 +243,7 @@ class User(BaseModel):
     country: Optional[Country]
     cover: Optional[UserProfileCover]
     is_restricted: Optional[bool]
-    account_history: Optional[list[Any]]  # Unsure what this is
+    account_history: Optional[list[UserAccountHistory]]
     active_tournament_banner: Optional[UserProfileTournamentBanner]
     badges: Optional[list[UserBadge]]
     beatmap_playcounts_count: Optional[int]

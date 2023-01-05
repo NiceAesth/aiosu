@@ -123,8 +123,8 @@ class BeatmapRankStatus(Enum):
 
 
 class BeatmapAvailability(BaseModel):
-    more_information: Optional[str] = None
-    download_disabled: Optional[bool] = None
+    more_information: Optional[str]
+    download_disabled: Optional[bool]
 
     @classmethod
     def _from_api_v1(cls, data: Any) -> BeatmapAvailability:
@@ -132,8 +132,8 @@ class BeatmapAvailability(BaseModel):
 
 
 class BeatmapNominations(BaseModel):
-    current: Optional[int] = None
-    required: Optional[int] = None
+    current: Optional[int]
+    required: Optional[int]
 
 
 class BeatmapCovers(BaseModel):
@@ -169,28 +169,28 @@ class BeatmapHype(BaseModel):
 
 
 class BeatmapFailtimes(BaseModel):
-    exit: Optional[list[int]] = None
-    fail: Optional[list[int]] = None
+    exit: Optional[list[int]]
+    fail: Optional[list[int]]
 
 
 class BeatmapDifficultyAttributes(BaseModel):
     max_combo: int
     star_rating: float
     # osu standard
-    aim_difficulty: Optional[float] = None
-    approach_rate: Optional[float] = None  # osu catch + standard
-    flashlight_difficulty: Optional[float] = None
-    overall_difficulty: Optional[float] = None
-    slider_factor: Optional[float] = None
-    speed_difficulty: Optional[float] = None
-    speed_note_count: Optional[float] = None
+    aim_difficulty: Optional[float]
+    approach_rate: Optional[float]  # osu catch + standard
+    flashlight_difficulty: Optional[float]
+    overall_difficulty: Optional[float]
+    slider_factor: Optional[float]
+    speed_difficulty: Optional[float]
+    speed_note_count: Optional[float]
     # osu taiko
-    stamina_difficulty: Optional[float] = None
-    rhythm_difficulty: Optional[float] = None
-    colour_difficulty: Optional[float] = None
+    stamina_difficulty: Optional[float]
+    rhythm_difficulty: Optional[float]
+    colour_difficulty: Optional[float]
     # osu mania
-    great_hit_window: Optional[float] = None
-    score_multiplier: Optional[float] = None
+    great_hit_window: Optional[float]
+    score_multiplier: Optional[float]
 
 
 class Beatmap(BaseModel):
@@ -203,25 +203,25 @@ class Beatmap(BaseModel):
     total_length: int
     user_id: int
     version: str
-    accuracy: Optional[float] = None
-    ar: Optional[float] = None
-    cs: Optional[float] = None
-    bpm: Optional[float] = None
-    convert: Optional[bool] = None
-    count_circles: Optional[int] = None
-    count_sliders: Optional[int] = None
-    count_spinners: Optional[int] = None
-    deleted_at: Optional[datetime] = None
-    drain: Optional[float] = None
-    hit_length: Optional[int] = None
-    is_scoreable: Optional[bool] = None
-    last_updated: Optional[datetime] = None
-    passcount: Optional[int] = None
+    accuracy: Optional[float]
+    ar: Optional[float]
+    cs: Optional[float]
+    bpm: Optional[float]
+    convert: Optional[bool]
+    count_circles: Optional[int]
+    count_sliders: Optional[int]
+    count_spinners: Optional[int]
+    deleted_at: Optional[datetime]
+    drain: Optional[float]
+    hit_length: Optional[int]
+    is_scoreable: Optional[bool]
+    last_updated: Optional[datetime]
+    passcount: Optional[int]
     play_count: Optional[int] = Field(None, alias="playcount")
-    checksum: Optional[str] = None
-    max_combo: Optional[int] = None
-    beatmapset: Optional[Beatmapset] = None
-    failtimes: Optional[BeatmapFailtimes] = None
+    checksum: Optional[str]
+    max_combo: Optional[int]
+    beatmapset: Optional[Beatmapset]
+    failtimes: Optional[BeatmapFailtimes]
 
     @root_validator(pre=True)
     def _set_url(cls, values: dict[str, Any]) -> dict[str, Any]:
@@ -299,24 +299,24 @@ class Beatmapset(BaseModel):
     title_unicode: str
     user_id: int
     video: bool
-    nsfw: Optional[bool] = None
-    hype: Optional[BeatmapHype] = None
-    availability: Optional[BeatmapAvailability] = None
-    bpm: Optional[float] = None
-    can_be_hyped: Optional[bool] = None
-    discussion_enabled: Optional[bool] = None
-    discussion_locked: Optional[bool] = None
-    is_scoreable: Optional[bool] = None
-    last_updated: Optional[datetime] = None
-    legacy_thread_url: Optional[str] = None
-    nominations_summary: Optional[BeatmapNominations] = None
-    ranked_date: Optional[datetime] = None
-    storyboard: Optional[bool] = None
-    submitted_date: Optional[datetime] = None
-    tags: Optional[str] = None
-    ratings: Optional[list[int]] = None
-    has_favourited: Optional[bool] = None
-    beatmaps: Optional[list[Beatmap]] = None
+    nsfw: Optional[bool]
+    hype: Optional[BeatmapHype]
+    availability: Optional[BeatmapAvailability]
+    bpm: Optional[float]
+    can_be_hyped: Optional[bool]
+    discussion_enabled: Optional[bool]
+    discussion_locked: Optional[bool]
+    is_scoreable: Optional[bool]
+    last_updated: Optional[datetime]
+    legacy_thread_url: Optional[str]
+    nominations_summary: Optional[BeatmapNominations]
+    ranked_date: Optional[datetime]
+    storyboard: Optional[bool]
+    submitted_date: Optional[datetime]
+    tags: Optional[str]
+    ratings: Optional[list[int]]
+    has_favourited: Optional[bool]
+    beatmaps: Optional[list[Beatmap]]
 
     @property
     def url(self) -> str:
