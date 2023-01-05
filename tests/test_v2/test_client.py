@@ -574,9 +574,7 @@ class TestClient:
         resp = MockResponse(beatmapsets, 200)
         mocker.patch("aiohttp.ClientSession.get", return_value=resp)
         data = await client.search_beatmapsets()
-        assert isinstance(data, list) and all(
-            isinstance(x, aiosu.models.Beatmapset) for x in data
-        )
+        assert isinstance(data, aiosu.models.BeatmapsetSearchResponse)
         await client.close()
 
     @pytest.mark.asyncio

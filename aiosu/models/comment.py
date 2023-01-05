@@ -8,7 +8,7 @@ from typing import Optional
 
 from .base import BaseModel
 from .common import CurrentUserAttributes
-from .common import Cursor
+from .common import CursorModel
 from .user import User
 
 __all__ = (
@@ -47,8 +47,7 @@ class Comment(BaseModel):
     user_id: Optional[int]
 
 
-class CommentBundle(BaseModel):
-    cursor: Cursor
+class CommentBundle(CursorModel):
     commentable_meta: list[Commentable]
     comments: list[Comment]
     has_more: bool

@@ -28,6 +28,7 @@ from ..models import BeatmapsetDiscussionPostResponse
 from ..models import BeatmapsetDiscussionResponse
 from ..models import BeatmapsetDiscussionVoteResponse
 from ..models import BeatmapsetEvent
+from ..models import BeatmapsetSearchResponse
 from ..models import BeatmapUserPlaycount
 from ..models import Build
 from ..models import CommentBundle
@@ -888,19 +889,19 @@ class Client(Eventable):
     async def search_beatmapsets(
         self,
         search_filter: Optional[str] = "",
-    ) -> list[Beatmapset]:
+    ) -> BeatmapsetSearchResponse:
         r"""Search beatmapset by filter.
 
         :param search_filter: The search filter.
         :type search_filter: str
 
         :raises APIException: Contains status code and error message
-        :return: List of beatmapset data objects
-        :rtype: list[aiosu.models.beatmap.Beatmapset]
+        :return: Beatmapset search response
+        :rtype: list[aiosu.models.beatmap.BeatmapsetSearchResponse]
         """
         url = f"{self.base_url}/api/v2/beatmapsets/search/{search_filter}"
         json = await self._request("GET", url)
-        return from_list(Beatmapset.parse_obj, json.get("beatmapsets", []))
+        return BeatmapsetSearchResponse.parse_obj(json)
 
     @check_token
     async def get_beatmapset_events(self, **kwargs: Any) -> list[BeatmapsetEvent]:

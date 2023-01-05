@@ -12,6 +12,7 @@ from typing import Literal
 from typing import Optional
 
 from emojiflags.lookup import lookup as flag_lookup  # type: ignore
+from pydantic import Field
 from pydantic import validator
 
 from .base import BaseModel
@@ -22,8 +23,7 @@ __all__ = (
     "Country",
     "CurrentUserAttributes",
     "TimestampedCount",
-    "Cursor",
-    "FuncType",
+    "CursorModel",
     "CursorNextType",
     "SortTypes",
 )
@@ -61,7 +61,7 @@ class Country(BaseModel):
 
     @property
     def flag_emoji(self) -> str:
-        """Emoji for the flag.
+        r"""Emoji for the flag.
 
         :return: Unicode emoji representation of the country's flag
         :rtype: str
@@ -82,5 +82,12 @@ class CurrentUserAttributes(BaseModel):
     can_new_comment_reason: Optional[str]
 
 
-class Cursor(BaseModel):
-    ...
+class CursorModel(BaseModel):
+    r"""NOTE: This model is not serializable by orjson directly.
+
+    Use the provided .json() or .dict() methods instead.
+    """
+
+    cursor_string: Optional[str]
+    next: Optional[CursorNextType] = Field(exclude=True)
+    """The next cursor string to use for pagination"""

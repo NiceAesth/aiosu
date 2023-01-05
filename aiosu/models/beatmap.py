@@ -13,7 +13,7 @@ from pydantic import Field
 from pydantic import root_validator
 
 from .base import BaseModel
-from .common import CursorNextType
+from .common import CursorModel
 from .gamemode import Gamemode
 from .user import User
 
@@ -39,6 +39,7 @@ __all__ = (
     "BeatmapsetDiscussionResponse",
     "BeatmapsetDiscussionPostResponse",
     "BeatmapsetDiscussionVoteResponse",
+    "BeatmapsetSearchResponse",
 )
 
 BeatmapsetDisscussionType = Literal[
@@ -355,6 +356,10 @@ class Beatmapset(BaseModel):
         )
 
 
+class BeatmapsetSearchResponse(CursorModel):
+    beatmapsets: list[Beatmapset]
+
+
 class BeatmapUserPlaycount(BaseModel):
     count: int
     beatmap_id: int
@@ -431,15 +436,12 @@ class BeatmapsetEvent(BaseModel):
     comment: Optional[dict]
 
 
-class BeatmapsetDiscussionResponse(BaseModel):
+class BeatmapsetDiscussionResponse(CursorModel):
     beatmaps: list[Beatmap]
     discussions: list[BeatmapsetDiscussion]
     included_discussions: list[BeatmapsetDiscussion]
     users: list[User]
     max_blocks: int
-    cursor_string: Optional[str]
-    next: Optional[CursorNextType] = Field(exclude=True)
-    """The next cursor string to use for pagination"""
 
     @root_validator(pre=True)
     def _set_max_blocks(cls, values: dict[str, Any]) -> dict[str, Any]:
@@ -447,22 +449,16 @@ class BeatmapsetDiscussionResponse(BaseModel):
         return values
 
 
-class BeatmapsetDiscussionPostResponse(BaseModel):
+class BeatmapsetDiscussionPostResponse(CursorModel):
     beatmapsets: list[Beatmapset]
     posts: list[BeatmapsetDiscussionPost]
     users: list[User]
-    cursor_string: Optional[str]
-    next: Optional[CursorNextType] = Field(exclude=True)
-    """The next cursor string to use for pagination"""
 
 
-class BeatmapsetDiscussionVoteResponse(BaseModel):
+class BeatmapsetDiscussionVoteResponse(CursorModel):
     votes: list[BeatmapsetVoteEvent]
     discussions: list[BeatmapsetDiscussion]
     users: list[User]
-    cursor_string: Optional[str]
-    next: Optional[CursorNextType] = Field(exclude=True)
-    """The next cursor string to use for pagination"""
 
 
 Beatmap.update_forward_refs()
