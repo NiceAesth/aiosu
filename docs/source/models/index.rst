@@ -154,6 +154,17 @@ Forum
 
 .. autodata:: aiosu.models.forum.ForumTopicType
 
+Chat
+----
+
+.. automodule:: aiosu.models.chat
+    :members:
+    :exclude-members: Config
+    :undoc-members:
+    :inherited-members: BaseModel
+
+.. autodata:: aiosu.models.chat.ChatChannelTypes
+
 Wiki
 ----
 

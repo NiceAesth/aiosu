@@ -8,6 +8,7 @@ from .backgrounds import *
 from .base import *
 from .beatmap import *
 from .changelog import *
+from .chat import *
 from .comment import *
 from .common import *
 from .event import *

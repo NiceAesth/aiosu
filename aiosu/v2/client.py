@@ -33,6 +33,8 @@ from ..models import BeatmapsetSearchResponse
 from ..models import BeatmapUserPlaycount
 from ..models import Build
 from ..models import ChangelogListing
+from ..models import ChatChannel
+from ..models import ChatMessageCreateResponse
 from ..models import CommentBundle
 from ..models import Event
 from ..models import ForumCreateTopicResponse
@@ -1480,7 +1482,7 @@ class Client(Eventable):
         }
         add_param(data, kwargs, key="with_poll")
         if data.get("with_poll"):
-            forum_topic_poll = {
+            forum_topic_poll: dict[str, Any] = {
                 "title": kwargs["poll_title"],
                 "length_days": kwargs.pop("poll_length_days", 0),
                 "vote_change": kwargs.pop("poll_vote_change", False),
@@ -1511,7 +1513,7 @@ class Client(Eventable):
         :rtype: aiosu.models.forum.ForumPost
         """
         url = f"{self.base_url}/api/v2/forums/topics/{topic_id}/reply"
-        data = {
+        data: dict[str, str] = {
             "body": content,
         }
         json = await self._request("POST", url, data=data)
@@ -1531,7 +1533,7 @@ class Client(Eventable):
         :rtype: aiosu.models.forum.ForumTopic
         """
         url = f"{self.base_url}/api/v2/forums/topics/{topid_id}/title"
-        data = {
+        data: dict[str, dict[str, str]] = {
             "forum_topic": {
                 "topic_title": new_title,
             },
@@ -1553,11 +1555,94 @@ class Client(Eventable):
         :rtype: aiosu.models.forum.ForumPost
         """
         url = f"{self.base_url}/api/v2/forums/posts/{post_id}"
-        data = {
+        data: dict[str, str] = {
             "body": new_content,
         }
         json = await self._request("PUT", url, data=data)
         return ForumPost.parse_obj(json)
+
+    @check_token
+    @requires_scope(Scopes.CHAT_WRITE)
+    async def create_chat_channel(
+        self, type: Literal["PM", "ANNOUNCE"], **kwargs: Any
+    ) -> ChatChannel:
+        r"""Creates a chat channel.
+
+        :param type: The type of the channel.
+        :type type: Literal["PM", "ANNOUNCE"]
+        :param \**kwargs:
+            See below
+
+        :Keyword Arguments:
+            * *target_id* (``int``) --
+                Required if type is ``PM``, the ID of the user to send a PM to
+            * *target_ids* (``List[int]``) --
+                Required if type is ``PM``, the IDs of the users to send a PM to
+            * *message* (``str``) --
+                Required if type is ``ANNOUNCE``, the message to send in the PM
+            * *channel_name* (``str``) --
+                Required if type is ``ANNOUNCE``, the name of the channel
+            * *channel_description* (``str``) --
+                Required if type is ``ANNOUNCE``, the description of the channel
+
+        :raises APIException: Contains status code and error message
+        :return: Chat channel object
+        :rtype: aiosu.models.chat.ChatChannel
+        """
+        url = f"{self.base_url}/api/v2/chat/channels"
+        data: dict[str, Any] = {
+            "type": type,
+        }
+        add_param(data, kwargs, key="message")
+        if type == "PM":
+            has_id = add_param(data, kwargs, key="target_id")
+            has_id |= add_param(data, kwargs, key="target_ids")
+            if not has_id:
+                raise ValueError("Missing target ID(s)")
+        elif type == "ANNOUNCE":
+            if not data.get("message"):
+                raise ValueError("Missing message")
+            channel = {
+                "name": kwargs["channel_name"],
+                "description": kwargs["channel_description"],
+            }
+            data["channel"] = channel
+        json = await self._request("POST", url, data=data)
+        return ChatChannel.parse_obj(json)
+
+    @check_token
+    @requires_scope(Scopes.CHAT_WRITE)
+    async def send_message(
+        self, user_id: int, message: str, is_action: bool, **kwargs: Any
+    ) -> ChatMessageCreateResponse:
+        r"""Sends a message to a user.
+
+        :param user_id: The ID of the user
+        :type user_id: int
+        :param message: The message to send
+        :type message: str
+        :param is_action: Whether the message is an action
+        :type is_action: bool
+        :param \**kwargs:
+            See below
+
+        :Keyword Arguments:
+            * *uuid* (``str``) --
+                Optional, the UUID of the message
+
+        :raises APIException: Contains status code and error message
+        :return: Chat message create response object
+        :rtype: aiosu.models.chat.ChatMessageCreateResponse
+        """
+        url = f"{self.base_url}/api/v2/chat/new"
+        data: dict[str, Any] = {
+            "target_id": user_id,
+            "message": message,
+            "is_action": is_action,
+        }
+        add_param(data, kwargs, key="uuid")
+        json = await self._request("POST", url, data=data)
+        return ChatMessageCreateResponse.parse_obj(json)
 
     @check_token
     async def revoke_token(self) -> None:
