@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import functools
 from datetime import datetime
+from functools import partial
 from io import BytesIO
 from typing import Literal
 from typing import TYPE_CHECKING
@@ -23,8 +24,9 @@ from ..helpers import from_list
 from ..models import Beatmap
 from ..models import BeatmapDifficultyAttributes
 from ..models import Beatmapset
+from ..models import BeatmapsetDiscussionResponse
 from ..models import BeatmapsetEvent
-from ..models import BeatmapsetEventType
+from ..models import BeatmapUserPlaycount
 from ..models import Build
 from ..models import CommentBundle
 from ..models import Event
@@ -39,7 +41,6 @@ from ..models import SearchResponse
 from ..models import SeasonalBackgroundSet
 from ..models import Spotlight
 from ..models import User
-from ..models import UserBeatmapPlaycount
 from ..models import UserQueryType
 from ..models import WikiPage
 
@@ -672,7 +673,7 @@ class Client(Eventable):
     @check_token
     async def get_user_most_played(
         self, user_id: int, **kwargs: Any
-    ) -> list[UserBeatmapPlaycount]:
+    ) -> list[BeatmapUserPlaycount]:
         r"""Get a user's most played beatmaps.
 
         :param user_id: ID of the user
@@ -688,14 +689,14 @@ class Client(Eventable):
 
         :raises APIException: Contains status code and error message
         :return: List of user playcount objects
-        :rtype: list[aiosu.models.user.UserBeatmapPlaycount]
+        :rtype: list[aiosu.models.beatmap.BeatmapUserPlaycount]
         """
         url = f"{self.base_url}/api/v2/users/{user_id}/beatmapsets/most_played"
         params: dict[str, Any] = {}
         add_param(params, kwargs, key="limit")
         add_param(params, kwargs, key="offset")
         json = await self._request("GET", url, params=params)
-        return from_list(UserBeatmapPlaycount.parse_obj, json)
+        return from_list(BeatmapUserPlaycount.parse_obj, json)
 
     @check_token
     async def get_user_recent_activity(
@@ -934,6 +935,63 @@ class Client(Eventable):
         add_param(params, kwargs, key="types")
         json = await self._request("GET", url, params=params)
         return from_list(BeatmapsetEvent.parse_obj, json.get("events", []))
+
+    @check_token
+    async def get_beatmapset_discussions(
+        self, **kwargs: Any
+    ) -> BeatmapsetDiscussionResponse:
+        r"""Get beatmapset discussions.
+
+        :param \**kwargs:
+            See below
+
+        :Keyword Arguments:
+            * *beatmap_id* (``int``) --
+                Optional, beatmap ID
+            * *beatmapset_id* (``int``) --
+                Optional, beatmapset ID
+            * *beatmapset_status* (``aiosu.models.beatmap.BeatmapsetStatus``) --
+                Optional, beatmapset status
+            * *limit* (``int``) --
+                Optional, number of results per page
+            * *page* (``int``) --
+                Optional, page number
+            * *only_unresolved* (``bool``) --
+                Optional, only unresolved discussions
+            * *sort* (``aiosu.models.beatmap.BeatmapsetDiscussionSort``) --
+                Optional, sort order
+            * *user_id* (``int``) --
+                Optional, user ID
+            * with_deleted (``bool``) --
+                Optional, include deleted discussions
+            * cursor_string (``str``) --
+                Optional, cursor string
+
+        :raises APIException: Contains status code and error message
+        :return: Beatmapset discussion response
+        :rtype: aiosu.models.beatmap.BeatmapsetDiscussionResponse
+        """
+        url = f"{self.base_url}/api/v2/beatmapsets/discussions"
+        params: dict[str, Any] = {}
+        add_param(params, kwargs, key="beatmap_id")
+        add_param(params, kwargs, key="beatmapset_id")
+        add_param(params, kwargs, key="beatmapset_status")
+        add_param(params, kwargs, key="limit")
+        add_param(params, kwargs, key="page")
+        add_param(params, kwargs, key="only_unresolved")
+        add_param(params, kwargs, key="sort")
+        add_param(params, kwargs, key="user", param_name="user_id")
+        add_param(params, kwargs, key="with_deleted")
+        add_param(params, kwargs, key="cursor_string")
+        json = await self._request("GET", url, params=params)
+        resp = BeatmapsetDiscussionResponse.parse_obj(json)
+        if resp.cursor_string:
+            resp.next = partial(
+                self.get_beatmapset_discussions,
+                **kwargs,
+                cursor_string=resp.cursor_string,
+            )
+        return resp
 
     @check_token
     async def get_score(

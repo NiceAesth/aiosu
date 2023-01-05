@@ -5,18 +5,17 @@ from __future__ import annotations
 
 from datetime import datetime
 from enum import Enum
+from typing import Any
 from typing import Literal
 from typing import Optional
-from typing import TYPE_CHECKING
 
 from pydantic import Field
 from pydantic import root_validator
 
 from .base import BaseModel
+from .common import CursorNextType
 from .gamemode import Gamemode
-
-if TYPE_CHECKING:
-    from typing import Any
+from .user import User
 
 __all__ = (
     "Beatmap",
@@ -35,6 +34,8 @@ __all__ = (
     "BeatmapsetEventComment",
     "BeatmapsetEventType",
     "BeatmapsetVoteEvent",
+    "BeatmapUserPlaycount",
+    "BeatmapsetDiscussionResponse",
 )
 
 
@@ -344,6 +345,13 @@ BeatmapsetEventType = Literal[
 ]
 
 
+class BeatmapUserPlaycount(BaseModel):
+    count: int
+    beatmap_id: int
+    beatmap: Optional[Beatmap]
+    beatmapset: Optional[Beatmapset]
+
+
 class BeatmapsetDiscussionPost(BaseModel):
     id: int
     user_id: int
@@ -407,6 +415,22 @@ class BeatmapsetEvent(BaseModel):
     beatmapset: Optional[Beatmapset]
     discussion: Optional[BeatmapsetDiscussion]
     comment: Optional[dict]
+
+
+class BeatmapsetDiscussionResponse(BaseModel):
+    beatmaps: list[Beatmap]
+    discussions: list[BeatmapsetDiscussion]
+    included_discussions: list[BeatmapsetDiscussion]
+    users: list[User]
+    max_blocks: int
+    cursor_string: Optional[str]
+    next: Optional[CursorNextType] = Field(exclude=True)
+    """The next cursor string to use for pagination"""
+
+    @root_validator(pre=True)
+    def _set_max_blocks(cls, values: dict[str, Any]) -> dict[str, Any]:
+        values["max_blocks"] = values["reviews_config"]["max_blocks"]
+        return values
 
 
 Beatmap.update_forward_refs()

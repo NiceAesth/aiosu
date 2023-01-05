@@ -4,6 +4,10 @@ This module contains models for miscellaneous objects.
 from __future__ import annotations
 
 from datetime import datetime
+from functools import partial
+from typing import Any
+from typing import Awaitable
+from typing import Callable
 from typing import Optional
 
 from emojiflags.lookup import lookup as flag_lookup  # type: ignore
@@ -18,7 +22,12 @@ __all__ = (
     "CurrentUserAttributes",
     "TimestampedCount",
     "Cursor",
+    "FuncType",
+    "CursorNextType",
 )
+
+FuncType = Callable[[Any, Any], Awaitable[Any]]
+CursorNextType = partial[FuncType]
 
 
 class TimestampedCount(BaseModel):

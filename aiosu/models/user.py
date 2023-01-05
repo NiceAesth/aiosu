@@ -10,9 +10,6 @@ from typing import Optional
 from typing import TYPE_CHECKING
 
 from .base import BaseModel
-from .beatmap import Beatmap
-from .beatmap import Beatmapset
-from .common import Achievement
 from .common import Country
 from .common import TimestampedCount
 from .gamemode import Gamemode
@@ -24,7 +21,6 @@ __all__ = (
     "User",
     "UserAccountHistory",
     "UserBadge",
-    "UserBeatmapPlaycount",
     "UserGradeCounts",
     "UserGroup",
     "UserKudosu",
@@ -40,13 +36,6 @@ __all__ = (
 
 cast_int: Callable[..., int] = lambda x: int(x or 0)
 cast_float: Callable[..., float] = lambda x: float(x or 0)
-
-
-class UserBeatmapPlaycount(BaseModel):
-    count: int
-    beatmap_id: int
-    beatmap: Optional[Beatmap]
-    beatmapset: Optional[Beatmapset]
 
 
 class UserQueryType(Enum):
@@ -103,14 +92,14 @@ class UserRankHistoryElement(BaseModel):
 
 class UserProfileCover(BaseModel):
     url: str
-    custom_url: Optional[str] = None
-    id: Optional[str] = None
+    custom_url: Optional[str]
+    id: Optional[str]
 
 
 class UserProfileTournamentBanner(BaseModel):
     tournament_id: int
     image: str
-    id: Optional[int] = None
+    id: Optional[int]
 
 
 class UserBadge(BaseModel):
@@ -158,12 +147,12 @@ class UserGroup(BaseModel):
     identifier: str
     name: str
     short_name: str
-    colour: str
     has_listing: bool
     has_playmodes: bool
     is_probationary: bool
-    playmodes: Optional[list[Gamemode]] = None
-    description: Optional[str] = None
+    colour: Optional[str]
+    playmodes: Optional[list[Gamemode]]
+    description: Optional[str]
 
 
 class UserStats(BaseModel):
@@ -181,7 +170,7 @@ class UserStats(BaseModel):
     maximum_combo: Optional[int]
     global_rank: Optional[int]
     country_rank: Optional[int]
-    user: Optional[User] = None
+    user: Optional[User]
 
     @classmethod
     def _from_api_v1(cls, data: Any) -> UserStats:
@@ -223,49 +212,49 @@ class User(BaseModel):
     is_supporter: Optional[bool]
     pm_friends_only: Optional[bool]
     profile_colour: Optional[str]
-    is_deleted: Optional[bool] = None
-    last_visit: Optional[datetime] = None
-    discord: Optional[str] = None
-    has_supported: Optional[bool] = None
-    interests: Optional[str] = None
-    join_date: Optional[datetime] = None
-    kudosu: Optional[UserKudosu] = None
-    location: Optional[str] = None
-    max_blocks: Optional[int] = None
-    max_friends: Optional[int] = None
-    occupation: Optional[str] = None
-    playmode: Optional[Gamemode] = None
-    playstyle: Optional[list[str]] = None
-    post_count: Optional[int] = None
-    profile_order: Optional[list[str]] = None
-    title: Optional[str] = None
-    twitter: Optional[str] = None
-    website: Optional[str] = None
-    country: Optional[Country] = None
-    cover: Optional[UserProfileCover] = None
-    is_restricted: Optional[bool] = None
-    account_history: Optional[list[Any]] = None  # Unsure what this is
-    active_tournament_banner: Optional[UserProfileTournamentBanner] = None
-    badges: Optional[list[UserBadge]] = None
-    beatmap_playcounts_count: Optional[int] = None
-    favourite_beatmapset_count: Optional[int] = None
-    follower_count: Optional[int] = None
-    graveyard_beatmapset_count: Optional[int] = None
-    groups: Optional[list[UserGroup]] = None
-    loved_beatmapset_count: Optional[int] = None
-    monthly_playcounts: Optional[list[TimestampedCount]] = None
-    page: Optional[Userpage] = None
-    pending_beatmapset_count: Optional[int] = None
-    previous_usernames: Optional[list[str]] = None
-    ranked_beatmapset_count: Optional[int] = None
-    replays_watched_counts: Optional[list[TimestampedCount]] = None
-    scores_best_count: Optional[int] = None
-    scores_first_count: Optional[int] = None
-    scores_recent_count: Optional[int] = None
-    statistics: Optional[UserStats] = None
-    support_level: Optional[int] = None
-    user_achievements: Optional[list[UserAchievmement]] = None
-    rank_history: Optional[UserRankHistoryElement] = None
+    is_deleted: Optional[bool]
+    last_visit: Optional[datetime]
+    discord: Optional[str]
+    has_supported: Optional[bool]
+    interests: Optional[str]
+    join_date: Optional[datetime]
+    kudosu: Optional[UserKudosu]
+    location: Optional[str]
+    max_blocks: Optional[int]
+    max_friends: Optional[int]
+    occupation: Optional[str]
+    playmode: Optional[Gamemode]
+    playstyle: Optional[list[str]]
+    post_count: Optional[int]
+    profile_order: Optional[list[str]]
+    title: Optional[str]
+    twitter: Optional[str]
+    website: Optional[str]
+    country: Optional[Country]
+    cover: Optional[UserProfileCover]
+    is_restricted: Optional[bool]
+    account_history: Optional[list[Any]]  # Unsure what this is
+    active_tournament_banner: Optional[UserProfileTournamentBanner]
+    badges: Optional[list[UserBadge]]
+    beatmap_playcounts_count: Optional[int]
+    favourite_beatmapset_count: Optional[int]
+    follower_count: Optional[int]
+    graveyard_beatmapset_count: Optional[int]
+    groups: Optional[list[UserGroup]]
+    loved_beatmapset_count: Optional[int]
+    monthly_playcounts: Optional[list[TimestampedCount]]
+    page: Optional[Userpage]
+    pending_beatmapset_count: Optional[int]
+    previous_usernames: Optional[list[str]]
+    ranked_beatmapset_count: Optional[int]
+    replays_watched_counts: Optional[list[TimestampedCount]]
+    scores_best_count: Optional[int]
+    scores_first_count: Optional[int]
+    scores_recent_count: Optional[int]
+    statistics: Optional[UserStats]
+    support_level: Optional[int]
+    user_achievements: Optional[list[UserAchievmement]]
+    rank_history: Optional[UserRankHistoryElement]
 
     @property
     def url(self) -> str:

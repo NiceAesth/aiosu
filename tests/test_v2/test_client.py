@@ -440,7 +440,7 @@ class TestClient:
         mocker.patch("aiohttp.ClientSession.get", return_value=resp)
         data = await client.get_user_most_played(7782553)
         assert isinstance(data, list) and all(
-            isinstance(x, aiosu.models.UserBeatmapPlaycount) for x in data
+            isinstance(x, aiosu.models.BeatmapUserPlaycount) for x in data
         )
         await client.close()
 
