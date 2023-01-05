@@ -7,6 +7,7 @@ from __future__ import annotations
 
 from io import BytesIO
 from io import StringIO
+from typing import Literal
 from typing import TYPE_CHECKING
 
 import aiohttp
@@ -36,6 +37,8 @@ if TYPE_CHECKING:
 
 
 __all__ = ("Client",)
+
+ClientRequestType = Literal["GET", "POST", "DELETE", "PUT", "PATCH"]
 
 
 def _beatmap_score_conv(data: Any, mode: Gamemode, beatmap_id: int) -> Score:
@@ -81,7 +84,7 @@ class Client:
         await self.close()
 
     async def _request(
-        self, request_type: Literal["GET", "POST", "DELETE"], *args: Any, **kwargs: Any
+        self, request_type: ClientRequestType, *args: Any, **kwargs: Any
     ) -> Any:
         if self._session is None:
             self._session = aiohttp.ClientSession()
@@ -90,6 +93,8 @@ class Client:
             "GET": self._session.get,
             "POST": self._session.post,
             "DELETE": self._session.delete,
+            "PUT": self._session.put,
+            "PATCH": self._session.patch,
         }
 
         async with self._limiter:

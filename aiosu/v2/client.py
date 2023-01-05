@@ -66,6 +66,8 @@ if TYPE_CHECKING:
 
 __all__ = ("Client",)
 
+ClientRequestType = Literal["GET", "POST", "DELETE", "PUT", "PATCH"]
+
 
 def check_token(func: Callable) -> Callable:
     """
@@ -192,7 +194,7 @@ class Client(Eventable):
         }
 
     async def _request(
-        self, request_type: Literal["GET", "POST", "DELETE"], *args: Any, **kwargs: Any
+        self, request_type: ClientRequestType, *args: Any, **kwargs: Any
     ) -> Any:
         if self._session is None:
             self._session = aiohttp.ClientSession(
