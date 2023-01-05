@@ -6,6 +6,7 @@ from __future__ import annotations
 from typing import Any
 from typing import BinaryIO
 
+from ..models.lazer import LazerReplayData
 from ..models.mods import Mod
 from ..models.replay import Replay
 from ..models.replay import ReplayEvent
@@ -101,6 +102,9 @@ def parse_file(file: BinaryIO) -> Replay:
         replay["online_id"] = unpack_int(file)
     if Mod.Target & replay["mods"]:
         replay["mod_extras"] = unpack_float64(file)
+    if replay["version"] >= 30000001:
+        lazer_replay_data_str = unpack_replay_data(file)
+        replay["lazer_replay_data"] = LazerReplayData.parse_raw(lazer_replay_data_str)
     return Replay(**replay)
 
 
@@ -161,6 +165,11 @@ def write_replay(file: BinaryIO, replay: Replay) -> None:
         pack_int(file, replay.online_id)
     if replay.mod_extras is not None:
         pack_float64(file, replay.mod_extras)
+    if replay.version >= 30000001:
+        pack_replay_data(
+            file,
+            replay.lazer_replay_data.json(exclude_unset=True, exclude_none=True),
+        )
 
 
 def write_path(path: str, replay: Replay) -> None:

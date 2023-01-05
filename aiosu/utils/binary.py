@@ -189,6 +189,8 @@ def unpack_replay_data(file: BinaryIO) -> str:
     :rtype: str
     """
     length = unpack_int(file)
+    if length == 0:
+        return ""
     data = file.read(length)
     data = lzma.decompress(data)
     return data.decode("ascii")
