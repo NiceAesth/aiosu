@@ -11,6 +11,7 @@ import aiosu
 from ..classes import MockResponse
 
 modes = ["osu", "mania", "fruits", "taiko"]
+ranking_types = ["performance", "score", "country", "charts"]
 
 
 def to_bytes(obj):
@@ -239,6 +240,16 @@ def artist_tracks():
     return data
 
 
+@pytest.fixture
+def rankings():
+    def _rankings(mode, type):
+        with open(f"tests/data/v2/rankings_{mode}_{type}.json", "rb") as f:
+            data = f.read()
+        return data
+
+    return _rankings
+
+
 class TestCursor:
     @pytest.mark.asyncio
     async def test_get_featured_artists_cursor(self, mocker, token, artist_tracks):
@@ -319,6 +330,17 @@ class TestCursor:
         assert isinstance(data, aiosu.models.BeatmapsetDiscussionVoteResponse)
         data_next = await data.next()
         assert isinstance(data_next, aiosu.models.BeatmapsetDiscussionVoteResponse)
+        await client.close()
+
+    @pytest.mark.asyncio
+    async def test_get_rankings_cursor(self, mocker, token, rankings):
+        client = aiosu.v2.Client(token=token)
+        resp = MockResponse(rankings("osu", "performance"), 200)
+        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
+        data = await client.get_rankings("osu", "performance")
+        assert isinstance(data, aiosu.models.Rankings)
+        data_next = await data.next()
+        assert isinstance(data_next, aiosu.models.Rankings)
         await client.close()
 
 
@@ -768,4 +790,15 @@ class TestClient:
         assert isinstance(data, list) and all(
             isinstance(x, aiosu.models.Spotlight) for x in data
         )
+        await client.close()
+
+    @pytest.mark.asyncio
+    async def test_get_rankings(self, mocker, token, rankings):
+        client = aiosu.v2.Client(token=token)
+        for mode in modes:
+            for type_ in ranking_types:
+                resp = MockResponse(rankings(mode, type_), 200)
+                mocker.patch("aiohttp.ClientSession.get", return_value=resp)
+                data = await client.get_rankings(mode, type_)
+                assert isinstance(data, aiosu.models.Rankings)
         await client.close()

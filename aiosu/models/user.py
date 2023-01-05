@@ -128,15 +128,15 @@ class UserAccountHistory(BaseModel):
 
 
 class UserGradeCounts(BaseModel):
-    ssh: int
+    ssh: Optional[int]
     """Number of Silver SS ranks achieved."""
-    ss: int
+    ss: Optional[int]
     """Number of SS ranks achieved."""
-    sh: int
+    sh: Optional[int]
     """Number of Silver S ranks achieved."""
-    s: int
+    s: Optional[int]
     """Number of S ranks achieved."""
-    a: int
+    a: Optional[int]
     """Number of A ranks achieved."""
 
     @classmethod
@@ -166,19 +166,23 @@ class UserGroup(BaseModel):
 
 
 class UserStats(BaseModel):
-    level: UserLevel
-    pp: float
-    ranked_score: int
-    hit_accuracy: float
-    play_count: int
-    play_time: int
-    total_score: int
-    total_hits: int
-    is_ranked: bool
-    grade_counts: UserGradeCounts
+    """Fields are marked as optional since they might be missing from rankings other than performance."""
+
+    ranked_score: Optional[int]
+    play_count: Optional[int]
+    grade_counts: Optional[UserGradeCounts]
+    total_hits: Optional[int]
+    is_ranked: Optional[bool]
+    total_score: Optional[int]
+    level: Optional[UserLevel]
+    hit_accuracy: Optional[float]
+    play_time: Optional[int]
+    pp: Optional[float]
+    pp_exp: Optional[float]
     replays_watched_by_others: Optional[int]
     maximum_combo: Optional[int]
     global_rank: Optional[int]
+    global_rank_exp: Optional[int]
     country_rank: Optional[int]
     user: Optional[User]
 

@@ -39,6 +39,8 @@ from ..models import KudosuHistory
 from ..models import Mods
 from ..models import NewsPost
 from ..models import OAuthToken
+from ..models import Rankings
+from ..models import RankingType
 from ..models import Scopes
 from ..models import Score
 from ..models import SearchResponse
@@ -421,7 +423,8 @@ class Client(Eventable):
         if resp.cursor_string:
             kwargs.pop("cursor_string", None)
             resp.next = partial(
-                self.get_beatmapset_discussion_votes,
+                self.get_comment,
+                comment_id=comment_id,
                 **kwargs,
                 cursor_string=resp.cursor_string,
             )
@@ -1236,6 +1239,55 @@ class Client(Eventable):
         """
         url = f"{self.base_url}/api/v2/scores/{mode}/{score_id}/download"
         return await self._request("GET", url)
+
+    @check_token
+    async def get_rankings(
+        self, mode: Gamemode, type: RankingType, **kwargs: Any
+    ) -> Rankings:
+        r"""Get rankings.
+
+        :param mode: The gamemode to search for
+        :type mode: aiosu.models.gamemode.Gamemode
+        :param type: The ranking type to search for
+        :type type: aiosu.models.rankings.RankingType
+        :param \**kwargs:
+            See below
+
+        :Keyword Arguments:
+            * *country* (``str``) --
+                Optional, country code
+            * *filter* (``aiosu.models.rankings.RankingFilter``) --
+                Optional, ranking filter
+            * *spotlight* (``int``) --
+                Optional, spotlight ID
+            * *variant* (``aiosu.models.rankings.RankingVariant``) --
+                Optional, ranking variant
+            * *cursor_string* (``str``) --
+                Optional, cursor string
+
+        :raises APIException: Contains status code and error message
+        :return: Rankings
+        :rtype: aiosu.models.rankings.Rankings
+        """
+        url = f"{self.base_url}/api/v2/rankings/{mode}/{type}"
+        params: dict[str, Any] = {}
+        add_param(params, kwargs, key="country")
+        add_param(params, kwargs, key="filter")
+        add_param(params, kwargs, key="spotlight")
+        add_param(params, kwargs, key="variant")
+        add_param(params, kwargs, key="cursor_string")
+        json = await self._request("GET", url, params=params)
+        resp = Rankings.parse_obj(json)
+        if resp.cursor_string:
+            kwargs.pop("cursor_string", None)
+            resp.next = partial(
+                self.get_rankings,
+                mode=mode,
+                type=type,
+                **kwargs,
+                cursor_string=resp.cursor_string,
+            )
+        return resp
 
     @check_token
     async def get_spotlights(self) -> list[Spotlight]:

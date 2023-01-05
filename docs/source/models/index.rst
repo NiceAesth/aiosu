@@ -23,6 +23,10 @@ Rankings
 
 .. autodata:: aiosu.models.rankings.RankingType
 
+.. autodata:: aiosu.models.rankings.RankingFilter
+
+.. autodata:: aiosu.models.rankings.RankingVariant
+
 User
 ----
 

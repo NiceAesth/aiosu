@@ -13,15 +13,19 @@ from .user import UserStats
 
 
 __all__ = (
+    "RankingFilter",
+    "RankingVariant",
     "RankingType",
     "Rankings",
 )
 
+RankingFilter = Literal["all", "friends"]
 RankingType = Literal["performance", "score", "country", "charts"]
+RankingVariant = Literal["4k", "7k"]
 
 
 class Rankings(CursorModel):
-    ranking: UserStats
-    total: int
+    ranking: list[UserStats]
+    total: Optional[int]
     spotlight: Optional[Spotlight]
     beatmapsets: Optional[list[Beatmapset]]
