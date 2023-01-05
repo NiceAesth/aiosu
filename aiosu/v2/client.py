@@ -24,7 +24,9 @@ from ..helpers import from_list
 from ..models import Beatmap
 from ..models import BeatmapDifficultyAttributes
 from ..models import Beatmapset
+from ..models import BeatmapsetDiscussionPostResponse
 from ..models import BeatmapsetDiscussionResponse
+from ..models import BeatmapsetDiscussionVoteResponse
 from ..models import BeatmapsetEvent
 from ..models import BeatmapUserPlaycount
 from ..models import Build
@@ -950,16 +952,18 @@ class Client(Eventable):
                 Optional, beatmap ID
             * *beatmapset_id* (``int``) --
                 Optional, beatmapset ID
-            * *beatmapset_status* (``aiosu.models.beatmap.BeatmapsetStatus``) --
+            * *beatmapset_status* (``aiosu.models.beatmap.BeatmapsetRequestStatus``) --
                 Optional, beatmapset status
             * *limit* (``int``) --
                 Optional, number of results per page
             * *page* (``int``) --
                 Optional, page number
+            * *message_types* (``list[aiosu.models.beatmap.BeatmapsetDisscussionType]``) --
+                Optional, message types
             * *only_unresolved* (``bool``) --
                 Optional, only unresolved discussions
-            * *sort* (``aiosu.models.beatmap.BeatmapsetDiscussionSort``) --
-                Optional, sort order
+            * *sort* (``aiosu.models.common.SortTypes``) --
+                Optional, sort order, defaults to ``id_desc``
             * *user_id* (``int``) --
                 Optional, user ID
             * with_deleted (``bool``) --
@@ -978,6 +982,7 @@ class Client(Eventable):
         add_param(params, kwargs, key="beatmapset_status")
         add_param(params, kwargs, key="limit")
         add_param(params, kwargs, key="page")
+        add_param(params, kwargs, key="message_types")
         add_param(params, kwargs, key="only_unresolved")
         add_param(params, kwargs, key="sort")
         add_param(params, kwargs, key="user", param_name="user_id")
@@ -986,8 +991,116 @@ class Client(Eventable):
         json = await self._request("GET", url, params=params)
         resp = BeatmapsetDiscussionResponse.parse_obj(json)
         if resp.cursor_string:
+            kwargs.pop("cursor_string", None)
             resp.next = partial(
                 self.get_beatmapset_discussions,
+                **kwargs,
+                cursor_string=resp.cursor_string,
+            )
+        return resp
+
+    @check_token
+    async def get_beatmapset_discussion_posts(
+        self, **kwargs: Any
+    ) -> BeatmapsetDiscussionPostResponse:
+        r"""Get beatmapset discussion posts.
+
+        :param \**kwargs:
+            See below
+
+        :Keyword Arguments:
+            * *beatmapset_discussion_id* (``int``) --
+                Optional, beatmapset discussion ID
+            * *limit* (``int``) --
+                Optional, number of results per page
+            * *page* (``int``) --
+                Optional, page number
+            * *sort* (``aiosu.models.common.SortTypes``) --
+                Optional, sort order, defaults to ``id_desc``
+            * *types* (``list[str]``) --
+                Optional, post types
+            * *user_id* (``int``) --
+                Optional, user ID
+            * with_deleted (``bool``) --
+                Optional, include deleted discussions
+            * cursor_string (``str``) --
+                Optional, cursor string
+
+        :raises APIException: Contains status code and error message
+        :return: Beatmapset discussion post response
+        :rtype: aiosu.models.beatmap.BeatmapsetDiscussionPostResponse
+        """
+        url = f"{self.base_url}/api/v2/beatmapsets/discussions/posts"
+        params: dict[str, Any] = {}
+        add_param(params, kwargs, key="beatmapset_discussion_id")
+        add_param(params, kwargs, key="limit")
+        add_param(params, kwargs, key="page")
+        add_param(params, kwargs, key="sort")
+        add_param(params, kwargs, key="types")
+        add_param(params, kwargs, key="user", param_name="user_id")
+        add_param(params, kwargs, key="with_deleted")
+        add_param(params, kwargs, key="cursor_string")
+        json = await self._request("GET", url, params=params)
+        resp = BeatmapsetDiscussionPostResponse.parse_obj(json)
+        if resp.cursor_string:
+            kwargs.pop("cursor_string", None)
+            resp.next = partial(
+                self.get_beatmapset_discussion_posts,
+                **kwargs,
+                cursor_string=resp.cursor_string,
+            )
+        return resp
+
+    @check_token
+    async def get_beatmapset_discussion_votes(
+        self, **kwargs: Any
+    ) -> BeatmapsetDiscussionVoteResponse:
+        r"""Get beatmapset discussion votes.
+
+        :param \**kwargs:
+            See below
+
+        :Keyword Arguments:
+            * *beatmapset_discussion_id* (``int``) --
+                Optional, beatmapset discussion ID
+            * *limit* (``int``) --
+                Optional, number of results per page
+            * *page* (``int``) --
+                Optional, page number
+            * *receiver_id* (``int``) --
+                Optional, receiver ID
+            * *score* (``aiosu.models.beatmap.BeatmapsetDiscussionVoteScore``) --
+                Optional, vote score
+            * *sort* (``aiosu.models.common.SortTypes``) --
+                Optional, sort order, defaults to ``id_desc``
+            * *user_id* (``int``) --
+                Optional, user ID
+            * with_deleted (``bool``) --
+                Optional, include deleted discussions
+            * cursor_string (``str``) --
+                Optional, cursor string
+
+        :raises APIException: Contains status code and error message
+        :return: Beatmapset discussion vote response
+        :rtype: aiosu.models.beatmap.BeatmapsetDiscussionVoteResponse
+        """
+        url = f"{self.base_url}/api/v2/beatmapsets/discussions/votes"
+        params: dict[str, Any] = {}
+        add_param(params, kwargs, key="beatmapset_discussion_id")
+        add_param(params, kwargs, key="limit")
+        add_param(params, kwargs, key="page")
+        add_param(params, kwargs, key="receiver", param_name="receiver_id")
+        add_param(params, kwargs, key="score")
+        add_param(params, kwargs, key="sort")
+        add_param(params, kwargs, key="user", param_name="user_id")
+        add_param(params, kwargs, key="with_deleted")
+        add_param(params, kwargs, key="cursor_string")
+        json = await self._request("GET", url, params=params)
+        resp = BeatmapsetDiscussionVoteResponse.parse_obj(json)
+        if resp.cursor_string:
+            kwargs.pop("cursor_string", None)
+            resp.next = partial(
+                self.get_beatmapset_discussion_votes,
                 **kwargs,
                 cursor_string=resp.cursor_string,
             )
