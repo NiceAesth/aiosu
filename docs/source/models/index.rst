@@ -92,6 +92,15 @@ Gamemode
     :undoc-members:
     :inherited-members: BaseModel
 
+Featured Artists
+----------------
+
+.. automodule:: aiosu.models.artist
+    :members:
+    :exclude-members: Config
+    :undoc-members:
+    :inherited-members: BaseModel
+
 Backgrounds
 -----------
 

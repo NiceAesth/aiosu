@@ -232,7 +232,106 @@ def difficulty_attributes():
     return _difficulty_attributes
 
 
+@pytest.fixture
+def artist_tracks():
+    with open("tests/data/v2/multiple_artist_track.json", "rb") as f:
+        data = f.read()
+    return data
+
+
+class TestCursor:
+    @pytest.mark.asyncio
+    async def test_get_featured_artists_cursor(self, mocker, token, artist_tracks):
+        client = aiosu.v2.Client(token=token)
+        resp = MockResponse(artist_tracks, 200)
+        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
+        data = await client.get_featured_artists()
+        assert isinstance(data, aiosu.models.ArtistResponse)
+        data_next = await data.next()
+        assert isinstance(data_next, aiosu.models.ArtistResponse)
+        await client.close()
+
+    @pytest.mark.asyncio
+    async def test_get_comment_cursor(self, mocker, token, comment_bundle):
+        client = aiosu.v2.Client(token=token)
+        resp = MockResponse(comment_bundle, 200)
+        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
+        data = await client.get_comment(123)
+        assert isinstance(data, aiosu.models.CommentBundle)
+        data_next = await data.next()
+        assert isinstance(data_next, aiosu.models.CommentBundle)
+        await client.close()
+
+    @pytest.mark.asyncio
+    async def test_search_beatmapsets_cursor(self, mocker, token, beatmapsets):
+        client = aiosu.v2.Client(token=token)
+        resp = MockResponse(beatmapsets, 200)
+        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
+        data = await client.search_beatmapsets()
+        assert isinstance(data, aiosu.models.BeatmapsetSearchResponse)
+        data_next = await data.next()
+        assert isinstance(data_next, aiosu.models.BeatmapsetSearchResponse)
+        await client.close()
+
+    @pytest.mark.asyncio
+    async def test_get_beatmapset_discussions_cursor(
+        self,
+        mocker,
+        token,
+        beatmapset_discussions,
+    ):
+        client = aiosu.v2.Client(token=token)
+        resp = MockResponse(beatmapset_discussions, 200)
+        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
+        data = await client.get_beatmapset_discussions()
+        assert isinstance(data, aiosu.models.BeatmapsetDiscussionResponse)
+        data_next = await data.next()
+        assert isinstance(data_next, aiosu.models.BeatmapsetDiscussionResponse)
+        await client.close()
+
+    @pytest.mark.asyncio
+    async def test_get_beatmapset_discussion_posts_cursor(
+        self,
+        mocker,
+        token,
+        beatmapset_discussion_posts,
+    ):
+        client = aiosu.v2.Client(token=token)
+        resp = MockResponse(beatmapset_discussion_posts, 200)
+        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
+        data = await client.get_beatmapset_discussion_posts()
+        assert isinstance(data, aiosu.models.BeatmapsetDiscussionPostResponse)
+        data_next = await data.next()
+        assert isinstance(data_next, aiosu.models.BeatmapsetDiscussionPostResponse)
+        await client.close()
+
+    @pytest.mark.asyncio
+    async def test_get_beatmapset_discussion_votes_cursor(
+        self,
+        mocker,
+        token,
+        beatmapset_discussion_votes,
+    ):
+        client = aiosu.v2.Client(token=token)
+        resp = MockResponse(beatmapset_discussion_votes, 200)
+        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
+        data = await client.get_beatmapset_discussion_votes()
+        assert isinstance(data, aiosu.models.BeatmapsetDiscussionVoteResponse)
+        data_next = await data.next()
+        assert isinstance(data_next, aiosu.models.BeatmapsetDiscussionVoteResponse)
+        await client.close()
+
+
 class TestClient:
+    @pytest.mark.asyncio
+    async def test_get_featured_artists(self, mocker, token, artist_tracks):
+        client = aiosu.v2.Client(token=token)
+        resp = MockResponse(artist_tracks, 200)
+        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
+        data = await client.get_featured_artists()
+        assert isinstance(data, aiosu.models.ArtistResponse)
+        await client.close()
+
     @pytest.mark.asyncio
     async def test_get_seasonal_backgrounds(self, mocker, token, seasonal_bgs):
         client = aiosu.v2.Client(token=token)

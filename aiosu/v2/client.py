@@ -21,6 +21,7 @@ from ..events import Eventable
 from ..exceptions import APIException
 from ..helpers import add_param
 from ..helpers import from_list
+from ..models import ArtistResponse
 from ..models import Beatmap
 from ..models import BeatmapDifficultyAttributes
 from ..models import Beatmapset
@@ -248,6 +249,59 @@ class Client(Eventable):
             ClientUpdateEvent(client=self, old_token=old_token, new_token=self.token),
         )
 
+    async def get_featured_artists(self, **kwargs: Any) -> ArtistResponse:
+        r"""Gets the current featured artists.
+
+        :param \**kwargs:
+            See below
+
+        :Keyword Arguments:
+            * *limit* (``int``) --
+                Optional, the number of featured artists to return.
+            * *album* (``str``) --
+                Optional, the album to filter by.
+            * *artist* (``str``) --
+                Optional, the artist to filter by.
+            * *genre* (``int``) --
+                Optional, the genre ID to filter by.
+            * *length* (``list[int]``) --
+                Optional, the length range to filter by.
+            * *bpm* (``list[int]``) --
+                Optional, The BPM range to filter by.
+            * *query* (``str``) --
+                Optional, the search query to filter by.
+            * *is_default_sort* (``bool``) --
+                Optional, whether to sort by the default sort.
+            * *sort* (``str``) --
+                Optional, the sort to use.
+
+        :raises APIException: Contains status code and error message
+        :return: Featured artist response object
+        :rtype: aiosu.models.artist.ArtistResponse
+        """
+        url = f"{self.base_url}/beatmaps/artists/tracks"
+        params: dict[str, Any] = {}
+        add_param(params, kwargs, key="limit")
+        add_param(params, kwargs, key="album")
+        add_param(params, kwargs, key="artist")
+        add_param(params, kwargs, key="genre")
+        add_param(params, kwargs, key="length")
+        add_param(params, kwargs, key="bpm")
+        add_param(params, kwargs, key="query")
+        add_param(params, kwargs, key="is_default_sort")
+        add_param(params, kwargs, key="sort")
+        add_param(params, kwargs, key="cursor_string")
+        json = await self._request("GET", url)
+        resp = ArtistResponse.parse_obj(json)
+        if resp.cursor_string:
+            kwargs.pop("cursor_string", None)
+            resp.next = partial(
+                self.get_featured_artists,
+                **kwargs,
+                cursor_string=resp.cursor_string,
+            )
+        return resp
+
     async def get_seasonal_backgrounds(self) -> SeasonalBackgroundSet:
         r"""Gets the current seasonal background set.
 
@@ -343,18 +397,35 @@ class Client(Eventable):
         json = await self._request("GET", url)
         return WikiPage.parse_obj(json)
 
-    async def get_comment(self, comment_id: int) -> CommentBundle:
+    async def get_comment(self, comment_id: int, **kwargs: Any) -> CommentBundle:
         r"""Gets a comment.
 
         :param comment_id: The ID of the comment
         :type comment_id: int
+        :param \**kwargs:
+            See below
+
+        :Keyword Arguments:
+            * *cursor_string* (``str``) --
+                Optional, cursor string to get the next page of comments
+
         :raises APIException: Contains status code and error message
         :return: Comment bundle object
         :rtype: aiosu.models.comment.CommentBundle
         """
         url = f"{self.base_url}/api/v2/comments/{comment_id}"
-        json = await self._request("GET", url)
-        return CommentBundle.parse_obj(json)
+        params: dict[str, Any] = {}
+        add_param(params, kwargs, key="cursor_string")
+        json = await self._request("GET", url, params=params)
+        resp = CommentBundle.parse_obj(json)
+        if resp.cursor_string:
+            kwargs.pop("cursor_string", None)
+            resp.next = partial(
+                self.get_beatmapset_discussion_votes,
+                **kwargs,
+                cursor_string=resp.cursor_string,
+            )
+        return resp
 
     @check_token
     async def search(self, query: str, **kwargs: Any) -> SearchResponse:
@@ -889,19 +960,36 @@ class Client(Eventable):
     async def search_beatmapsets(
         self,
         search_filter: Optional[str] = "",
+        **kwargs: Any,
     ) -> BeatmapsetSearchResponse:
         r"""Search beatmapset by filter.
 
         :param search_filter: The search filter.
         :type search_filter: str
+        :param \**kwargs:
+            See below
+
+        :Keyword Arguments:
+            * *cursor_string* (``str``) --
+                Optional, cursor string to get the next page of results
 
         :raises APIException: Contains status code and error message
         :return: Beatmapset search response
         :rtype: list[aiosu.models.beatmap.BeatmapsetSearchResponse]
         """
         url = f"{self.base_url}/api/v2/beatmapsets/search/{search_filter}"
+        params: dict[str, Any] = {}
+        add_param(params, kwargs, key="cursor_string")
         json = await self._request("GET", url)
-        return BeatmapsetSearchResponse.parse_obj(json)
+        resp = BeatmapsetSearchResponse.parse_obj(json)
+        if resp.cursor_string:
+            kwargs.pop("cursor_string", None)
+            resp.next = partial(
+                self.search_beatmapsets,
+                **kwargs,
+                cursor_string=resp.cursor_string,
+            )
+        return resp
 
     @check_token
     async def get_beatmapset_events(self, **kwargs: Any) -> list[BeatmapsetEvent]:

@@ -3,6 +3,7 @@ This module contains API models.
 """
 from __future__ import annotations
 
+from .artist import *
 from .backgrounds import *
 from .base import *
 from .beatmap import *

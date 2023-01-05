@@ -5,9 +5,6 @@ from __future__ import annotations
 
 from datetime import datetime
 from functools import partial
-from typing import Any
-from typing import Awaitable
-from typing import Callable
 from typing import Literal
 from typing import Optional
 
@@ -24,12 +21,9 @@ __all__ = (
     "CurrentUserAttributes",
     "TimestampedCount",
     "CursorModel",
-    "CursorNextType",
     "SortTypes",
 )
 
-FuncType = Callable[[Any, Any], Awaitable[Any]]
-CursorNextType = partial[FuncType]
 
 SortTypes = Literal["id_asc", "id_desc"]
 
@@ -89,5 +83,5 @@ class CursorModel(BaseModel):
     """
 
     cursor_string: Optional[str]
-    next: Optional[CursorNextType] = Field(exclude=True)
+    next: Optional[partial] = Field(exclude=True)
     """The next cursor string to use for pagination"""
