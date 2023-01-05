@@ -32,6 +32,7 @@ from ..models import BeatmapsetEvent
 from ..models import BeatmapsetSearchResponse
 from ..models import BeatmapUserPlaycount
 from ..models import Build
+from ..models import ChangelogListing
 from ..models import CommentBundle
 from ..models import Event
 from ..models import Gamemode
@@ -312,6 +313,51 @@ class Client(Eventable):
         json = await self._request("GET", url)
         return SeasonalBackgroundSet.parse_obj(json)
 
+    async def get_changelog_listing(self, **kwargs: Any) -> ChangelogListing:
+        r"""Gets the changelog listing.
+
+        :param \**kwargs:
+            See below
+
+        :Keyword Arguments:
+            * *message_formats* (``list[str]``) --
+                Optional, the message formats to return.
+            * *from* (``str``) --
+                Optional, the start date to return.
+            * *to* (``str``) --
+                Optional, the end date to return.
+            * *max_id* (``int``) --
+                Optional, the maximum ID to return.
+            * *stream* (``str``) --
+                Optional, the stream to return.
+            * *cursor_string* (``str``) --
+                Optional, the cursor string to use.
+
+        :raises APIException: Contains status code and error message
+        :return: Changelog listing object
+        :rtype: aiosu.models.changelog.ChangelogListing
+        """
+        url = f"{self.base_url}/api/v2/changelog"
+        params: dict[str, Any] = {
+            "message_formats": kwargs.pop("message_formats", ["html", "markdown"]),
+        }
+        add_param(params, kwargs, key="from")
+        add_param(params, kwargs, key="to")
+        add_param(params, kwargs, key="max_id")
+        add_param(params, kwargs, key="stream")
+        add_param(params, kwargs, key="cursor_string")
+        json = await self._request("GET", url, params=params)
+        resp = ChangelogListing.parse_obj(json)
+        if resp.cursor_string:
+            kwargs["cursor_string"] = resp.cursor_string
+            resp.next = partial(self.get_changelog_listing, **kwargs)
+        else:  # TODO: Figure this out / remove on cursor string support
+            resp.next = partial(
+                self.get_changelog_listing,
+                **resp.search.dict(by_alias=True, exclude_none=True),
+            )
+        return resp
+
     async def get_changelog_build(self, stream: str, build: str) -> Build:
         r"""Gets a specific build from the changelog.
 
@@ -338,7 +384,7 @@ class Client(Eventable):
         :Keyword Arguments:
             * *is_id* (``bool``) --
                 Optional, whether the query is an ID or not, defaults to ``True`` if the query is an int
-            * *message_formats* (``list[Literal["html", "markdown"]]``) --
+            * *message_formats* (``list[aiosu.models.news.ChangelogMessageFormats]``) --
                 Optional, message formats to get, defaults to ``["html", "markdown"]``
 
         :raises APIException: Contains status code and error message

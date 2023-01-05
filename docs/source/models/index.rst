@@ -123,6 +123,8 @@ Changelogs
     :undoc-members:
     :inherited-members: BaseModel
 
+.. autodata:: aiosu.models.changelog.ChangelogMessageFormats
+
 Spotlights
 ----------
 

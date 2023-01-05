@@ -257,6 +257,13 @@ def news_listing():
     return data
 
 
+@pytest.fixture
+def changelog_listing():
+    with open("tests/data/v2/changelog_listing.json", "rb") as f:
+        data = f.read()
+    return data
+
+
 class TestCursor:
     @pytest.mark.asyncio
     async def test_get_featured_artists_cursor(self, mocker, token, artist_tracks):
@@ -278,6 +285,17 @@ class TestCursor:
         assert isinstance(data, aiosu.models.NewsListing)
         data_next = await data.next()
         assert isinstance(data_next, aiosu.models.NewsListing)
+        await client.close()
+
+    @pytest.mark.asyncio
+    async def test_get_changelog_listing_cursor(self, mocker, token, changelog_listing):
+        client = aiosu.v2.Client(token=token)
+        resp = MockResponse(changelog_listing, 200)
+        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
+        data = await client.get_changelog_listing()
+        assert isinstance(data, aiosu.models.ChangelogListing)
+        data_next = await data.next()
+        assert isinstance(data_next, aiosu.models.ChangelogListing)
         await client.close()
 
     @pytest.mark.asyncio
@@ -390,6 +408,15 @@ class TestClient:
         mocker.patch("aiohttp.ClientSession.get", return_value=resp)
         data = await client.get_seasonal_backgrounds()
         assert isinstance(data, aiosu.models.SeasonalBackgroundSet)
+        await client.close()
+
+    @pytest.mark.asyncio
+    async def test_get_changelog_listing(self, mocker, token, changelog_listing):
+        client = aiosu.v2.Client(token=token)
+        resp = MockResponse(changelog_listing, 200)
+        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
+        data = await client.get_changelog_listing()
+        assert isinstance(data, aiosu.models.ChangelogListing)
         await client.close()
 
     @pytest.mark.asyncio
