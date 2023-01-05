@@ -84,4 +84,4 @@ class CursorModel(BaseModel):
 
     cursor_string: Optional[str]
     next: Optional[partial] = Field(exclude=True)
-    """The next cursor string to use for pagination"""
+    """Partial function to get the next page of results."""

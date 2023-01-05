@@ -15,6 +15,7 @@ __all__ = (
     "NewsPost",
     "Navigation",
     "NewsListing",
+    "NewsSearch",
 )
 
 
