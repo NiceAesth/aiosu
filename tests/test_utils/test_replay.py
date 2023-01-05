@@ -6,7 +6,7 @@ import pytest
 
 import aiosu
 
-modes = ["osu", "mania", "fruits", "taiko"]
+modes = ["osu", "mania", "fruits", "taiko", "lazer"]
 
 
 @pytest.fixture
