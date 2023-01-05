@@ -11,6 +11,7 @@ from pydantic import root_validator
 
 from .base import BaseModel
 from .scopes import Scopes
+from .scopes import VALID_CLIENT_SCOPES
 
 if TYPE_CHECKING:
     from typing import Any
@@ -39,7 +40,7 @@ class OAuthToken(BaseModel):
     @root_validator
     def _check_scopes(cls, values: dict[str, Any]) -> dict[str, Any]:
         if not bool(values["refresh_token"]):
-            values["scopes"] = Scopes.PUBLIC
+            values["scopes"] &= VALID_CLIENT_SCOPES
         return values
 
     @property

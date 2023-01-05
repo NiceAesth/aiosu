@@ -125,7 +125,7 @@ class Client(Eventable):
         * *base_url* (``str``) --
             Optional, base API URL, defaults to "https://osu.ppy.sh"
         * *scopes* (``aiosu.models.Scopes``) --
-            Optional, defaults to ``Scopes.PUBLIC | Scopes.IDENTIFY``
+            Optional, defaults to ``Scopes.PUBLIC | Scopes.IDENTIFY``. Ignored if token is provided.
         * *token* (``aiosu.models.oauthtoken.OAuthToken``) --
             Optional, defaults to client credentials if not provided
         * *limiter* (``tuple[int, int]``) --
@@ -137,8 +137,9 @@ class Client(Eventable):
         self._register_event(ClientUpdateEvent)
         self.client_id: int = kwargs.pop("client_id", None)
         self.client_secret: str = kwargs.pop("client_secret", None)
-        self.scopes: Scopes = kwargs.pop("scopes", Scopes.PUBLIC | Scopes.IDENTIFY)
-        self.token: OAuthToken = kwargs.pop("token", OAuthToken(scopes=self.scopes))
+        unsafe_scopes: Scopes = kwargs.pop("scopes", Scopes.PUBLIC | Scopes.IDENTIFY)
+        self.token: OAuthToken = kwargs.pop("token", OAuthToken(scopes=unsafe_scopes))
+        self.scopes = self.token.scopes
         self.base_url: str = kwargs.pop("base_url", "https://osu.ppy.sh")
         self._limiter: AsyncLimiter = AsyncLimiter(
             *kwargs.pop(
@@ -249,6 +250,9 @@ class Client(Eventable):
                 async with temp_session.post(url, data=data) as resp:
                     try:
                         body = await resp.read()
+                        content_type = resp.headers.get("content-type", "")
+                        if content_type != "application/json":
+                            raise APIException(415, "Unhandled Content Type")
                         json = orjson.loads(body)
                         if resp.status != 200:
                             raise APIException(resp.status, json.get("error", ""))
@@ -1664,13 +1668,14 @@ class Client(Eventable):
             * *cursor_string* (``str``) --
                 Optional, the cursor string to get the next page of results
 
+        :raises ValueError: If limit is not between 1 and 50
         :raises APIException: Contains status code and error message
         :return: Multiplayer matches response object
         :rtype: aiosu.models.multiplayer.MultiplayerMatchesResponse
         """
         if not 1 <= (limit := kwargs.pop("limit", 1)) <= 50:
             raise ValueError("Limit must be between 1 and 50")
-        url = f"{self.base_url}/api/v2/multiplayer/matches"
+        url = f"{self.base_url}/api/v2/matches"
         params: dict[str, Any] = {
             "limit": limit,
         }
@@ -1701,13 +1706,14 @@ class Client(Eventable):
             * *after* (``int``) --
                 Optional, the ID of the score to get the scores after
 
+        :raises ValueError: If limit is not between 1 and 100
         :raises APIException: Contains status code and error message
         :return: Multiplayer match response object
         :rtype: aiosu.models.multiplayer.MultiplayerMatchResponse
         """
         if not 1 <= (limit := kwargs.pop("limit", 1)) <= 100:
             raise ValueError("Limit must be between 1 and 100")
-        url = f"{self.base_url}/api/v2/multiplayer/matches/{match_id}"
+        url = f"{self.base_url}/api/v2/matches/{match_id}"
         params: dict[str, Any] = {
             "limit": limit,
         }
@@ -1715,6 +1721,39 @@ class Client(Eventable):
         add_param(params, kwargs, key="after")
         json = await self._request("GET", url)
         return MultiplayerMatchResponse.parse_obj(json)
+
+    @check_token
+    async def get_multiplayer_rooms(self, **kwargs: Any) -> MultiplayerRoomsResponse:
+        url = f"{self.base_url}/api/v2/rooms"
+        if "mode" in kwargs:
+            mode = Gamemode(kwargs.pop("mode"))  # type: ignore
+            url += f"/{mode}"
+        params: dict[str, Any] = {}
+        add_param(params, kwargs, key="cursor_string")
+        json = await self._request("GET", url, params=params)
+        resp = MultiplayerRoomsResponse.parse_obj(json)
+        if resp.cursor_string:
+            kwargs["cursor_string"] = resp.cursor_string
+            resp.next = partial(self.get_multiplayer_rooms, **kwargs)
+
+    @check_token
+    async def get_multiplayer_room(self, room_id: int) -> MultiplayerRoomResponse:
+        url = f"{self.base_url}/api/v2/rooms/{room_id}"
+        json = await self._request("GET", url)
+        return MultiplayerRoomResponse.parse_obj(json)
+
+    @check_token
+    async def get_multiplayer_leaderboard(
+        self, room_id: int, **kwargs: Any
+    ) -> MultiplayerLeaderboardResponse:
+        if 1 <= (limit := kwargs.pop("limit", 1)) <= 50:
+            raise ValueError("Limit must be between 1 and 50")
+        url = f"{self.base_url}/api/v2/rooms/{room_id}/leaderboard"
+        params: dict[str, Any] = {
+            "limit": limit,
+        }
+        json = await self._request("GET", url, params=params)
+        return MultiplayerLeaderboardResponse.parse_obj(json)
 
     @check_token
     @requires_scope(Scopes.IDENTIFY | Scopes.DELEGATE, any_scope=True)
@@ -1738,13 +1777,17 @@ class Client(Eventable):
             * *cursor_string* (``str``) --
                 Optional, the cursor string to use for pagination
 
+        :raises ValueError: If limit is not between 1 and 100
         :raises APIException: Contains status code and error message
         :return: Multiplayer scores response object
         :rtype: aiosu.models.multiplayer.MultiplayerScoresResponse
         """
+        if not 1 <= (limit := kwargs.pop("limit", 1)) <= 100:
+            raise ValueError("Limit must be between 1 and 100")
         url = f"{self.base_url}/api/v2/rooms/{room_id}/playlist/{playlist_id}/scores"
-        params: dict[str, Any] = {}
-        add_param(params, kwargs, key="limit")
+        params: dict[str, Any] = {
+            "limit": limit,
+        }
         add_param(params, kwargs, key="sort")
         add_param(params, kwargs, key="cursor_string")
         json = await self._request("GET", url, params=params)

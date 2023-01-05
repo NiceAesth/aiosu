@@ -49,7 +49,10 @@ class ClientStorage(Eventable):
         self.client_id: int = kwargs.pop("client_id", None)
         self.base_url: str = kwargs.pop("base_url", "https://osu.ppy.sh")
         self.__create_app_client: bool = kwargs.pop("create_app_client", True)
-        self.default_scopes: Scopes = Scopes.PUBLIC | Scopes.IDENTIFY
+        self.default_scopes: Scopes = kwargs.pop(
+            "default_scopes",
+            Scopes.PUBLIC | Scopes.IDENTIFY,
+        )
         self.clients: dict[int, Client] = {}
 
     async def __aenter__(self) -> ClientStorage:
@@ -114,7 +117,10 @@ class ClientStorage(Eventable):
             raise ValueError("App clients have been disabled.")
 
         if 0 not in self.clients:
-            client = Client(token=OAuthToken(), **self._get_client_args())
+            client = Client(
+                token=OAuthToken(scopes=self.default_scopes),
+                **self._get_client_args(),
+            )
             self.clients[0] = client
             await self._process_event(
                 ClientAddEvent(client_id=0, client=client),
