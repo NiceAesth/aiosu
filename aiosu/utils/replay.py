@@ -165,7 +165,7 @@ def write_replay(file: BinaryIO, replay: Replay) -> None:
         pack_int(file, replay.online_id)
     if replay.mod_extras is not None:
         pack_float64(file, replay.mod_extras)
-    if replay.version >= 30000001:
+    if replay.lazer_replay_data is not None:
         pack_replay_data(
             file,
             replay.lazer_replay_data.json(exclude_unset=True, exclude_none=True),
