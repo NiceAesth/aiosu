@@ -16,6 +16,7 @@ from .forum import *
 from .gamemode import *
 from .kudosu import *
 from .mods import *
+from .multiplayer import *
 from .news import *
 from .oauthtoken import *
 from .performance import *

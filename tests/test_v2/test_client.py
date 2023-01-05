@@ -264,6 +264,20 @@ def changelog_listing():
     return data
 
 
+@pytest.fixture
+def match():
+    with open("tests/data/v2/single_match.json", "rb") as f:
+        data = f.read()
+    return data
+
+
+@pytest.fixture
+def matches():
+    with open("tests/data/v2/multiple_match.json", "rb") as f:
+        data = f.read()
+    return data
+
+
 class TestCursor:
     @pytest.mark.asyncio
     async def test_get_featured_artists_cursor(self, mocker, token, artist_tracks):
@@ -388,6 +402,17 @@ class TestCursor:
         assert isinstance(data, aiosu.models.Rankings)
         data_next = await data.next()
         assert isinstance(data_next, aiosu.models.Rankings)
+        await client.close()
+
+    @pytest.mark.asyncio
+    async def test_get_multiplayer_matches_cursor(self, mocker, token, matches):
+        client = aiosu.v2.Client(token=token)
+        resp = MockResponse(matches, 200)
+        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
+        data = await client.get_multiplayer_matches()
+        assert isinstance(data, aiosu.models.MultiplayerMatchesResponse)
+        data_next = await data.next()
+        assert isinstance(data_next, aiosu.models.MultiplayerMatchesResponse)
         await client.close()
 
 
@@ -875,4 +900,22 @@ class TestClient:
                 mocker.patch("aiohttp.ClientSession.get", return_value=resp)
                 data = await client.get_rankings(mode, type_)
                 assert isinstance(data, aiosu.models.Rankings)
+        await client.close()
+
+    @pytest.mark.asyncio
+    async def test_get_multiplayer_matches(self, mocker, token, matches):
+        client = aiosu.v2.Client(token=token)
+        resp = MockResponse(matches, 200)
+        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
+        data = await client.get_multiplayer_matches()
+        assert isinstance(data, aiosu.models.MultiplayerMatchesResponse)
+        await client.close()
+
+    @pytest.mark.asyncio
+    async def test_get_multiplayer_match(self, mocker, token, match):
+        client = aiosu.v2.Client(token=token)
+        resp = MockResponse(match, 200)
+        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
+        data = await client.get_multiplayer_match(1)
+        assert isinstance(data, aiosu.models.MultiplayerMatchResponse)
         await client.close()

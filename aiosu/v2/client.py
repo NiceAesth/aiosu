@@ -44,6 +44,9 @@ from ..models import ForumTopicResponse
 from ..models import Gamemode
 from ..models import KudosuHistory
 from ..models import Mods
+from ..models import MultiplayerMatchesResponse
+from ..models import MultiplayerMatchResponse
+from ..models import MultiplayerScoresResponse
 from ..models import NewsListing
 from ..models import NewsPost
 from ..models import OAuthToken
@@ -1643,6 +1646,115 @@ class Client(Eventable):
         add_param(data, kwargs, key="uuid")
         json = await self._request("POST", url, data=data)
         return ChatMessageCreateResponse.parse_obj(json)
+
+    @check_token
+    async def get_multiplayer_matches(
+        self, **kwargs: Any
+    ) -> MultiplayerMatchesResponse:
+        r"""Gets the multiplayer matches.
+
+        :param \**kwargs:
+            See below
+
+        :Keyword Arguments:
+            * *sort* (``aiosu.models.common.SortTypes``) --
+                Optional, the sort type
+            * *limit* (``int``) --
+                Optional, number of scores to get. Min: 1, Max: 50, defaults to 50
+            * *cursor_string* (``str``) --
+                Optional, the cursor string to get the next page of results
+
+        :raises APIException: Contains status code and error message
+        :return: Multiplayer matches response object
+        :rtype: aiosu.models.multiplayer.MultiplayerMatchesResponse
+        """
+        if not 1 <= (limit := kwargs.pop("limit", 1)) <= 50:
+            raise ValueError("Limit must be between 1 and 50")
+        url = f"{self.base_url}/api/v2/multiplayer/matches"
+        params: dict[str, Any] = {
+            "limit": limit,
+        }
+        add_param(params, kwargs, key="sort")
+        json = await self._request("GET", url, params=params)
+        resp = MultiplayerMatchesResponse.parse_obj(json)
+        if resp.cursor_string:
+            kwargs["cursor_string"] = resp.cursor_string
+            resp.next = partial(self.get_multiplayer_matches, **kwargs)
+        return resp
+
+    @check_token
+    async def get_multiplayer_match(
+        self, match_id: int, **kwargs: Any
+    ) -> MultiplayerMatchResponse:
+        r"""Gets a multiplayer match.
+
+        :param match_id: The ID of the match
+        :type match_id: int
+        :param \**kwargs:
+            See below
+
+        :Keyword Arguments:
+            * *limit* (``int``) --
+                Optional, number of scores to get. Min: 1, Max: 100, defaults to 100
+            * *before* (``int``) --
+                Optional, the ID of the score to get the scores before
+            * *after* (``int``) --
+                Optional, the ID of the score to get the scores after
+
+        :raises APIException: Contains status code and error message
+        :return: Multiplayer match response object
+        :rtype: aiosu.models.multiplayer.MultiplayerMatchResponse
+        """
+        if not 1 <= (limit := kwargs.pop("limit", 1)) <= 100:
+            raise ValueError("Limit must be between 1 and 100")
+        url = f"{self.base_url}/api/v2/multiplayer/matches/{match_id}"
+        params: dict[str, Any] = {
+            "limit": limit,
+        }
+        add_param(params, kwargs, key="before")
+        add_param(params, kwargs, key="after")
+        json = await self._request("GET", url)
+        return MultiplayerMatchResponse.parse_obj(json)
+
+    @check_token
+    @requires_scope(Scopes.IDENTIFY | Scopes.DELEGATE, any_scope=True)
+    async def get_multiplayer_scores(
+        self, room_id: int, playlist_id: int, **kwargs: Any
+    ) -> MultiplayerScoresResponse:
+        r"""Gets the multiplayer scores for a room.
+
+        :param room_id: The ID of the room
+        :type room_id: int
+        :param playlist_id: The ID of the playlist
+        :type playlist_id: int
+        :param \**kwargs:
+            See below
+
+        :Keyword Arguments:
+            * *limit* (``int``) --
+                Optional, the number of scores to return
+            * *sort* (``aiosu.models.multiplayer.MultiplayerScoreSortType``) --
+                Optional, the sort order of the scores
+            * *cursor_string* (``str``) --
+                Optional, the cursor string to use for pagination
+
+        :raises APIException: Contains status code and error message
+        :return: Multiplayer scores response object
+        :rtype: aiosu.models.multiplayer.MultiplayerScoresResponse
+        """
+        url = f"{self.base_url}/api/v2/rooms/{room_id}/playlist/{playlist_id}/scores"
+        params: dict[str, Any] = {}
+        add_param(params, kwargs, key="limit")
+        add_param(params, kwargs, key="sort")
+        add_param(params, kwargs, key="cursor_string")
+        json = await self._request("GET", url, params=params)
+        resp = MultiplayerScoresResponse.parse_obj(json)
+        if resp.cursor_string:
+            kwargs["cursor_string"] = resp.cursor_string
+            resp.next = partial(
+                self.get_multiplayer_scores, room_id, playlist_id, **kwargs
+            )
+        return resp
 
     @check_token
     async def revoke_token(self) -> None:

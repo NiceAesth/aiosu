@@ -96,6 +96,19 @@ Gamemode
     :undoc-members:
     :inherited-members: BaseModel
 
+Multiplayer
+-----------
+
+.. automodule:: aiosu.models.multiplayer
+    :members:
+    :exclude-members: Config
+    :undoc-members:
+    :inherited-members: BaseModel
+
+.. autodata:: aiosu.models.multiplayer.MultiplayerScoreSortType
+
+.. autodata:: aiosu.models.multiplayer.MultiplayerEventTypes
+
 Featured Artists
 ----------------
 
