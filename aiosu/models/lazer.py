@@ -6,6 +6,8 @@ from __future__ import annotations
 from typing import Any
 from typing import Optional
 
+from pydantic import Field
+
 from .base import BaseModel
 
 __all__ = (
@@ -18,7 +20,7 @@ class LazerMod(BaseModel):
     """Temporary model for lazer mods."""
 
     acronym: str
-    settings: dict[str, Any]
+    settings: dict[str, Any] = Field(default_factory=dict)
 
 
 class LazerScoreStatistics(BaseModel):
@@ -37,3 +39,9 @@ class LazerScoreStatistics(BaseModel):
     good: Optional[int]
     perfect: Optional[int]
     legacy_combo_increase: Optional[int]
+
+
+class LazerReplayData(BaseModel):
+    mods: list[LazerMod]
+    statistics: LazerScoreStatistics
+    maximum_statistics: LazerScoreStatistics

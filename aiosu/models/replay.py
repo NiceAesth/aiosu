@@ -12,6 +12,7 @@ from pydantic import root_validator
 
 from .base import BaseModel
 from .gamemode import Gamemode
+from .lazer import LazerReplayData
 from .mods import Mod
 from .mods import Mods
 from .score import ScoreStatistics
@@ -99,6 +100,7 @@ class Replay(BaseModel):
     mod_extras: Optional[float]
     skip_offset: Optional[int]
     rng_seed: Optional[int]
+    lazer_replay_data: Optional[LazerReplayData]
 
     def __repr__(self) -> str:
         return f"<Replay {self.player_name} {self.map_md5}>"

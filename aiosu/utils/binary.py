@@ -6,6 +6,7 @@ from __future__ import annotations
 import lzma
 import struct
 from datetime import datetime
+from datetime import timezone
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -143,7 +144,7 @@ def unpack_timestamp(file: BinaryIO) -> datetime:
     :rtype: datetime
     """
     seconds = unpack_long(file) / 10000000 - 62135596800
-    return datetime.fromtimestamp(seconds)
+    return datetime.fromtimestamp(seconds, tz=timezone.utc)
 
 
 def unpack_uleb128(file: BinaryIO) -> int:
@@ -189,6 +190,8 @@ def unpack_replay_data(file: BinaryIO) -> str:
     :rtype: str
     """
     length = unpack_int(file)
+    if length == 0:
+        return ""
     data = file.read(length)
     data = lzma.decompress(data)
     return data.decode("ascii")
