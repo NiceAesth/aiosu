@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING
 import orjson
 import pydantic
 
+from .gamemode import Gamemode
 from .mods import Mods
 
 if TYPE_CHECKING:
@@ -32,6 +33,7 @@ class BaseModel(pydantic.BaseModel):
         json_dumps = orjson_dumps
         json_encoders = {
             Mods: lambda v: str(v),
+            Gamemode: lambda v: str(v),
         }
 
 

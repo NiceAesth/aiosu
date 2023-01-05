@@ -272,3 +272,6 @@ class User(BaseModel):
                 "statistics": UserStats._from_api_v1(data),
             },
         )
+
+
+UserStats.update_forward_refs()

@@ -33,10 +33,61 @@ __all__ = (
     "BeatmapsetEvent",
     "BeatmapsetEventComment",
     "BeatmapsetEventType",
+    "BeatmapsetRequestStatus",
     "BeatmapsetVoteEvent",
     "BeatmapUserPlaycount",
     "BeatmapsetDiscussionResponse",
+    "BeatmapsetDiscussionPostResponse",
+    "BeatmapsetDiscussionVoteResponse",
 )
+
+BeatmapsetDisscussionType = Literal[
+    "hype",
+    "praise",
+    "problem",
+    "review",
+    "suggestion",
+    "mapper_note",
+]
+
+
+BeatmapsetEventType = Literal[
+    "approve",
+    "beatmap_owner_change",
+    "discussion_delete",
+    "discussion_post_delete",
+    "discussion_post_restore",
+    "discussion_restore",
+    "discussion_lock",
+    "discussion_unlock",
+    "disqualify",
+    "genre_edit",
+    "issue_reopen",
+    "issue_resolve",
+    "kudosu_allow",
+    "kudosu_deny",
+    "kudosu_gain",
+    "kudosu_lost",
+    "kudosu_recalculate",
+    "language_edit",
+    "love",
+    "nominate",
+    "nomination_reset",
+    "nomination_reset_received",
+    "nsfw_toggle",
+    "offset_edit",
+    "qualify",
+    "rank",
+    "remove_from_loved",
+]
+
+BeatmapsetRequestStatus = Literal[
+    "all",
+    "ranked",
+    "qualified",
+    "disqualified",
+    "never_ranked",
+]
 
 
 class BeatmapRankStatus(Enum):
@@ -304,47 +355,6 @@ class Beatmapset(BaseModel):
         )
 
 
-BeatmapsetDisscussionType = Literal[
-    "hype",
-    "praise",
-    "problem",
-    "review",
-    "suggestion",
-    "mapper_note",
-]
-
-
-BeatmapsetEventType = Literal[
-    "approve",
-    "beatmap_owner_change",
-    "discussion_delete",
-    "discussion_post_delete",
-    "discussion_post_restore",
-    "discussion_restore",
-    "discussion_lock",
-    "discussion_unlock",
-    "disqualify",
-    "genre_edit",
-    "issue_reopen",
-    "issue_resolve",
-    "kudosu_allow",
-    "kudosu_deny",
-    "kudosu_gain",
-    "kudosu_lost",
-    "kudosu_recalculate",
-    "language_edit",
-    "love",
-    "nominate",
-    "nomination_reset",
-    "nomination_reset_received",
-    "nsfw_toggle",
-    "offset_edit",
-    "qualify",
-    "rank",
-    "remove_from_loved",
-]
-
-
 class BeatmapUserPlaycount(BaseModel):
     count: int
     beatmap_id: int
@@ -388,6 +398,10 @@ class BeatmapsetDiscussion(BaseModel):
 class BeatmapsetVoteEvent(BaseModel):
     score: int
     user_id: int
+    id: Optional[int]
+    created_at: Optional[datetime]
+    updated_at: Optional[datetime]
+    beatmapset_discussion_id: Optional[int]
 
 
 class BeatmapsetEventComment(BaseModel):
@@ -431,6 +445,24 @@ class BeatmapsetDiscussionResponse(BaseModel):
     def _set_max_blocks(cls, values: dict[str, Any]) -> dict[str, Any]:
         values["max_blocks"] = values["reviews_config"]["max_blocks"]
         return values
+
+
+class BeatmapsetDiscussionPostResponse(BaseModel):
+    beatmapsets: list[Beatmapset]
+    posts: list[BeatmapsetDiscussionPost]
+    users: list[User]
+    cursor_string: Optional[str]
+    next: Optional[CursorNextType] = Field(exclude=True)
+    """The next cursor string to use for pagination"""
+
+
+class BeatmapsetDiscussionVoteResponse(BaseModel):
+    votes: list[BeatmapsetVoteEvent]
+    discussions: list[BeatmapsetDiscussion]
+    users: list[User]
+    cursor_string: Optional[str]
+    next: Optional[CursorNextType] = Field(exclude=True)
+    """The next cursor string to use for pagination"""
 
 
 Beatmap.update_forward_refs()

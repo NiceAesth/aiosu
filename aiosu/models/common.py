@@ -8,6 +8,7 @@ from functools import partial
 from typing import Any
 from typing import Awaitable
 from typing import Callable
+from typing import Literal
 from typing import Optional
 
 from emojiflags.lookup import lookup as flag_lookup  # type: ignore
@@ -24,10 +25,13 @@ __all__ = (
     "Cursor",
     "FuncType",
     "CursorNextType",
+    "SortTypes",
 )
 
 FuncType = Callable[[Any, Any], Awaitable[Any]]
 CursorNextType = partial[FuncType]
+
+SortTypes = Literal["id_asc", "id_desc"]
 
 
 class TimestampedCount(BaseModel):
