@@ -37,6 +37,7 @@ from ..models import Event
 from ..models import Gamemode
 from ..models import KudosuHistory
 from ..models import Mods
+from ..models import NewsListing
 from ..models import NewsPost
 from ..models import OAuthToken
 from ..models import Rankings
@@ -296,12 +297,8 @@ class Client(Eventable):
         json = await self._request("GET", url)
         resp = ArtistResponse.parse_obj(json)
         if resp.cursor_string:
-            kwargs.pop("cursor_string", None)
-            resp.next = partial(
-                self.get_featured_artists,
-                **kwargs,
-                cursor_string=resp.cursor_string,
-            )
+            kwargs["cursor_string"] = resp.cursor_string
+            resp.next = partial(self.get_featured_artists, **kwargs)
         return resp
 
     async def get_seasonal_backgrounds(self) -> SeasonalBackgroundSet:
@@ -356,6 +353,39 @@ class Client(Eventable):
             params["key"] = "id"
         json = await self._request("GET", url, params=params)
         return Build.parse_obj(json)
+
+    async def get_news_listing(self, **kwargs: Any) -> NewsListing:
+        r"""Gets the news listing.
+
+        :param \**kwargs:
+            See below
+
+        :Keyword Arguments:
+            * *limit* (``int``) --
+                Optional, the number of news posts to return. Min: 1, Max: 21, defaults to 12
+            * *year* (``int``) --
+                Optional, the year to filter by.
+            * *cursor_string* (``str``) --
+                Optional, the cursor string to use for pagination.
+
+        :raises APIException: Contains status code and error message
+        :return: News listing object
+        :rtype: aiosu.models.news.NewsListing
+        """
+        url = f"{self.base_url}/api/v2/news"
+        if not 1 <= (limit := kwargs.pop("limit", 12)) <= 21:
+            raise ValueError("Invalid limit specified. Limit must be between 1 and 21")
+        params: dict[str, Any] = {
+            "limit": limit,
+        }
+        add_param(params, kwargs, key="year")
+        add_param(params, kwargs, key="cursor_string")
+        json = await self._request("GET", url, params=params)
+        resp = NewsListing.parse_obj(json)
+        if resp.cursor_string:
+            kwargs["cursor_string"] = resp.cursor_string
+            resp.next = partial(self.get_news_listing, **kwargs)
+        return resp
 
     async def get_news_post(
         self, news_query: Union[str, int], **kwargs: Any
@@ -421,13 +451,44 @@ class Client(Eventable):
         json = await self._request("GET", url, params=params)
         resp = CommentBundle.parse_obj(json)
         if resp.cursor_string:
-            kwargs.pop("cursor_string", None)
-            resp.next = partial(
-                self.get_comment,
-                comment_id=comment_id,
-                **kwargs,
-                cursor_string=resp.cursor_string,
-            )
+            kwargs["cursor_string"] = resp.cursor_string
+            resp.next = partial(self.get_comment, comment_id=comment_id, **kwargs)
+        return resp
+
+    async def get_comments(self, **kwargs: Any) -> CommentBundle:
+        r"""Gets comments.
+
+        :param \**kwargs:
+            See below
+
+        :Keyword Arguments:
+            * *commentable_type* (``Literal["beatmapset", "build", "news_post", "user"]``) --
+                Optional, commentable type to get comments from
+            * *commentable_id* (``int``) --
+                Optional, commentable ID to get comments from
+            * *parent_id* (``int``) --
+                Optional, parent ID to get comments from
+            * *sort* (aiosu.models.comment.CommentSortType) --
+                Optional, sort order of comments, defaults to ``"new"``
+            * *cursor_string* (``str``) --
+                Optional, cursor string to get the next page of comments
+
+        :raises APIException: Contains status code and error message
+        :return: Comment bundle object
+        :rtype: aiosu.models.comment.CommentBundle
+        """
+        url = f"{self.base_url}/api/v2/comments"
+        params: dict[str, Any] = {}
+        add_param(params, kwargs, key="commentable_type")
+        add_param(params, kwargs, key="commentable_id")
+        add_param(params, kwargs, key="parent_id")
+        add_param(params, kwargs, key="sort")
+        add_param(params, kwargs, key="cursor_string")
+        json = await self._request("GET", url, params=params)
+        resp = CommentBundle.parse_obj(json)
+        if resp.cursor_string:
+            kwargs["cursor_string"] = resp.cursor_string
+            resp.next = partial(self.get_comments, **kwargs)
         return resp
 
     @check_token
@@ -600,7 +661,7 @@ class Client(Eventable):
         :return: List of requested scores
         :rtype: list[aiosu.models.score.Score]
         """
-        if not 1 <= kwargs.get("limit", 100) <= 100:
+        if not 1 <= (limit := kwargs.pop("limit", 100)) <= 100:
             raise ValueError("Invalid limit specified. Limit must be between 1 and 100")
         if request_type not in ("recent", "best", "firsts"):
             raise ValueError(
@@ -609,7 +670,7 @@ class Client(Eventable):
         url = f"{self.base_url}/api/v2/users/{user_id}/scores/{request_type}"
         params: dict[str, Any] = {
             "include_fails": kwargs.pop("include_fails", False),
-            "limit": kwargs.pop("limit", 100),
+            "limit": limit,
             "offset": kwargs.pop("offset", 0),
         }
         add_param(params, kwargs, key="mode", converter=lambda x: str(Gamemode(x)))  # type: ignore
@@ -986,12 +1047,8 @@ class Client(Eventable):
         json = await self._request("GET", url)
         resp = BeatmapsetSearchResponse.parse_obj(json)
         if resp.cursor_string:
-            kwargs.pop("cursor_string", None)
-            resp.next = partial(
-                self.search_beatmapsets,
-                **kwargs,
-                cursor_string=resp.cursor_string,
-            )
+            kwargs["cursor_string"] = resp.cursor_string
+            resp.next = partial(self.search_beatmapsets, **kwargs)
         return resp
 
     @check_token
@@ -1083,12 +1140,8 @@ class Client(Eventable):
         json = await self._request("GET", url, params=params)
         resp = BeatmapsetDiscussionResponse.parse_obj(json)
         if resp.cursor_string:
-            kwargs.pop("cursor_string", None)
-            resp.next = partial(
-                self.get_beatmapset_discussions,
-                **kwargs,
-                cursor_string=resp.cursor_string,
-            )
+            kwargs["cursor_string"] = resp.cursor_string
+            resp.next = partial(self.get_beatmapset_discussions, **kwargs)
         return resp
 
     @check_token
@@ -1135,12 +1188,8 @@ class Client(Eventable):
         json = await self._request("GET", url, params=params)
         resp = BeatmapsetDiscussionPostResponse.parse_obj(json)
         if resp.cursor_string:
-            kwargs.pop("cursor_string", None)
-            resp.next = partial(
-                self.get_beatmapset_discussion_posts,
-                **kwargs,
-                cursor_string=resp.cursor_string,
-            )
+            kwargs["cursor_string"] = resp.cursor_string
+            resp.next = partial(self.get_beatmapset_discussion_posts, **kwargs)
         return resp
 
     @check_token
@@ -1190,12 +1239,8 @@ class Client(Eventable):
         json = await self._request("GET", url, params=params)
         resp = BeatmapsetDiscussionVoteResponse.parse_obj(json)
         if resp.cursor_string:
-            kwargs.pop("cursor_string", None)
-            resp.next = partial(
-                self.get_beatmapset_discussion_votes,
-                **kwargs,
-                cursor_string=resp.cursor_string,
-            )
+            kwargs["cursor_string"] = resp.cursor_string
+            resp.next = partial(self.get_beatmapset_discussion_votes, **kwargs)
         return resp
 
     @check_token
@@ -1279,14 +1324,8 @@ class Client(Eventable):
         json = await self._request("GET", url, params=params)
         resp = Rankings.parse_obj(json)
         if resp.cursor_string:
-            kwargs.pop("cursor_string", None)
-            resp.next = partial(
-                self.get_rankings,
-                mode=mode,
-                type=type,
-                **kwargs,
-                cursor_string=resp.cursor_string,
-            )
+            kwargs["cursor_string"] = resp.cursor_string
+            resp.next = partial(self.get_rankings, mode=mode, type=type, **kwargs)
         return resp
 
     @check_token

@@ -250,6 +250,13 @@ def rankings():
     return _rankings
 
 
+@pytest.fixture
+def news_listing():
+    with open("tests/data/v2/news_listing.json", "rb") as f:
+        data = f.read()
+    return data
+
+
 class TestCursor:
     @pytest.mark.asyncio
     async def test_get_featured_artists_cursor(self, mocker, token, artist_tracks):
@@ -263,11 +270,33 @@ class TestCursor:
         await client.close()
 
     @pytest.mark.asyncio
+    async def test_get_news_listing_cursor(self, mocker, token, news_listing):
+        client = aiosu.v2.Client(token=token)
+        resp = MockResponse(news_listing, 200)
+        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
+        data = await client.get_news_listing()
+        assert isinstance(data, aiosu.models.NewsListing)
+        data_next = await data.next()
+        assert isinstance(data_next, aiosu.models.NewsListing)
+        await client.close()
+
+    @pytest.mark.asyncio
     async def test_get_comment_cursor(self, mocker, token, comment_bundle):
         client = aiosu.v2.Client(token=token)
         resp = MockResponse(comment_bundle, 200)
         mocker.patch("aiohttp.ClientSession.get", return_value=resp)
         data = await client.get_comment(123)
+        assert isinstance(data, aiosu.models.CommentBundle)
+        data_next = await data.next()
+        assert isinstance(data_next, aiosu.models.CommentBundle)
+        await client.close()
+
+    @pytest.mark.asyncio
+    async def test_get_comments_cursor(self, mocker, token, comment_bundle):
+        client = aiosu.v2.Client(token=token)
+        resp = MockResponse(comment_bundle, 200)
+        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
+        data = await client.get_comments()
         assert isinstance(data, aiosu.models.CommentBundle)
         data_next = await data.next()
         assert isinstance(data_next, aiosu.models.CommentBundle)
@@ -382,6 +411,15 @@ class TestClient:
         await client.close()
 
     @pytest.mark.asyncio
+    async def test_get_news_listing(self, mocker, token, news_listing):
+        client = aiosu.v2.Client(token=token)
+        resp = MockResponse(news_listing, 200)
+        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
+        data = await client.get_news_listing()
+        assert isinstance(data, aiosu.models.NewsListing)
+        await client.close()
+
+    @pytest.mark.asyncio
     async def test_get_news_post(self, mocker, token, news_post):
         client = aiosu.v2.Client(token=token)
         resp = MockResponse(news_post, 200)
@@ -405,6 +443,15 @@ class TestClient:
         resp = MockResponse(comment_bundle, 200)
         mocker.patch("aiohttp.ClientSession.get", return_value=resp)
         data = await client.get_comment(123)
+        assert isinstance(data, aiosu.models.CommentBundle)
+        await client.close()
+
+    @pytest.mark.asyncio
+    async def test_get_comments(self, mocker, token, comment_bundle):
+        client = aiosu.v2.Client(token=token)
+        resp = MockResponse(comment_bundle, 200)
+        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
+        data = await client.get_comments()
         assert isinstance(data, aiosu.models.CommentBundle)
         await client.close()
 

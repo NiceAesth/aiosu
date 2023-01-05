@@ -179,6 +179,8 @@ Comments
     :undoc-members:
     :inherited-members: BaseModel
 
+.. autodata:: aiosu.models.comment.CommentSortType
+
 API Events
 ----------
 

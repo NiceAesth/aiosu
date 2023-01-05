@@ -4,6 +4,7 @@ This module contains models for comment objects.
 from __future__ import annotations
 
 from datetime import datetime
+from typing import Literal
 from typing import Optional
 
 from .base import BaseModel
@@ -15,7 +16,10 @@ __all__ = (
     "Commentable",
     "Comment",
     "CommentBundle",
+    "CommentSortType",
 )
+
+CommentSortType = Literal["new", "old", "top"]
 
 
 class Commentable(BaseModel):
