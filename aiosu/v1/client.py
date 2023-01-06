@@ -9,6 +9,7 @@ from io import BytesIO
 from io import StringIO
 from typing import Literal
 from typing import TYPE_CHECKING
+from warnings import warn
 
 import aiohttp
 import orjson
@@ -64,11 +65,14 @@ class Client:
     def __init__(self, token: str, **kwargs: Any) -> None:
         self.token: str = token
         self.base_url: str = kwargs.pop("base_url", "https://osu.ppy.sh")
-        self._limiter: AsyncLimiter = AsyncLimiter(
-            *kwargs.pop(
-                "limiter",
-                (600, 60),
+        max_rate, time_period = kwargs.pop("limiter", (600, 60))
+        if (max_rate / time_period) > (1000 / 60):
+            warn(
+                "You are running at an insanely high rate limit. Doing so may result in your account being banned.",
             )
+        self._limiter: AsyncLimiter = AsyncLimiter(
+            max_rate=max_rate,
+            time_period=time_period,
         )
         self._session: aiohttp.ClientSession = None  # type: ignore
 
