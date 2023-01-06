@@ -17,6 +17,10 @@ __all__ = (
     "ChatMessage",
     "ChatMessageCreateResponse",
     "ChatChannelTypes",
+    "ChatIncludeTypes",
+    "ChatUpdateResponse",
+    "ChatUserSilence",
+    "ChatChannelResponse",
 )
 
 ChatChannelTypes = Literal[
@@ -27,15 +31,27 @@ ChatChannelTypes = Literal[
     "SPECTATOR",
     "TEMPORARY",
     "GROUP",
+    "ANNOUNCE",
+]
+
+ChatIncludeTypes = Literal[
+    "messages",
+    "presence",
+    "silences",
 ]
 
 
+class ChatUserSilence(BaseModel):
+    id: int
+    user_id: int
+
+
 class ChatChannel(BaseModel):
-    channel_id: int
+    id: int = Field(alias="channel_id")
     type: ChatChannelTypes
     name: str
-    icon: str
     moderated: bool
+    icon: Optional[str]
     description: Optional[str]
     last_message_id: Optional[int]
     user_ids: Optional[list[int]] = Field(alias="users")
@@ -44,16 +60,27 @@ class ChatChannel(BaseModel):
 
 class ChatMessage(BaseModel):
     message_id: int
-    channel_id: int
     sender_id: int
-    content: str
+    channel_id: int
     timestamp: str
+    content: str
+    content_html: str
     is_action: bool
-    sender: User
     uuid: Optional[str]
+    sender: Optional[User]
 
 
 class ChatMessageCreateResponse(BaseModel):
-    new_channel_id: int
-    presence: list[ChatChannel]
+    channel: ChatChannel
     message: ChatMessage
+
+
+class ChatUpdateResponse(BaseModel):
+    messages: Optional[list[ChatMessage]]
+    presence: Optional[list[ChatChannel]]
+    silences: list
+
+
+class ChatChannelResponse(BaseModel):
+    channel: ChatChannel
+    users: Optional[list[User]]

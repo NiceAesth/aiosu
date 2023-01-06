@@ -203,6 +203,8 @@ Chat
 
 .. autodata:: aiosu.models.chat.ChatChannelTypes
 
+.. autodata:: aiosu.models.chat.ChatIncludeTypes
+
 Wiki
 ----
 
