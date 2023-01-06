@@ -377,14 +377,9 @@ class Client(Eventable):
         add_param(params, kwargs, key="cursor_string")
         json = await self._request("GET", url, params=params)
         resp = ChangelogListing.parse_obj(json)
-        if resp.cursor_string:
+        if resp.cursor_string:  # Unused: API does not return cursor_string
             kwargs["cursor_string"] = resp.cursor_string
             resp.next = partial(self.get_changelog_listing, **kwargs)
-        else:  # TODO: Figure this out / remove on cursor string support
-            resp.next = partial(
-                self.get_changelog_listing,
-                **resp.search.dict(by_alias=True, exclude_none=True),
-            )
         return resp
 
     async def get_changelog_build(self, stream: str, build: str) -> Build:
@@ -525,7 +520,7 @@ class Client(Eventable):
         add_param(params, kwargs, key="cursor_string")
         json = await self._request("GET", url, params=params)
         resp = CommentBundle.parse_obj(json)
-        if resp.cursor_string:
+        if resp.cursor_string:  # Unused: API does not return cursor_string
             kwargs["cursor_string"] = resp.cursor_string
             resp.next = partial(self.get_comment, comment_id=comment_id, **kwargs)
         return resp
@@ -561,7 +556,7 @@ class Client(Eventable):
         add_param(params, kwargs, key="cursor_string")
         json = await self._request("GET", url, params=params)
         resp = CommentBundle.parse_obj(json)
-        if resp.cursor_string:
+        if resp.cursor_string:  # Unused: API does not return cursor_string
             kwargs["cursor_string"] = resp.cursor_string
             resp.next = partial(self.get_comments, **kwargs)
         return resp
@@ -1398,7 +1393,7 @@ class Client(Eventable):
         add_param(params, kwargs, key="cursor_string")
         json = await self._request("GET", url, params=params)
         resp = Rankings.parse_obj(json)
-        if resp.cursor_string:
+        if resp.cursor_string:  # Unused: API does not return cursor_string
             kwargs["cursor_string"] = resp.cursor_string
             resp.next = partial(self.get_rankings, mode=mode, type=type, **kwargs)
         return resp
