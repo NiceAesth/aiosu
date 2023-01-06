@@ -34,7 +34,12 @@ from ..models import BeatmapUserPlaycount
 from ..models import Build
 from ..models import ChangelogListing
 from ..models import ChatChannel
+from ..models import ChatChannelResponse
+from ..models import ChatChannelTypes
+from ..models import ChatMessage
 from ..models import ChatMessageCreateResponse
+from ..models import ChatUpdateResponse
+from ..models import ChatUserSilence
 from ..models import CommentBundle
 from ..models import Event
 from ..models import ForumCreateTopicResponse
@@ -1572,14 +1577,141 @@ class Client(Eventable):
         return ForumPost.parse_obj(json)
 
     @check_token
+    @requires_scope(Scopes.LAZER)
+    async def get_chat_ack(self, **kwargs: Any) -> list[ChatUserSilence]:
+        r"""Gets chat acknowledgement.
+
+        :param \**kwargs:
+            See below
+
+        :Keyword Arguments:
+            * *since* (``int``) --
+                Optional, the last message ID received
+            * *silence_id_since* (``int``) --
+                Optional, the last silence ID received
+
+        :raises APIException: Contains status code and error message
+        :return: List of chat user silence objects
+        :rtype: list[aiosu.models.chat.ChatUserSilence]
+        """
+        url = f"{self.base_url}/api/v2/chat/ack"
+        data: dict[str, Any] = {}
+        add_param(data, kwargs, key="since")
+        add_param(data, kwargs, key="silence_id_since", param_name="history_since")
+        json = await self._request("POST", url, data=data)
+        return from_list(ChatUserSilence.parse_obj, json.get("silences", []))
+
+    @check_token
+    @requires_scope(Scopes.LAZER)
+    async def get_chat_updates(self, since: int, **kwargs: Any) -> ChatUpdateResponse:
+        r"""Gets chat updates.
+
+        :param since: The last message ID received
+        :type since: int
+        :param \**kwargs:
+            See below
+
+        :Keyword Arguments:
+            * *limit* (``int``) --
+                Optional, the maximum number of messages to return. Min: 1, Max: 50. Defaults to 50
+            * *channel_id* (``int``) --
+                Optional, the channel ID to get messages from
+            * *silence_id_since* (``int``) --
+                Optional, the last silence ID received
+            * *includes* (``list[aiosu.models.chat.ChatIncludeTypes]``) --
+                Optional, the additional information to include. Defaults to all.
+
+        :raises ValueError: If limit is not between 1 and 50
+        :raises APIException: Contains status code and error message
+        :return: Chat update response object
+        :rtype: aiosu.models.chat.ChatUpdateResponse
+        """
+        if not 1 <= (limit := kwargs.get("limit", 50)) <= 50:
+            raise ValueError("limit must be between 1 and 50")
+        url = f"{self.base_url}/api/v2/chat/updates"
+        data: dict[str, Any] = {
+            "since": since,
+            "limit:": limit,
+        }
+        add_param(data, kwargs, key="channel_id")
+        add_param(data, kwargs, key="includes")
+        add_param(data, kwargs, key="silence_id_since", param_name="history_since")
+        json = await self._request("GET", url, data=data)
+        return ChatUpdateResponse.parse_obj(json)
+
+    @check_token
+    @requires_scope(Scopes.LAZER)
+    async def get_channel(self, channel_id: int) -> ChatChannelResponse:
+        r"""Gets channel.
+
+        :param channel_id: The channel ID to get
+        :type channel_id: int
+        :raises APIException: Contains status code and error message
+        :return: Chat channel object
+        :rtype: aiosu.models.chat.ChatChannelResponse
+        """
+        url = f"{self.base_url}/api/v2/chat/channels/{channel_id}"
+        json = await self._request("GET", url)
+        return ChatChannelResponse.parse_obj(json)
+
+    @check_token
+    @requires_scope(Scopes.LAZER)
+    async def get_channels(self) -> list[ChatChannel]:
+        r"""Gets a list of joinable public channels.
+
+        :raises APIException: Contains status code and error message
+        :return: List of chat channel objects
+        :rtype: list[aiosu.models.chat.ChatChannel]
+        """
+        url = f"{self.base_url}/api/v2/chat/channels"
+        json = await self._request("GET", url)
+        return from_list(ChatChannel.parse_obj, json)
+
+    @check_token
+    @requires_scope(Scopes.LAZER)
+    async def get_channel_messages(
+        self, channel_id: int, **kwargs: Any
+    ) -> list[ChatMessage]:
+        r"""Gets channel messages.
+
+        :param channel_id: The channel ID to get messages from
+        :type channel_id: int
+        :param \**kwargs:
+            See below
+
+        :Keyword Arguments:
+            * *limit* (``int``) --
+                Optional, the maximum number of messages to return. Min: 1, Max: 50. Defaults to 50
+            * *since* (``int``) --
+                Optional, the ID of the oldest message to return
+            * *until* (``int``) --
+                Optional, the ID of the newest message to return
+
+        :raises ValueError: If limit is not between 1 and 50
+        :raises APIException: Contains status code and error message
+        :return: List of chat message objects
+        :rtype: list[aiosu.models.chat.ChatMessage]
+        """
+        if not 1 <= (limit := kwargs.get("limit", 50)) <= 50:
+            raise ValueError("limit must be between 1 and 50")
+        url = f"{self.base_url}/api/v2/chat/channels/{channel_id}/messages"
+        data: dict[str, Any] = {
+            "limit:": limit,
+        }
+        add_param(data, kwargs, key="since")
+        add_param(data, kwargs, key="until")
+        json = await self._request("GET", url, data=data)
+        return from_list(ChatMessage.parse_obj, json)
+
+    @check_token
     @requires_scope(Scopes.CHAT_WRITE)
     async def create_chat_channel(
-        self, type: Literal["PM", "ANNOUNCE"], **kwargs: Any
+        self, type: ChatChannelTypes, **kwargs: Any
     ) -> ChatChannel:
         r"""Creates a chat channel.
 
         :param type: The type of the channel.
-        :type type: Literal["PM", "ANNOUNCE"]
+        :type type: aiosu.models.chat.ChatChannelType
         :param \**kwargs:
             See below
 
@@ -1621,8 +1753,81 @@ class Client(Eventable):
         return ChatChannel.parse_obj(json)
 
     @check_token
-    @requires_scope(Scopes.CHAT_WRITE)
+    @requires_scope(Scopes.LAZER)
+    async def join_channel(self, channel_id: int, user_id: int) -> ChatChannel:
+        r"""Joins a channel.
+
+        :param channel_id: The channel ID to join
+        :type channel_id: int
+        :param user_id: The user ID to join as
+        :type user_id: int
+        :raises APIException: Contains status code and error message
+        :return: Chat channel object
+        :rtype: aiosu.models.chat.ChatChannel
+        """
+        url = f"{self.base_url}/api/v2/chat/channels/{channel_id}/users/{user_id}"
+        json = await self._request("PUT", url)
+        return ChatChannel.parse_obj(json)
+
+    @check_token
+    @requires_scope(Scopes.LAZER)
+    async def leave_channel(self, channel_id: int, user_id: int) -> None:
+        r"""Leaves a channel.
+
+        :param channel_id: The channel ID to leave
+        :type channel_id: int
+        :param user_id: The user ID to leave as
+        :type user_id: int
+        :raises APIException: Contains status code and error message
+        """
+        url = f"{self.base_url}/api/v2/chat/channels/{channel_id}/users/{user_id}"
+        await self._request("DELETE", url)
+
+    @check_token
+    @requires_scope(Scopes.LAZER)
+    async def mark_read(self, channel_id: int, message_id: int) -> None:
+        r"""Marks a channel as read.
+
+        :param channel_id: The channel ID to mark as read
+        :type channel_id: int
+        :param message_id: The message ID to mark as read up to
+        :type message_id: int
+        :raises APIException: Contains status code and error message
+        """
+        url = f"{self.base_url}/api/v2/chat/channels/{channel_id}/mark-as-read/{message_id}"
+        await self._request("PUT", url)
+
+    @check_token
+    @requires_scope(Scopes.LAZER)
     async def send_message(
+        self,
+        channel_id: int,
+        message: str,
+        is_action: bool,
+    ) -> ChatMessage:
+        r"""Sends a message to a channel.
+
+        :param channel_id: The ID of the channel
+        :type channel_id: int
+        :param message: The message to send
+        :type message: str
+        :param is_action: Whether the message is an action
+        :type is_action: bool
+        :raises APIException: Contains status code and error message
+        :return: Chat message object
+        :rtype: aiosu.models.chat.ChatMessage
+        """
+        url = f"{self.base_url}/api/v2/chat/channels/{channel_id}/messages"
+        data: dict[str, Any] = {
+            "message": message,
+            "is_action": is_action,
+        }
+        json = await self._request("POST", url, data=data)
+        return ChatMessage.parse_obj(json)
+
+    @check_token
+    @requires_scope(Scopes.CHAT_WRITE)
+    async def send_private_message(
         self, user_id: int, message: str, is_action: bool, **kwargs: Any
     ) -> ChatMessageCreateResponse:
         r"""Sends a message to a user.
