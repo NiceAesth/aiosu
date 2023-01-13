@@ -16,7 +16,7 @@ latest  ✅
 Reporting a Vulnerability
 -------------------------
 
-If you notice any vulnerabilities, pleae contact me urgently at
+If you notice any vulnerabilities, please contact me urgently at
 nice@aesth.dev or via security advisories in the repository.
 
 Depending on the issue, a resolution will be attempted in up to a week.
