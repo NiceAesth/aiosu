@@ -204,6 +204,7 @@ class ClientStorage(Eventable):
             client = await self.client_repository.get(client_id)
             if not client:
                 raise ValueError("Client not found. This should never happen.")
+            return client
         if token is not None:
             return await self.add_client(token)
         raise ValueError("Either id or token must be specified.")
