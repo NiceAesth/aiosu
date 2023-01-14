@@ -2,8 +2,8 @@
 # https://python-poetry.org/docs/cli/#version
 
 shell:
-	@poetry install --with dev
-	@poetry shell
+	poetry install --with dev
+	poetry shell
 
 release:
 	@poetry version $(ver)
@@ -14,9 +14,13 @@ release:
 	@git push --tags
 	@poetry version
 
+
+lint:
+	poetry run pre-commit run --all-files
+
 test:
-	@pytest -s
-	@mypy
+	poetry run pytest -s
+	poetry run mypy
 
 serve-docs:
 	@cd docs;\
