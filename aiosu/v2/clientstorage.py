@@ -6,7 +6,9 @@ from __future__ import annotations
 import functools
 from typing import TYPE_CHECKING
 
+from . import BaseClientRepository
 from . import Client
+from . import SimpleClientRepository
 from ..events import ClientAddEvent
 from ..events import ClientUpdateEvent
 from ..events import Eventable
@@ -39,6 +41,8 @@ class ClientStorage(Eventable):
             Optional, whether to automatically create guest clients, defaults to True
         * *default_scopes* (``Scopes``) --
             Optional, default scopes to use when creating a client, defaults to Scopes.PUBLIC | Scopes.IDENTIFY
+        * *client_repository* (``aiosu.v2.clientrepository.BaseClientRepository``) --
+            Optional, client repository to use, defaults to ``aiosu.v2.clientrepository.SimpleClientRepository``
     """
 
     def __init__(self, **kwargs: Any) -> None:
@@ -47,13 +51,16 @@ class ClientStorage(Eventable):
         self._register_event(ClientUpdateEvent)
         self.client_secret: str = kwargs.pop("client_secret", None)
         self.client_id: int = kwargs.pop("client_id", None)
-        self.base_url: str = kwargs.pop("base_url", "https://osu.ppy.sh")
+        self.base_url: str = kwargs.pop("base_url", "https://osu.ppy.sh").rstrip("/")
         self.__create_app_client: bool = kwargs.pop("create_app_client", True)
         self.default_scopes: Scopes = kwargs.pop(
             "default_scopes",
             Scopes.PUBLIC | Scopes.IDENTIFY,
         )
-        self.clients: dict[int, Client] = {}
+        self.client_repository: BaseClientRepository = kwargs.pop(
+            "client_repository",
+            SimpleClientRepository(),
+        )
 
     async def __aenter__(self) -> ClientStorage:
         return self
@@ -116,27 +123,30 @@ class ClientStorage(Eventable):
         if not self.__create_app_client:
             raise ValueError("App clients have been disabled.")
 
-        if 0 not in self.clients:
-            client = Client(
+        if not await self.client_exists(0):
+            new_client = Client(
                 token=OAuthToken(scopes=self.default_scopes),
                 **self._get_client_args(),
             )
-            self.clients[0] = client
+            await self.client_repository.add(0, new_client)
             await self._process_event(
-                ClientAddEvent(client_id=0, client=client),
+                ClientAddEvent(client_id=0, client=new_client),
             )
 
-        return self.clients[0]
+        client = await self.client_repository.get(0)
+        if not client:
+            raise ValueError("App client not found.")
+        return client
 
-    def client_exists(self, client_uid: int) -> bool:
+    async def client_exists(self, client_uid: int) -> bool:
         r"""Checks if a client exists.
 
-        :param client_uid: The owner user ID of the client
+        :param client_uid: The ID of the client
         :type client_uid: int
         :return: Whether the client with the given ID exists
         :rtype: bool
         """
-        return client_uid in self.clients
+        return await self.client_repository.exists(client_uid)
 
     async def add_client(
         self,
@@ -166,7 +176,7 @@ class ClientStorage(Eventable):
         if client_id is None:
             client_user = await client.get_me()
             client_id = client_user.id
-        self.clients[client_id] = client
+        await self.client_repository.add(client_id, client)
         await self._process_event(
             ClientAddEvent(client_id=client_id, client=client),
         )
@@ -190,13 +200,15 @@ class ClientStorage(Eventable):
         """
         client_id: int = kwargs.pop("id", None)
         token: OAuthToken = kwargs.pop("token", None)
-        if self.client_exists(client_id):
-            return self.clients[client_id]
+        if await self.client_exists(client_id):
+            client = await self.client_repository.get(client_id)
+            if not client:
+                raise ValueError("Client not found. This should never happen.")
         if token is not None:
             return await self.add_client(token)
         raise ValueError("Either id or token must be specified.")
 
     async def close(self) -> None:
         r"""Closes all client sessions."""
-        for client in self.clients.values():
+        for client in await self.client_repository.get_all():
             await client.close()

@@ -149,7 +149,7 @@ class Client(Eventable):
         unsafe_scopes: Scopes = kwargs.pop("scopes", Scopes.PUBLIC | Scopes.IDENTIFY)
         self.token: OAuthToken = kwargs.pop("token", OAuthToken(scopes=unsafe_scopes))
         self.scopes = self.token.scopes
-        self.base_url: str = kwargs.pop("base_url", "https://osu.ppy.sh")
+        self.base_url: str = kwargs.pop("base_url", "https://osu.ppy.sh").rstrip("/")
         max_rate, time_period = kwargs.pop("limiter", (600, 60))
         if (max_rate / time_period) > (1000 / 60):
             warn(

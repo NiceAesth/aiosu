@@ -64,7 +64,7 @@ class Client:
 
     def __init__(self, token: str, **kwargs: Any) -> None:
         self.token: str = token
-        self.base_url: str = kwargs.pop("base_url", "https://osu.ppy.sh")
+        self.base_url: str = kwargs.pop("base_url", "https://osu.ppy.sh").rstrip("/")
         max_rate, time_period = kwargs.pop("limiter", (600, 60))
         if (max_rate / time_period) > (1000 / 60):
             warn(

@@ -44,6 +44,7 @@ async def process_code(
     :return: The OAuth token
     :rtype: aiosu.models.oauthtoken.OAuthToken
     """
+    base_url = base_url.rstrip("/")
     url = f"{base_url}/oauth/token"
     headers = {"Content-Type": "application/x-www-form-urlencoded"}
     data = {

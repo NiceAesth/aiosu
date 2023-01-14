@@ -8,6 +8,13 @@ Client Storage
     :members:
     :undoc-members:
 
+Client Repository
+-----------------
+
+.. automodule:: aiosu.v2.clientrepository
+    :members:
+    :undoc-members:
+
 Client
 ------
 
