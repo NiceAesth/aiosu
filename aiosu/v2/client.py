@@ -1843,7 +1843,7 @@ class Client(Eventable):
 
         :Keyword Arguments:
             * *uuid* (``str``) --
-                Optional, the UUID of the message
+                Optional, client-side message identifier to be sent back in response and websocket json
 
         :raises APIException: Contains status code and error message
         :return: Chat message create response object
