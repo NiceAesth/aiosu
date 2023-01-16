@@ -1718,7 +1718,7 @@ class Client(Eventable):
             * *target_id* (``int``) --
                 Required if type is ``PM``, the ID of the user to send a PM to
             * *target_ids* (``List[int]``) --
-                Required if type is ``PM``, the IDs of the users to send a PM to
+                Required if type is ``ANNOUNCE``, the IDs of the users to send a PM to
             * *message* (``str``) --
                 Required if type is ``ANNOUNCE``, the message to send in the PM
             * *channel_name* (``str``) --
@@ -1726,6 +1726,7 @@ class Client(Eventable):
             * *channel_description* (``str``) --
                 Required if type is ``ANNOUNCE``, the description of the channel
 
+        :raises ValueError: If missing required parameters
         :raises APIException: Contains status code and error message
         :return: Chat channel object
         :rtype: aiosu.models.chat.ChatChannel
@@ -1736,11 +1737,11 @@ class Client(Eventable):
         }
         add_param(data, kwargs, key="message")
         if type == "PM":
-            has_id = add_param(data, kwargs, key="target_id")
-            has_id |= add_param(data, kwargs, key="target_ids")
-            if not has_id:
-                raise ValueError("Missing target ID(s)")
+            if not add_param(data, kwargs, key="target_id"):
+                raise ValueError("Missing target ID")
         elif type == "ANNOUNCE":
+            if not add_param(data, kwargs, key="target_ids"):
+                raise ValueError("Missing target IDs")
             if not data.get("message"):
                 raise ValueError("Missing message")
             channel = {
