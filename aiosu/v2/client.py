@@ -1715,16 +1715,16 @@ class Client(Eventable):
             See below
 
         :Keyword Arguments:
-            * *target_id* (``int``) --
-                Required if type is ``PM``, the ID of the user to send a PM to
-            * *target_ids* (``List[int]``) --
-                Required if type is ``ANNOUNCE``, the IDs of the users to send a PM to
             * *message* (``str``) --
                 Required if type is ``ANNOUNCE``, the message to send in the PM
+            * *target_id* (``int``) --
+                Only used if if type is ``PM``, the ID of the user to send a PM to
+            * *target_ids* (``List[int]``) --
+                Only used if type is ``ANNOUNCE``, the IDs of the users to send a PM to
             * *channel_name* (``str``) --
-                Required if type is ``ANNOUNCE``, the name of the channel
+                Only used if type is ``ANNOUNCE``, the name of the channel
             * *channel_description* (``str``) --
-                Required if type is ``ANNOUNCE``, the description of the channel
+                Only used if type is ``ANNOUNCE``, the description of the channel
 
         :raises ValueError: If missing required parameters
         :raises APIException: Contains status code and error message
