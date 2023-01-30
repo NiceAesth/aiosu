@@ -16,7 +16,7 @@ sys.path.insert(0, os.path.abspath("../../aiosu/"))
 
 project = "aiosu"
 author = "Nice Aesthetics"
-copyright = f"{date.today().year}, {author}"
+project_copyright = f"{date.today().year}, {author}"
 release = toml.load(os.path.abspath("../../pyproject.toml"))["tool"]["poetry"][
     "version"
 ]
