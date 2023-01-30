@@ -47,21 +47,21 @@ def beatmap():
 
 @pytest.fixture
 def match():
-    with open(f"tests/data/v1/match.json", "rb") as f:
+    with open("tests/data/v1/match.json", "rb") as f:
         data = f.read()
     return data
 
 
 @pytest.fixture
 def replay():
-    with open(f"tests/data/v1/replay.json", "rb") as f:
+    with open("tests/data/v1/replay.json", "rb") as f:
         data = f.read()
     return data
 
 
 @pytest.fixture
 def beatmap_osu():
-    with open(f"tests/data/beatmap.osu", "rb") as f:
+    with open("tests/data/beatmap.osu", "rb") as f:
         data = f.read()
     return data
 

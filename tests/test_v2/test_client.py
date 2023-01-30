@@ -771,13 +771,12 @@ class TestClient:
     @pytest.mark.asyncio
     async def test_get_beatmaps(self, mocker, token, beatmaps):
         client = aiosu.v2.Client(token=token)
-        for mode in modes:
-            resp = MockResponse(beatmaps, 200)
-            mocker.patch("aiohttp.ClientSession.get", return_value=resp)
-            data = await client.get_beatmaps([2095393, 2354779])
-            assert isinstance(data, list) and all(
-                isinstance(x, aiosu.models.Beatmap) for x in data
-            )
+        resp = MockResponse(beatmaps, 200)
+        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
+        data = await client.get_beatmaps([2095393, 2354779])
+        assert isinstance(data, list) and all(
+            isinstance(x, aiosu.models.Beatmap) for x in data
+        )
         await client.close()
 
     @pytest.mark.asyncio
