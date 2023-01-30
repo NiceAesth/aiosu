@@ -66,8 +66,8 @@ def score():
 
 @pytest.fixture
 def scores():
-    def _scores(mode="osu", type="recents"):
-        with open(f"tests/data/v2/multiple_score_{mode}_{type}.json", "rb") as f:
+    def _scores(mode="osu", score_type="recents"):
+        with open(f"tests/data/v2/multiple_score_{mode}_{score_type}.json", "rb") as f:
             data = f.read()
         return data
 
@@ -242,8 +242,8 @@ def artist_tracks():
 
 @pytest.fixture
 def rankings():
-    def _rankings(mode, type):
-        with open(f"tests/data/v2/rankings_{mode}_{type}.json", "rb") as f:
+    def _rankings(mode="osu", ranking_type="performance"):
+        with open(f"tests/data/v2/rankings_{mode}_{ranking_type}.json", "rb") as f:
             data = f.read()
         return data
 
@@ -771,13 +771,12 @@ class TestClient:
     @pytest.mark.asyncio
     async def test_get_beatmaps(self, mocker, token, beatmaps):
         client = aiosu.v2.Client(token=token)
-        for mode in modes:
-            resp = MockResponse(beatmaps, 200)
-            mocker.patch("aiohttp.ClientSession.get", return_value=resp)
-            data = await client.get_beatmaps([2095393, 2354779])
-            assert isinstance(data, list) and all(
-                isinstance(x, aiosu.models.Beatmap) for x in data
-            )
+        resp = MockResponse(beatmaps, 200)
+        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
+        data = await client.get_beatmaps([2095393, 2354779])
+        assert isinstance(data, list) and all(
+            isinstance(x, aiosu.models.Beatmap) for x in data
+        )
         await client.close()
 
     @pytest.mark.asyncio

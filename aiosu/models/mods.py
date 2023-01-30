@@ -129,15 +129,16 @@ class Mod(IntEnum):
 class Mods(UserList):
     """List of Mod objects"""
 
-    def __init__(self, mods: Union[list[str], str, int] = []) -> None:
+    def __init__(self, mods: Union[list[str], str, int]) -> None:
         super().__init__(self)
         self.data = []
+        if isinstance(mods, int):  # Bitwise representation of mods
+            self.data = [mod for mod in list(Mod) if mod & mods]
+            return
         if isinstance(mods, str):  # string of mods
             mods = [mods[i : i + 2] for i in range(0, len(mods), 2)]
         if isinstance(mods, list):  # List of Mod types
             self.data = [Mod(mod) for mod in mods]  # type: ignore
-        if isinstance(mods, int):  # Bitwise representation of mods
-            self.data = [mod for mod in list(Mod) if mod & mods]
 
     @property
     def bitwise(self) -> int:
