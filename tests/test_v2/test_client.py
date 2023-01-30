@@ -66,8 +66,8 @@ def score():
 
 @pytest.fixture
 def scores():
-    def _scores(mode="osu", type="recents"):
-        with open(f"tests/data/v2/multiple_score_{mode}_{type}.json", "rb") as f:
+    def _scores(mode="osu", score_type="recents"):
+        with open(f"tests/data/v2/multiple_score_{mode}_{score_type}.json", "rb") as f:
             data = f.read()
         return data
 
@@ -242,8 +242,8 @@ def artist_tracks():
 
 @pytest.fixture
 def rankings():
-    def _rankings(mode, type):
-        with open(f"tests/data/v2/rankings_{mode}_{type}.json", "rb") as f:
+    def _rankings(mode="osu", ranking_type="performance"):
+        with open(f"tests/data/v2/rankings_{mode}_{ranking_type}.json", "rb") as f:
             data = f.read()
         return data
 
