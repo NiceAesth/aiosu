@@ -7,6 +7,8 @@ from datetime import datetime
 from typing import Optional
 from typing import TYPE_CHECKING
 
+from pydantic import root_validator
+
 from ..utils.accuracy import CatchAccuracyCalculator
 from ..utils.accuracy import ManiaAccuracyCalculator
 from ..utils.accuracy import OsuAccuracyCalculator
@@ -26,6 +28,7 @@ __all__ = (
     "Score",
     "ScoreStatistics",
     "ScoreWeight",
+    "calculate_score_completion",
 )
 
 accuracy_calculators = {
@@ -34,6 +37,58 @@ accuracy_calculators = {
     "taiko": TaikoAccuracyCalculator(),
     "fruits": CatchAccuracyCalculator(),
 }
+
+
+def calculate_score_completion(
+    mode: Gamemode,
+    statistics: ScoreStatistics,
+    beatmap: Beatmap,
+) -> float:
+    """Calculates completion for a score.
+
+    :param mode: The gamemode of the score
+    :type mode: aiosu.models.gamemode.Gamemode
+    :param statistics: The statistics of the score
+    :type statistics: aiosu.models.score.ScoreStatistics
+    :param beatmap: The beatmap of the score
+    :type beatmap: aiosu.models.beatmap.Beatmap
+    :raises ValueError: If the gamemode is unknown
+    :return: Completion for the given score
+    :rtype: float
+    """
+    if mode == Gamemode.STANDARD:
+        return (
+            (
+                statistics.count_300
+                + statistics.count_100
+                + statistics.count_50
+                + statistics.count_miss
+            )
+            / beatmap.count_objects
+        ) * 100
+    elif mode == Gamemode.TAIKO:
+        return (
+            (statistics.count_300 + statistics.count_100 + statistics.count_miss)
+            / beatmap.count_objects
+        ) * 100
+    elif mode == Gamemode.CTB:
+        return (
+            (statistics.count_300 + statistics.count_100 + +statistics.count_miss)
+            / beatmap.count_objects
+        ) * 100
+    elif mode == Gamemode.MANIA:
+        return (
+            (
+                statistics.count_300
+                + statistics.count_100
+                + statistics.count_50
+                + statistics.count_miss
+                + statistics.count_geki
+                + statistics.count_katu
+            )
+            / beatmap.count_objects
+        ) * 100
+    raise ValueError("Unknown mode specified.")
 
 
 class ScoreWeight(BaseModel):
@@ -90,7 +145,7 @@ class Score(BaseModel):
     """Only present on API v1"""
 
     @property
-    def completion(self) -> float:  # Should probably move to utils
+    def completion(self) -> float:
         """Beatmap completion.
 
         :raises ValueError: If beatmap is None
@@ -101,47 +156,7 @@ class Score(BaseModel):
         if not self.beatmap:
             raise ValueError("Beatmap object is not set.")
 
-        if self.mode == Gamemode.STANDARD:
-            return (
-                (
-                    self.statistics.count_300
-                    + self.statistics.count_100
-                    + self.statistics.count_50
-                    + self.statistics.count_miss
-                )
-                / self.beatmap.count_objects
-            ) * 100
-        if self.mode == Gamemode.TAIKO:
-            return (
-                (
-                    self.statistics.count_300
-                    + self.statistics.count_100
-                    + self.statistics.count_miss
-                )
-                / self.beatmap.count_objects
-            ) * 100
-        if self.mode == Gamemode.CTB:
-            return (
-                (
-                    self.statistics.count_300
-                    + self.statistics.count_100
-                    + +self.statistics.count_miss
-                )
-                / self.beatmap.count_objects
-            ) * 100
-        if self.mode == Gamemode.STANDARD:
-            return (
-                (
-                    self.statistics.count_300
-                    + self.statistics.count_100
-                    + self.statistics.count_50
-                    + self.statistics.count_miss
-                    + self.statistics.count_geki
-                    + self.statistics.count_katu
-                )
-                / self.beatmap.count_objects
-            ) * 100
-        raise ValueError("Unknown mode specified.")
+        return calculate_score_completion(self.mode, self.statistics, self.beatmap)
 
     @property
     def score_url(self) -> Optional[str]:
@@ -170,6 +185,21 @@ class Score(BaseModel):
             if self.best_id
             else None
         )
+
+    @root_validator
+    def _check_completion(cls, values: dict[str, Any]) -> dict[str, Any]:
+        if not values.get("beatmap"):
+            return values
+        completion = calculate_score_completion(
+            values["mode"],
+            values["statistics"],
+            values["beatmap"],
+        )
+        if completion != 100:
+            values["passed"] = False
+            values["perfect"] = False
+            values["rank"] = "F"
+        return values
 
     async def request_beatmap(self, client: v1.Client) -> None:
         r"""For v1 Scores: requests the beatmap from the API and sets it.
