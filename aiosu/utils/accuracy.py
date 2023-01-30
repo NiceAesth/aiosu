@@ -221,7 +221,6 @@ class CatchAccuracyCalculator(AbstractAccuracyCalculator):
         tiny_ticks_missed = score.statistics.count_katu
         misses = score.statistics.count_miss
 
-        total_combo_hits = misses + ticks_hit + fruits_hit
         total_hits = (
             tiny_ticks_hit + ticks_hit + fruits_hit + misses + tiny_ticks_missed
         )

@@ -33,7 +33,6 @@ if TYPE_CHECKING:
     from typing import Optional
     from typing import Type
     from typing import Union
-    from typing import Literal
     from typing import Callable
 
 

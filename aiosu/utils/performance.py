@@ -430,13 +430,6 @@ class TaikoPerformanceCalculator(AbstractPerformanceCalculator):
             * multiplier
         )
 
-        total = (
-            math.pow(
-                math.pow(difficulty_value, 1.1) + math.pow(accuracy_value, 1.1),
-                1.0 / 1.1,
-            )
-        ) * multiplier
-
         return TaikoPerformanceAttributes(
             total=total_value,
             difficulty=difficulty_value,
@@ -534,7 +527,7 @@ class ManiaPerformanceCalculator(AbstractPerformanceCalculator):
         :rtype: aiosu.models.performance.ManiaPerformanceAttributes
         """
         accuracy_calculator = ManiaAccuracyCalculator()
-        accuracy = ManiaAccuracyCalculator().calculate_weighted(score)
+        accuracy = accuracy_calculator.calculate_weighted(score)
 
         total_hits = (
             score.statistics.count_geki
