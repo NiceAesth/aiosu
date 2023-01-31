@@ -48,19 +48,18 @@ class OsuAccuracyCalculator(AbstractAccuracyCalculator):
             + score.statistics.count_miss
         )
 
-        accuracy = 0.0
-        if total_hits > 0:
-            accuracy = max(
-                (
-                    score.statistics.count_300 * 6
-                    + score.statistics.count_100 * 2
-                    + score.statistics.count_50
-                )
-                / (total_hits * 6),
-                0,
-            )
+        if total_hits <= 0:
+            return 0.0
 
-        return accuracy
+        return max(
+            (
+                score.statistics.count_300 * 6.0
+                + score.statistics.count_100 * 2.0
+                + score.statistics.count_50
+            )
+            / (total_hits * 6.0),
+            0.0,
+        )
 
     @staticmethod
     def calculate_weighted(score: Score) -> float:
@@ -86,23 +85,25 @@ class OsuAccuracyCalculator(AbstractAccuracyCalculator):
         if (amount_hit_objects_with_accuracy := score.beatmap.count_circles) is None:
             raise ValueError("Beatmap object does not contain object information.")
 
-        better_accuracy_percentage = 0.0
-        if amount_hit_objects_with_accuracy > 0:
-            better_accuracy_percentage = max(
-                (
-                    (
-                        score.statistics.count_300
-                        - (total_hits - amount_hit_objects_with_accuracy)
-                    )
-                    * 6
-                    + score.statistics.count_100 * 2
-                    + score.statistics.count_50
-                )
-                / (amount_hit_objects_with_accuracy * 6),
-                0,
-            )
+        if Mod.ScoreV2 in score.mods:  # TODO: Check for lazer classic mod
+            amount_hit_objects_with_accuracy += score.beatmap.count_sliders
 
-        return better_accuracy_percentage
+        if amount_hit_objects_with_accuracy <= 0:
+            return 0.0
+
+        return max(
+            (
+                (
+                    score.statistics.count_300
+                    - (total_hits - amount_hit_objects_with_accuracy)
+                )
+                * 6.0
+                + score.statistics.count_100 * 2.0
+                + score.statistics.count_50
+            )
+            / (amount_hit_objects_with_accuracy * 6.0),
+            0.0,
+        )
 
 
 class TaikoAccuracyCalculator(AbstractAccuracyCalculator):
@@ -122,13 +123,14 @@ class TaikoAccuracyCalculator(AbstractAccuracyCalculator):
             + score.statistics.count_miss
         )
 
-        accuracy = 0.0
-        if total_hits > 0:
-            accuracy = (
-                score.statistics.count_300 * 2.0 + score.statistics.count_100
-            ) / (total_hits * 2.0)
+        if total_hits <= 0:
+            return 0.0
 
-        return accuracy
+        return max(
+            (score.statistics.count_300 * 2.0 + score.statistics.count_100)
+            / (total_hits * 2.0),
+            0.0,
+        )
 
     @classmethod
     def calculate_weighted(cls, score: Score) -> float:
@@ -163,25 +165,32 @@ class ManiaAccuracyCalculator(AbstractAccuracyCalculator):
             count_perfect + count_ok + count_great + count_good + count_meh + count_miss
         )
 
-        accuracy = 0.0
-        if total_hits > 0:
-            if Mod.ScoreV2 in score.mods:
-                accuracy = (
+        if total_hits <= 0:
+            return 0.0
+
+        if Mod.ScoreV2 in score.mods:
+            return max(
+                (
                     +(count_perfect * 305)
                     + (count_great * 300)
                     + (count_good * 200)
                     + (count_ok * 100)
                     + (count_meh * 50)
-                ) / (total_hits * 305)
-            else:
-                accuracy = (
-                    +((count_perfect + count_great) * 300)
-                    + (count_good * 200)
-                    + (count_ok * 100)
-                    + (count_meh * 50)
-                ) / (total_hits * 300)
+                )
+                / (total_hits * 305),
+                0.0,
+            )
 
-        return accuracy
+        return max(
+            (
+                +((count_perfect + count_great) * 6.0)
+                + (count_good * 4.0)
+                + (count_ok * 2.0)
+                + count_meh
+            )
+            / (total_hits * 6.0),
+            0.0,
+        )
 
     @staticmethod
     def calculate_weighted(score: Score) -> float:
@@ -203,17 +212,20 @@ class ManiaAccuracyCalculator(AbstractAccuracyCalculator):
             count_perfect + count_ok + count_great + count_good + count_meh + count_miss
         )
 
-        accuracy = 0.0
-        if total_hits > 0:
-            accuracy = (
+        if total_hits <= 0:
+            return 0.0
+
+        return max(
+            (
                 +(count_perfect * 320)
                 + (count_great * 300)
                 + (count_good * 200)
                 + (count_ok * 100)
                 + (count_meh * 50)
-            ) / (total_hits * 320)
-
-        return accuracy
+            )
+            / (total_hits * 320),
+            0.0,
+        )
 
 
 class CatchAccuracyCalculator(AbstractAccuracyCalculator):
@@ -237,11 +249,10 @@ class CatchAccuracyCalculator(AbstractAccuracyCalculator):
         )
         successful_hits = tiny_ticks_hit + ticks_hit + fruits_hit
 
-        accuracy = 0.0
-        if total_hits != 0:
-            accuracy = float(successful_hits) / total_hits
+        if total_hits <= 0:
+            return 0.0
 
-        return accuracy
+        return max(float(successful_hits) / total_hits, 0.0)
 
     @classmethod
     def calculate_weighted(cls, score: Score) -> float:
