@@ -27,8 +27,8 @@ def user():
 
 @pytest.fixture
 def scores():
-    def _scores(mode="osu", type="recents"):
-        with open(f"tests/data/v1/multiple_score_{mode}_{type}.json", "rb") as f:
+    def _scores(mode="osu", score_type="recents"):
+        with open(f"tests/data/v1/multiple_score_{mode}_{score_type}.json", "rb") as f:
             data = f.read()
         return data
 
@@ -47,21 +47,21 @@ def beatmap():
 
 @pytest.fixture
 def match():
-    with open(f"tests/data/v1/match.json", "rb") as f:
+    with open("tests/data/v1/match.json", "rb") as f:
         data = f.read()
     return data
 
 
 @pytest.fixture
 def replay():
-    with open(f"tests/data/v1/replay.json", "rb") as f:
+    with open("tests/data/v1/replay.json", "rb") as f:
         data = f.read()
     return data
 
 
 @pytest.fixture
 def beatmap_osu():
-    with open(f"tests/data/beatmap.osu", "rb") as f:
+    with open("tests/data/beatmap.osu", "rb") as f:
         data = f.read()
     return data
 

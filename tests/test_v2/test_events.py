@@ -57,7 +57,7 @@ class TestEvents:
         resp = MockResponse(user(), 200)
         mocker.patch("aiohttp.ClientSession.get", return_value=resp)
 
-        client = await client_storage.add_client(token=token)
+        await client_storage.add_client(token=token)
 
         assert decorated.times_called == 1
         await client_storage.close()

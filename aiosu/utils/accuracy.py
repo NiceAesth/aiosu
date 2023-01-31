@@ -6,6 +6,8 @@ from __future__ import annotations
 import abc
 from typing import TYPE_CHECKING
 
+from ..models.mods import Mod
+
 if TYPE_CHECKING:
     from ..models.score import Score
 
@@ -163,12 +165,21 @@ class ManiaAccuracyCalculator(AbstractAccuracyCalculator):
 
         accuracy = 0.0
         if total_hits > 0:
-            accuracy = (
-                +((count_perfect + count_great) * 300)
-                + (count_good * 200)
-                + (count_ok * 100)
-                + (count_meh * 50)
-            ) / (total_hits * 300)
+            if Mod.ScoreV2 in score.mods:
+                accuracy = (
+                    +(count_perfect * 305)
+                    + (count_great * 300)
+                    + (count_good * 200)
+                    + (count_ok * 100)
+                    + (count_meh * 50)
+                ) / (total_hits * 305)
+            else:
+                accuracy = (
+                    +((count_perfect + count_great) * 300)
+                    + (count_good * 200)
+                    + (count_ok * 100)
+                    + (count_meh * 50)
+                ) / (total_hits * 300)
 
         return accuracy
 
@@ -221,7 +232,6 @@ class CatchAccuracyCalculator(AbstractAccuracyCalculator):
         tiny_ticks_missed = score.statistics.count_katu
         misses = score.statistics.count_miss
 
-        total_combo_hits = misses + ticks_hit + fruits_hit
         total_hits = (
             tiny_ticks_hit + ticks_hit + fruits_hit + misses + tiny_ticks_missed
         )
