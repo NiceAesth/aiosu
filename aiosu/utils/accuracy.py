@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING
 from ..models.mods import Mod
 
 if TYPE_CHECKING:
+    from typing import Callable
     from ..models.score import Score
 
 __all__ = [
@@ -17,6 +18,8 @@ __all__ = [
     "ManiaAccuracyCalculator",
     "CatchAccuracyCalculator",
 ]
+
+cast_int: Callable[..., int] = lambda x: int(x or 0)
 
 
 class AbstractAccuracyCalculator(abc.ABC):
@@ -82,11 +85,10 @@ class OsuAccuracyCalculator(AbstractAccuracyCalculator):
             + score.statistics.count_miss
         )
 
-        if (amount_hit_objects_with_accuracy := score.beatmap.count_circles) is None:
-            raise ValueError("Beatmap object does not contain object information.")
+        amount_hit_objects_with_accuracy = cast_int(score.beatmap.count_circles)
 
         if Mod.ScoreV2 in score.mods:  # TODO: Check for lazer classic mod
-            amount_hit_objects_with_accuracy += score.beatmap.count_sliders
+            amount_hit_objects_with_accuracy += cast_int(score.beatmap.count_sliders)
 
         if amount_hit_objects_with_accuracy <= 0:
             return 0.0
