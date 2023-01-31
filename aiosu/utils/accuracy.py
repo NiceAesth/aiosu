@@ -71,7 +71,6 @@ class OsuAccuracyCalculator(AbstractAccuracyCalculator):
         :param score: The score to calculate accuracy for
         :type score: aiosu.models.score.Score
         :raises ValueError: If score does not have an associated beatmap
-        :raises ValueError: If the associated beatmap does not have object counts
         :return: Weighted accuracy to be used in pp calculation
         :rtype: float
         """
