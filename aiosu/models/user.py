@@ -10,6 +10,8 @@ from typing import Literal
 from typing import Optional
 from typing import TYPE_CHECKING
 
+from pydantic import Field
+
 from .base import BaseModel
 from .common import Country
 from .common import HTMLBody
@@ -102,8 +104,9 @@ class UserProfileCover(BaseModel):
 
 class UserProfileTournamentBanner(BaseModel):
     tournament_id: int
-    image: str
     id: Optional[int]
+    image: Optional[str]
+    image_2_x: Optional[str] = Field(alias="image@2x")
 
 
 class UserBadge(BaseModel):
