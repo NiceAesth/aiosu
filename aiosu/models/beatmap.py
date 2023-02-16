@@ -142,10 +142,10 @@ class BeatmapCovers(BaseModel):
     card: str
     list: str
     slimcover: str
-    cover_2_x: Optional[str]
-    card_2_x: Optional[str]
-    list_2_x: Optional[str]
-    slimcover_2_x: Optional[str]
+    cover_2_x: Optional[str] = Field(alias="cover@2x")
+    card_2_x: Optional[str] = Field(alias="card@2x")
+    list_2_x: Optional[str] = Field(alias="list@2x")
+    slimcover_2_x: Optional[str] = Field(alias="slimcover@2x")
 
     @classmethod
     def _from_api_v1(cls, data: Any) -> BeatmapCovers:
