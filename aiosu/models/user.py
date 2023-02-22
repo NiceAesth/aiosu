@@ -183,6 +183,10 @@ class UserStats(BaseModel):
     global_rank_exp: Optional[int]
     country_rank: Optional[int]
     user: Optional[User]
+    count_300: Optional[int]
+    count_100: Optional[int]
+    count_50: Optional[int]
+    count_miss: Optional[int]
 
     @classmethod
     def _from_api_v1(cls, data: Any) -> UserStats:
@@ -203,6 +207,9 @@ class UserStats(BaseModel):
                 + cast_int(data["count50"]),
                 "is_ranked": cast_float(data["pp_raw"]) != 0,
                 "grade_counts": UserGradeCounts._from_api_v1(data),
+                "count_300": cast_int(data["count300"]),
+                "count_100": cast_int(data["count100"]),
+                "count_50": cast_int(data["count50"]),
             },
         )
 
