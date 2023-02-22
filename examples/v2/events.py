@@ -18,7 +18,7 @@ client_storage = aiosu.v2.ClientStorage()
 @client_storage.on_client_add
 async def on_client_add(event: aiosu.events.ClientAddEvent):
     """Called when client is added via client_storage.add_client() or client_storage.get_client()"""
-    print(f"{event.client_id} {event.client}")
+    print(f"{event.session_id} {event.client}")
 
 
 @client_storage.on_client_update

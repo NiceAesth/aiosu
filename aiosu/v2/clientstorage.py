@@ -12,6 +12,8 @@ from ..events import ClientUpdateEvent
 from ..events import Eventable
 from ..models import OAuthToken
 from ..models import Scopes
+from .repositories import BaseTokenRepository
+from .repositories import SimpleTokenRepository
 
 if TYPE_CHECKING:
     from types import TracebackType
@@ -31,6 +33,8 @@ class ClientStorage(Eventable):
         See below
 
     :Keyword Arguments:
+        * *token_repository* (``BaseTokenRepository``) --
+            Optional, defaults to ``aiosu.v2.repositories.SimpleTokenRepository()``
         * *client_secret* (``str``)
         * *client_id* (``int``)
         * *base_url* (``str``) --
@@ -45,6 +49,10 @@ class ClientStorage(Eventable):
         super().__init__()
         self._register_event(ClientAddEvent)
         self._register_event(ClientUpdateEvent)
+        self._token_repository: BaseTokenRepository = kwargs.pop(
+            "token_repository",
+            SimpleTokenRepository(),
+        )
         self.client_secret: str = kwargs.pop("client_secret", None)
         self.client_id: int = kwargs.pop("client_id", None)
         self.base_url: str = kwargs.pop("base_url", "https://osu.ppy.sh")
@@ -123,7 +131,7 @@ class ClientStorage(Eventable):
             )
             self.clients[0] = client
             await self._process_event(
-                ClientAddEvent(client_id=0, client=client),
+                ClientAddEvent(session_id=0, client=client),
             )
 
         return self.clients[0]
@@ -152,7 +160,7 @@ class ClientStorage(Eventable):
 
         :Keyword Arguments:
             * *id* (``int``) --
-                Optional, the ID of the client, defaults to None
+                Optional, the ID of the client session, defaults to the token owner user ID
             * *scopes* (``Scopes``) --
                 Optional, the scopes of the client, defaults to storage default scopes
 
@@ -160,15 +168,21 @@ class ClientStorage(Eventable):
         :rtype: aiosu.v2.client.Client
         """
         scopes = kwargs.pop("scopes", self.default_scopes)
-        client_id: int = kwargs.pop("id", None)
-        client = Client(token=token, **self._get_client_args(), scopes=scopes)
+        session_id: int = kwargs.pop("id", None)
+        client = Client(
+            token_repository=self._token_repository,
+            session_id=session_id,
+            token=token,
+            **self._get_client_args(),
+            scopes=scopes,
+        )
         client._register_listener(self._process_event, ClientUpdateEvent)
-        if client_id is None:
+        if session_id is None:
             client_user = await client.get_me()
-            client_id = client_user.id
-        self.clients[client_id] = client
+            session_id = client_user.id
+        self.clients[session_id] = client
         await self._process_event(
-            ClientAddEvent(client_id=client_id, client=client),
+            ClientAddEvent(session_id=session_id, client=client),
         )
         return client
 
@@ -180,7 +194,7 @@ class ClientStorage(Eventable):
 
         :Keyword Arguments:
             * *id* (``int``) --
-                Optional, the ID of the client, defaults to None
+                Optional, the ID of the client session, defaults to None
             * *token* (``aiosu.models.oauthtoken.OAuthToken``) --
                 Optional, token of client to add, defaults to None
 
@@ -188,13 +202,13 @@ class ClientStorage(Eventable):
         :return: The requested client
         :rtype: aiosu.v2.client.Client
         """
-        client_id: int = kwargs.pop("id", None)
+        session_id: int = kwargs.pop("id", None)
         token: OAuthToken = kwargs.pop("token", None)
-        if self.client_exists(client_id):
-            return self.clients[client_id]
+        if self.client_exists(session_id):
+            return self.clients[session_id]
         if token is not None:
             return await self.add_client(token)
-        raise ValueError("Either id or token must be specified.")
+        raise ValueError("Either a valid id or token must be specified.")
 
     async def close(self) -> None:
         r"""Closes all client sessions."""
