@@ -85,6 +85,11 @@ __all__ = ("Client",)
 ClientRequestType = Literal["GET", "POST", "DELETE", "PUT", "PATCH"]
 
 
+def get_content_type(content_type: str) -> str:
+    """Returns the content type."""
+    return content_type.split(";")[0]
+
+
 def prepare_client(func: Callable) -> Callable:
     """A decorator that prepares the client, to be used as:
     @prepare_client
@@ -238,7 +243,7 @@ class Client(Eventable):
             "client_id": self.client_id,
             "client_secret": self.client_secret,
             "grant_type": "client_credentials",
-            # "scope": str(self.token.scopes),
+            "scope": "public",
         }
 
     async def _request(
@@ -255,7 +260,7 @@ class Client(Eventable):
         async with self._limiter:
             async with req[request_type](*args, **kwargs) as resp:
                 body = await resp.read()
-                content_type = resp.headers.get("content-type", "")
+                content_type = get_content_type(resp.headers.get("content-type", ""))
                 if resp.status != 200:
                     json = orjson.loads(body)
                     raise APIException(resp.status, json.get("error", ""))
@@ -265,7 +270,7 @@ class Client(Eventable):
                     return BytesIO(body)
                 if content_type == "text/plain":
                     return body.decode()
-                raise APIException(415, "Unhandled Content Type")
+                raise APIException(415, f"Unhandled Content Type '{content_type}'")
 
     async def _refresh(self) -> None:
         r"""INTERNAL: Refreshes the client's token
@@ -287,9 +292,14 @@ class Client(Eventable):
                 async with temp_session.post(url, data=data) as resp:
                     try:
                         body = await resp.read()
-                        content_type = resp.headers.get("content-type", "")
+                        content_type = get_content_type(
+                            resp.headers.get("content-type", ""),
+                        )
                         if content_type != "application/json":
-                            raise APIException(415, "Unhandled Content Type")
+                            raise APIException(
+                                415,
+                                f"Unhandled Content Type '{content_type}'",
+                            )
                         json = orjson.loads(body)
                         if resp.status != 200:
                             raise APIException(resp.status, json.get("error", ""))
