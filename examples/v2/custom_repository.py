@@ -47,6 +47,17 @@ class ExampleFileRepository(BaseTokenRepository):
         tokens = await self._read_file()
         return aiosu.models.OAuthToken.from_dict(tokens[session_id])
 
+    async def update(
+        self,
+        session_id: int,
+        token: aiosu.models.OAuthToken,
+    ) -> aiosu.models.OAuthToken:
+        """Update a token."""
+        tokens = await self._read_file()
+        tokens[session_id] = token.dict()
+        await self._write_file(tokens)
+        return token
+
 
 async def main():
     token = aiosu.models.OAuthToken(
