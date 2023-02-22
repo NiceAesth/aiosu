@@ -1,3 +1,4 @@
+"""This module contains a repository for API v2 token objects."""
 from __future__ import annotations
 
 from abc import ABC
@@ -9,7 +10,7 @@ __all__ = ("BaseTokenRepository", "SimpleTokenRepository")
 
 
 class BaseTokenRepository(ABC):
-    """Token repository."""
+    """Base token repository. Allows for custom token storage."""
 
     @abstractmethod
     async def exists(self, session_id: int) -> bool:

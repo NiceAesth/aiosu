@@ -69,8 +69,8 @@ from ..models import Spotlight
 from ..models import User
 from ..models import UserQueryType
 from ..models import WikiPage
-from .repositories import BaseTokenRepository
-from .repositories import SimpleTokenRepository
+from .repository import BaseTokenRepository
+from .repository import SimpleTokenRepository
 
 if TYPE_CHECKING:
     from types import TracebackType
@@ -99,8 +99,8 @@ def prepare_client(func: Callable) -> Callable:
     async def _prepare_client(self: Client, *args: Any, **kwargs: Any) -> Any:
         if self._session is None:
             self._session = aiohttp.ClientSession()
-        if not await self._token_repository.exists(self.session_id):
-            await self._token_repository.add(self.session_id, self._initial_token)
+        if not await self._token_exists():
+            await self._add_token(self._initial_token)
         return await func(self, *args, **kwargs)
 
     return _prepare_client
@@ -114,7 +114,7 @@ def check_token(func: Callable) -> Callable:
 
     @functools.wraps(func)
     async def _check_token(self: Client, *args: Any, **kwargs: Any) -> Any:
-        token = await self._token_repository.get(self.session_id)
+        token = await self.get_current_token()
         if datetime.utcnow() > token.expires_on:
             await self._refresh()
         return await func(self, *args, **kwargs)
@@ -131,7 +131,7 @@ def requires_scope(required_scopes: Scopes, any_scope: bool = False) -> Callable
     def _requires_scope(func: Callable) -> Callable:
         @functools.wraps(func)
         async def _wrap(self: Client, *args: Any, **kwargs: Any) -> Any:
-            token = await self._token_repository.get(self.session_id)
+            token = await self.get_current_token()
             if any_scope:
                 if not (required_scopes & token.scopes):
                     raise APIException(403, "Missing required scopes.")
@@ -152,8 +152,8 @@ class Client(Eventable):
         See below
 
     :Keyword Arguments:
-        * *token_repository* (``aiosu.v2.repositories.BaseTokenRepository``) --
-            Optional, defaults to ``aiosu.v2.repositories.SimpleTokenRepository()``
+        * *token_repository* (``aiosu.v2.repository.BaseTokenRepository``) --
+            Optional, defaults to ``aiosu.v2.repository.SimpleTokenRepository()``
         * *session_id* (``int``) --
             Optional, ID of the session to search in the repository, defaults to 0
         * *client_id* (``int``) --
@@ -221,8 +221,24 @@ class Client(Eventable):
 
         return _on_client_update
 
+    async def get_current_token(self) -> OAuthToken:
+        """Get the current token"""
+        return await self._token_repository.get(self.session_id)
+
+    async def _add_token(self, token: OAuthToken) -> None:
+        """Add a token to the current session"""
+        await self._token_repository.add(self.session_id, token)
+
+    async def _update_token(self, token: OAuthToken) -> None:
+        """Update the current token"""
+        await self._token_repository.update(self.session_id, token)
+
+    async def _token_exists(self) -> bool:
+        """Check if a token exists for the current session"""
+        return await self._token_repository.exists(self.session_id)
+
     async def _get_headers(self) -> dict[str, str]:
-        token = await self._token_repository.get(self.session_id)
+        token = await self.get_current_token()
         return {
             "Authorization": f"Bearer {token.access_token}",
             "Content-Type": "application/json",
@@ -230,7 +246,7 @@ class Client(Eventable):
         }
 
     async def _refresh_auth_data(self) -> dict[str, Union[str, int]]:
-        token = await self._token_repository.get(self.session_id)
+        token = await self.get_current_token()
         return {
             "client_id": self.client_id,
             "client_secret": self.client_secret,
@@ -277,7 +293,7 @@ class Client(Eventable):
 
         :raises APIException: Contains status code and error message
         """
-        old_token = await self._token_repository.get(self.session_id)
+        old_token = await self.get_current_token()
         url = f"{self.base_url}/oauth/token"
         headers = {"Content-Type": "application/x-www-form-urlencoded"}
 
@@ -306,7 +322,7 @@ class Client(Eventable):
                         if self._session:
                             await self._session.close()
                         new_token = OAuthToken.parse_obj(json)
-                        await self._token_repository.update(self.session_id, new_token)
+                        await self._update_token(new_token)
                         self._session = aiohttp.ClientSession(
                             headers=await self._get_headers(),
                         )

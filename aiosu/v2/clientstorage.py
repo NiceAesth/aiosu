@@ -11,8 +11,8 @@ from ..events import ClientAddEvent
 from ..events import ClientUpdateEvent
 from ..events import Eventable
 from ..models import OAuthToken
-from .repositories import BaseTokenRepository
-from .repositories import SimpleTokenRepository
+from .repository import BaseTokenRepository
+from .repository import SimpleTokenRepository
 
 if TYPE_CHECKING:
     from types import TracebackType
@@ -33,7 +33,7 @@ class ClientStorage(Eventable):
 
     :Keyword Arguments:
         * *token_repository* (``BaseTokenRepository``) --
-            Optional, defaults to ``aiosu.v2.repositories.SimpleTokenRepository()``
+            Optional, defaults to ``aiosu.v2.repository.SimpleTokenRepository()``
         * *client_secret* (``str``)
         * *client_id* (``int``)
         * *base_url* (``str``) --
