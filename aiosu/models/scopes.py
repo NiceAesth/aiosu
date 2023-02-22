@@ -30,7 +30,9 @@ class Scopes(IntFlag):
 
     def __str__(self) -> str:
         return " ".join(
-            scope for scope, value in API_SCOPE_NAMES.items() if self & value
+            scope_name
+            for scope_name, scope in API_SCOPE_NAMES.items()
+            if scope in self.__flags__()
         )
 
     @classmethod
