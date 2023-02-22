@@ -11,7 +11,6 @@ from ..events import ClientAddEvent
 from ..events import ClientUpdateEvent
 from ..events import Eventable
 from ..models import OAuthToken
-from ..models import Scopes
 from .repositories import BaseTokenRepository
 from .repositories import SimpleTokenRepository
 
