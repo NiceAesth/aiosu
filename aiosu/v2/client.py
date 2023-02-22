@@ -94,7 +94,7 @@ def prepare_client(func: Callable) -> Callable:
     async def _prepare_client(self: Client, *args: Any, **kwargs: Any) -> Any:
         if self._session is None:
             self._session = aiohttp.ClientSession()
-        if (await self._token_repository.get(self.session_id)) is None:
+        if not await self._token_repository.exists(self.session_id):
             await self._token_repository.add(self.session_id, self._initial_token)
         return await func(self, *args, **kwargs)
 
@@ -150,15 +150,13 @@ class Client(Eventable):
         * *token_repository* (``aiosu.v2.repositories.BaseTokenRepository``) --
             Optional, defaults to ``aiosu.v2.repositories.SimpleTokenRepository()``
         * *session_id* (``int``) --
-            Optional, defaults to 0
+            Optional, ID of the session to search in the repository, defaults to 0
         * *client_id* (``int``) --
             Optional, required for client credentials
         * *client_secret* (``str``) --
             Optional, required for client credentials
         * *base_url* (``str``) --
             Optional, base API URL, defaults to "https://osu.ppy.sh"
-        * *scopes* (``aiosu.models.Scopes``) --
-            Optional, defaults to ``Scopes.PUBLIC | Scopes.IDENTIFY``. Ignored if token is provided.
         * *token* (``aiosu.models.oauthtoken.OAuthToken``) --
             Optional, defaults to client credentials if not provided
         * *limiter* (``tuple[int, int]``) --
@@ -178,12 +176,7 @@ class Client(Eventable):
         self.session_id: int = kwargs.pop("session_id", 0)
         self.client_id: int = kwargs.pop("client_id", None)
         self.client_secret: str = kwargs.pop("client_secret", None)
-        unsafe_scopes: Scopes = kwargs.pop("scopes", Scopes.PUBLIC | Scopes.IDENTIFY)
-        self._initial_token: OAuthToken = kwargs.pop(
-            "token",
-            OAuthToken(scopes=unsafe_scopes),
-        )
-        self.scopes = self._initial_token.scopes
+        self._initial_token: OAuthToken = kwargs.pop("token", OAuthToken())
         self.base_url: str = kwargs.pop("base_url", "https://osu.ppy.sh")
         max_rate, time_period = kwargs.pop("limiter", (600, 60))
         if (max_rate / time_period) > (1000 / 60):
@@ -245,15 +238,12 @@ class Client(Eventable):
             "client_id": self.client_id,
             "client_secret": self.client_secret,
             "grant_type": "client_credentials",
-            "scope": str(self.scopes),
+            # "scope": str(self.token.scopes),
         }
 
     async def _request(
         self, request_type: ClientRequestType, *args: Any, **kwargs: Any
     ) -> Any:
-        if (await self._token_repository.get(self.session_id)) is None:
-            await self._token_repository.add(self.session_id, self._initial_token)
-
         req: dict[str, Callable] = {
             "GET": self._session.get,
             "POST": self._session.post,
@@ -306,7 +296,6 @@ class Client(Eventable):
                         if self._session:
                             await self._session.close()
                         new_token = OAuthToken.parse_obj(json)
-                        new_token.scopes = self.scopes
                         await self._token_repository.update(self.session_id, new_token)
                         self._session = aiohttp.ClientSession(
                             headers=await self._get_headers(),

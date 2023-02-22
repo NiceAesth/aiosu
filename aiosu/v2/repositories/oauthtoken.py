@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from abc import ABC
 from abc import abstractmethod
-from typing import Optional
 
 from ...models import OAuthToken
 
@@ -23,7 +22,7 @@ class BaseTokenRepository(ABC):
         ...
 
     @abstractmethod
-    async def get(self, session_id: int) -> Optional[OAuthToken]:
+    async def get(self, session_id: int) -> OAuthToken:
         """Get a token."""
         ...
 
@@ -48,9 +47,9 @@ class SimpleTokenRepository(BaseTokenRepository):
         self._tokens[session_id] = token
         return token
 
-    async def get(self, session_id: int) -> Optional[OAuthToken]:
+    async def get(self, session_id: int) -> OAuthToken:
         """Get a token."""
-        return self._tokens.get(session_id)
+        return self._tokens[session_id]
 
     async def update(self, session_id: int, token: OAuthToken) -> OAuthToken:
         """Update a token."""

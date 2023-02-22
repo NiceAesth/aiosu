@@ -1,3 +1,3 @@
 from __future__ import annotations
 
-from .token import *
+from .oauthtoken import *

@@ -17,6 +17,7 @@ def to_bytes(obj):
 @pytest.fixture
 def token():
     token = aiosu.models.OAuthToken(
+        access_token="eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiI5OTk5IiwianRpIjoiYXNkZiIsImlhdCI6MTY3Mjk1MDI0NS45MjAxMzMsIm5iZiI6MTY3Mjk1MDI0NS45MjAxMzYsImV4cCI6MTY3MzAzNTc4NC4wMTY2MjEsInN1YiI6Ijc3ODI1NTMiLCJzY29wZXMiOlsiaWRlbnRpZnkiLCJwdWJsaWMiXX0.eHwSds48D1qqWkFI18PcL2YNO9-Agr6OUGg-zAdDq3uj6p6mkgUOmJqHQkMNK5JjzF3qF0XBou_0NgOfTz5tVg68T0P90CBi4SmMw5Ljp8ir5-Jbsq9abo4RCfQG_0kQNGtvTftoxYudaQQXD-BmpxfwSDXXxJJIdoYpPBBmiKFAF8C2wf6451F9i9hR77oF67I7_NjEP2xXiLVkYHuiwtvgZDHjPFKA8LvXXJCVLui-dZvW45SCz9u5Kr1NIR_lFFbp0GsQPDQZNz1PU20oswJlo7aKnH8OpAepP13G9cdy8wXbqn8nhsI4hunRcuTeqMDJsCThWx23D5rwfGIqag",
         refresh_token="hi",
         expires_on=datetime.utcnow() + timedelta(days=1),
     )
@@ -26,6 +27,7 @@ def token():
 @pytest.fixture
 def token_expired():
     token = aiosu.models.OAuthToken(
+        access_token="eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiI5OTk5IiwianRpIjoiYXNkZiIsImlhdCI6MTY3Mjk1MDI0NS45MjAxMzMsIm5iZiI6MTY3Mjk1MDI0NS45MjAxMzYsImV4cCI6MTY3MzAzNTc4NC4wMTY2MjEsInN1YiI6Ijc3ODI1NTMiLCJzY29wZXMiOlsiaWRlbnRpZnkiLCJwdWJsaWMiXX0.eHwSds48D1qqWkFI18PcL2YNO9-Agr6OUGg-zAdDq3uj6p6mkgUOmJqHQkMNK5JjzF3qF0XBou_0NgOfTz5tVg68T0P90CBi4SmMw5Ljp8ir5-Jbsq9abo4RCfQG_0kQNGtvTftoxYudaQQXD-BmpxfwSDXXxJJIdoYpPBBmiKFAF8C2wf6451F9i9hR77oF67I7_NjEP2xXiLVkYHuiwtvgZDHjPFKA8LvXXJCVLui-dZvW45SCz9u5Kr1NIR_lFFbp0GsQPDQZNz1PU20oswJlo7aKnH8OpAepP13G9cdy8wXbqn8nhsI4hunRcuTeqMDJsCThWx23D5rwfGIqag",
         refresh_token="hi",
         expires_on=datetime.utcnow() - timedelta(days=1),
     )

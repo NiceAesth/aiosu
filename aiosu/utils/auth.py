@@ -25,7 +25,6 @@ async def process_code(
     redirect_uri: str,
     code: str,
     base_url: str = "https://osu.ppy.sh",
-    scopes: Scopes = Scopes.PUBLIC | Scopes.IDENTIFY,
 ) -> OAuthToken:
     r"""Creates an OAuth Token from an authorization code.
 
@@ -39,8 +38,6 @@ async def process_code(
     :type code: str
     :param base_url: The base URL of the API, defaults to "https://osu.ppy.sh"
     :type base_url: Optional[str]
-    :param scopes: The scopes to request, defaults to Scopes.PUBLIC | Scopes.IDENTIFY
-    :type scopes: Optional[Scopes]
     :return: The OAuth token
     :rtype: aiosu.models.oauthtoken.OAuthToken
     """
@@ -62,7 +59,6 @@ async def process_code(
                 if resp.status != 200:
                     raise APIException(resp.status, json.get("error", ""))
                 token = OAuthToken.parse_obj(json)
-                token.scopes = scopes
                 return token
             except aiohttp.client_exceptions.ContentTypeError:
                 raise APIException(403, "Invalid code specified.")
