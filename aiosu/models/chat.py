@@ -64,7 +64,6 @@ class ChatMessage(BaseModel):
     channel_id: int
     timestamp: str
     content: str
-    content_html: str
     is_action: bool
     uuid: Optional[str]
     sender: Optional[User]
