@@ -77,6 +77,13 @@ async def main():
     user = await client.get_me()
     await cs.close()
 
+    # note: you can also use a custom repo on a client by passing repository and session_id. if the repo does not contain the token, it will be added from the token passed to the client.
+    # client = aiosu.v2.Client(
+    #     repository=file_repo,
+    #     session_id=user.id,
+    #     token=token,
+    # )
+
 
 if __name__ == "__main__":
     asyncio.run(main())
