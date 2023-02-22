@@ -29,7 +29,24 @@ class Scopes(IntFlag):
         return scopes_list
 
     def __str__(self) -> str:
-        return " ".join(scope.name.lower() for scope in self.__flags__())  # type: ignore
+        return " ".join(
+            scope_name
+            for scope_name, scope in API_SCOPE_NAMES.items()
+            if scope in self.__flags__()
+        )
+
+    @classmethod
+    def from_api_list(cls, scopes: list[str]) -> Scopes:
+        return cls(sum(API_SCOPE_NAMES[scope] for scope in scopes))
 
 
+API_SCOPE_NAMES = {
+    "public": Scopes.PUBLIC,
+    "identify": Scopes.IDENTIFY,
+    "friends.read": Scopes.FRIENDS_READ,
+    "forum.write": Scopes.FORUM_WRITE,
+    "delegate": Scopes.DELEGATE,
+    "chat.write": Scopes.CHAT_WRITE,
+    "lazer": Scopes.LAZER,
+}
 VALID_CLIENT_SCOPES = Scopes.PUBLIC | Scopes.DELEGATE

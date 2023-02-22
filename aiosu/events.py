@@ -74,7 +74,7 @@ class ClientAddEvent(BaseEvent):
     """Event for when a client is added"""
 
     _name = "ClientAddEvent"
-    client_id: int
+    session_id: int
     """0 if app client"""
     client: Eventable
     """The client that was added"""

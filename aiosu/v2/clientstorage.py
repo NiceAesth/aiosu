@@ -11,7 +11,8 @@ from ..events import ClientAddEvent
 from ..events import ClientUpdateEvent
 from ..events import Eventable
 from ..models import OAuthToken
-from ..models import Scopes
+from .repository import BaseTokenRepository
+from .repository import SimpleTokenRepository
 
 if TYPE_CHECKING:
     from types import TracebackType
@@ -31,28 +32,28 @@ class ClientStorage(Eventable):
         See below
 
     :Keyword Arguments:
+        * *token_repository* (``BaseTokenRepository``) --
+            Optional, defaults to ``aiosu.v2.repository.SimpleTokenRepository()``
         * *client_secret* (``str``)
         * *client_id* (``int``)
         * *base_url* (``str``) --
             Optional, base API URL, defaults to "https://osu.ppy.sh"
         * *create_app_client* (``bool``) --
             Optional, whether to automatically create guest clients, defaults to True
-        * *default_scopes* (``Scopes``) --
-            Optional, default scopes to use when creating a client, defaults to Scopes.PUBLIC | Scopes.IDENTIFY
     """
 
     def __init__(self, **kwargs: Any) -> None:
         super().__init__()
         self._register_event(ClientAddEvent)
         self._register_event(ClientUpdateEvent)
+        self._token_repository: BaseTokenRepository = kwargs.pop(
+            "token_repository",
+            SimpleTokenRepository(),
+        )
         self.client_secret: str = kwargs.pop("client_secret", None)
         self.client_id: int = kwargs.pop("client_id", None)
         self.base_url: str = kwargs.pop("base_url", "https://osu.ppy.sh")
         self.__create_app_client: bool = kwargs.pop("create_app_client", True)
-        self.default_scopes: Scopes = kwargs.pop(
-            "default_scopes",
-            Scopes.PUBLIC | Scopes.IDENTIFY,
-        )
         self.clients: dict[int, Client] = {}
 
     async def __aenter__(self) -> ClientStorage:
@@ -118,12 +119,14 @@ class ClientStorage(Eventable):
 
         if 0 not in self.clients:
             client = Client(
-                token=OAuthToken(scopes=self.default_scopes),
+                token_repository=self._token_repository,
+                session_id=0,
+                token=OAuthToken(),
                 **self._get_client_args(),
             )
             self.clients[0] = client
             await self._process_event(
-                ClientAddEvent(client_id=0, client=client),
+                ClientAddEvent(session_id=0, client=client),
             )
 
         return self.clients[0]
@@ -145,31 +148,29 @@ class ClientStorage(Eventable):
     ) -> Client:
         r"""Adds a client to storage.
 
-        :param token: Token object for the client
-        :type token: aiosu.models.oauthtoken.OAuthToken
+        :param token: The token object of the client
+        :type token: aiosu.models.OAuthToken
         :param \**kwargs:
             See below
 
         :Keyword Arguments:
             * *id* (``int``) --
-                Optional, the ID of the client, defaults to None
-            * *scopes* (``Scopes``) --
-                Optional, the scopes of the client, defaults to storage default scopes
-
-        :return: The added client
+                Optional, the ID of the client session
+        :return: The client with the given ID or token
         :rtype: aiosu.v2.client.Client
         """
-        scopes = kwargs.pop("scopes", self.default_scopes)
-        client_id: int = kwargs.pop("id", None)
-        client = Client(token=token, **self._get_client_args(), scopes=scopes)
-        client._register_listener(self._process_event, ClientUpdateEvent)
-        if client_id is None:
-            client_user = await client.get_me()
-            client_id = client_user.id
-        self.clients[client_id] = client
-        await self._process_event(
-            ClientAddEvent(client_id=client_id, client=client),
+        session_id: int = kwargs.pop("id", token.owner_id)
+        client = Client(
+            token_repository=self._token_repository,
+            session_id=session_id,
+            token=token,
+            **self._get_client_args(),
         )
+        client._register_listener(self._process_event, ClientUpdateEvent)
+        await self._process_event(
+            ClientAddEvent(session_id=session_id, client=client),
+        )
+        self.clients[session_id] = client
         return client
 
     async def get_client(self, **kwargs: Any) -> Client:
@@ -180,21 +181,23 @@ class ClientStorage(Eventable):
 
         :Keyword Arguments:
             * *id* (``int``) --
-                Optional, the ID of the client, defaults to None
-            * *token* (``aiosu.models.oauthtoken.OAuthToken``) --
-                Optional, token of client to add, defaults to None
-
-        :raises ValueError: If neither id nor token are specified
-        :return: The requested client
+                Optional, the owner user ID of the client
+            * *token* (``OAuthToken``) --
+                Optional, the token object of the client
+        :raises ValueError: If no valid ID or token is provided
+        :return: The client with the given ID or token
         :rtype: aiosu.v2.client.Client
         """
-        client_id: int = kwargs.pop("id", None)
+        session_id: int = kwargs.pop("id", None)
         token: OAuthToken = kwargs.pop("token", None)
-        if self.client_exists(client_id):
-            return self.clients[client_id]
+        if self.client_exists(session_id):
+            return self.clients[session_id]
+        if await self._token_repository.exists(session_id):
+            token = await self._token_repository.get(session_id)
+            return await self.add_client(token, **kwargs)
         if token is not None:
-            return await self.add_client(token)
-        raise ValueError("Either id or token must be specified.")
+            return await self.add_client(token, **kwargs)
+        raise ValueError("Either a valid id or token must be specified.")
 
     async def close(self) -> None:
         r"""Closes all client sessions."""

@@ -7,11 +7,11 @@ from datetime import datetime
 from datetime import timedelta
 from typing import TYPE_CHECKING
 
+import jwt
 from pydantic import root_validator
 
 from .base import BaseModel
 from .scopes import Scopes
-from .scopes import VALID_CLIENT_SCOPES
 
 if TYPE_CHECKING:
     from typing import Any
@@ -26,8 +26,22 @@ class OAuthToken(BaseModel):
     refresh_token: str = ""
     expires_on: datetime = datetime.utcfromtimestamp(0)
     """Can be a datetime.datetime object or a string. Alternatively, expires_in may be passed representing the number of seconds the token will be valid for."""
-    scopes: Scopes = Scopes.PUBLIC | Scopes.IDENTIFY
-    """Defaults to Scopes.PUBLIC | Scopes.IDENTIFY. If refresh_token is not passed, scopes will be set to Scopes.PUBLIC."""
+
+    @property
+    def owner_id(self) -> int:
+        if not self.access_token:
+            return 0
+        decoded = jwt.decode(self.access_token, options={"verify_signature": False})
+        if decoded["sub"]:
+            return int(decoded["sub"])
+        return 0
+
+    @property
+    def scopes(self) -> Scopes:
+        if not self.access_token:
+            return Scopes.PUBLIC
+        decoded = jwt.decode(self.access_token, options={"verify_signature": False})
+        return Scopes.from_api_list(decoded["scopes"])
 
     @root_validator(pre=True)
     def _set_expires_on(cls, values: dict[str, Any]) -> dict[str, Any]:
@@ -35,12 +49,6 @@ class OAuthToken(BaseModel):
             values["expires_on"] = datetime.utcnow() + timedelta(
                 seconds=values["expires_in"],
             )
-        return values
-
-    @root_validator
-    def _check_scopes(cls, values: dict[str, Any]) -> dict[str, Any]:
-        if not bool(values["refresh_token"]):
-            values["scopes"] &= VALID_CLIENT_SCOPES
         return values
 
     @property
