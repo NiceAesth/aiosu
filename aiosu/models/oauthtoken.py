@@ -32,7 +32,9 @@ class OAuthToken(BaseModel):
         if not self.access_token:
             return 0
         decoded = jwt.decode(self.access_token, options={"verify_signature": False})
-        return decoded["sub"]
+        if decoded["sub"]:
+            return int(decoded["sub"])
+        return 0
 
     @property
     def scopes(self) -> Scopes:
