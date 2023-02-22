@@ -3,12 +3,13 @@ aiosu
 
 |Python| |pypi| |pre-commit.ci status| |rtd| |pytest| |mypy| |codacy|
 
-Simple and fast osu! API v1 and v2 library
+Simple and fast asynchronous osu! API v1 and v2 library with various utilities.
 
 
 Features
 --------
 
+- Support for modern async syntax (async with)
 - Support for API v1 and API v2
 - Rate limit handling
 - Utilities for osu! related calculations

@@ -10,6 +10,7 @@ aiosu is an easy-to-use asynchronous wrapper for the osu! API
 
 **Features:**
 
+- Support for modern async syntax (async with)
 - Support for API v1 and API v2
 - Rate limit handling
 - Utilities for osu! related calculations
