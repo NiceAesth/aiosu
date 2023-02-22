@@ -1,6 +1,13 @@
 Client v2
 =========
 
+Repository
+----------
+
+.. automodule:: aiosu.v2.repository.oauthtoken
+    :members:
+    :undoc-members:
+
 Client Storage
 --------------
 
