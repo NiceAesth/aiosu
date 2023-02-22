@@ -41,6 +41,11 @@ __all__ = ("Client",)
 ClientRequestType = Literal["GET", "POST", "DELETE", "PUT", "PATCH"]
 
 
+def get_content_type(content_type: str) -> str:
+    """Returns the content type."""
+    return content_type.split(";")[0]
+
+
 def _beatmap_score_conv(data: Any, mode: Gamemode, beatmap_id: int) -> Score:
     data["beatmap_id"] = beatmap_id
     return Score._from_api_v1(data, mode)
@@ -103,7 +108,7 @@ class Client:
         async with self._limiter:
             async with req[request_type](*args, **kwargs) as resp:
                 body = await resp.read()
-                content_type = resp.headers.get("content-type", "")
+                content_type = get_content_type(resp.headers.get("content-type", ""))
                 if resp.status != 200:
                     json = orjson.loads(body)
                     raise APIException(resp.status, json.get("error", ""))
