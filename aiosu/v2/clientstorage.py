@@ -10,6 +10,7 @@ from . import Client
 from ..events import ClientAddEvent
 from ..events import ClientUpdateEvent
 from ..events import Eventable
+from ..exceptions import InvalidClientRequestedError
 from ..models import OAuthToken
 from .repository import BaseTokenRepository
 from .repository import SimpleTokenRepository
@@ -185,7 +186,7 @@ class ClientStorage(Eventable):
                 Optional, the owner user ID of the client
             * *token* (``OAuthToken``) --
                 Optional, the token object of the client
-        :raises ValueError: If no valid ID or token is provided
+        :raises InvalidClientRequestedError: If no valid ID or token is provided
         :return: The client with the given ID or token
         :rtype: aiosu.v2.client.Client
         """
@@ -198,7 +199,9 @@ class ClientStorage(Eventable):
         if await self._token_repository.exists(session_id):
             token = await self._token_repository.get(session_id)
             return await self.add_client(token, id=session_id)
-        raise ValueError("Either a valid id or token must be specified.")
+        raise InvalidClientRequestedError(
+            "Either a valid id or token must be specified.",
+        )
 
     async def close(self) -> None:
         r"""Closes all client sessions."""
