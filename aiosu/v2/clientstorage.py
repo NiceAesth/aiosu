@@ -193,11 +193,11 @@ class ClientStorage(Eventable):
         token: OAuthToken = kwargs.pop("token", None)
         if self.client_exists(session_id):
             return self.clients[session_id]
+        if token is not None:
+            return await self.add_client(token, id=session_id)
         if await self._token_repository.exists(session_id):
             token = await self._token_repository.get(session_id)
-            return await self.add_client(token, **kwargs)
-        if token is not None:
-            return await self.add_client(token, **kwargs)
+            return await self.add_client(token, id=session_id)
         raise ValueError("Either a valid id or token must be specified.")
 
     async def close(self) -> None:
