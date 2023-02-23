@@ -6,9 +6,11 @@ from __future__ import annotations
 import abc
 from typing import TYPE_CHECKING
 
+from ..models.gamemode import Gamemode
 from ..models.mods import Mod
 
 if TYPE_CHECKING:
+    from typing import Type
     from typing import Callable
     from ..models.score import Score
 
@@ -20,6 +22,27 @@ __all__ = [
 ]
 
 cast_int: Callable[..., int] = lambda x: int(x or 0)
+
+
+def get_calculator(mode: Gamemode) -> Type[AbstractAccuracyCalculator]:
+    r"""Returns the accuracy calculator for the given gamemode.
+
+    :param mode: The gamemode to get the calculator for
+    :type mode: aiosu.models.gamemode.Gamemode
+    :raises ValueError: If the gamemode is unknown
+    :return: The accuracy calculator type for the given gamemode
+    :rtype: Type[AbstractAccuracyCalculator]
+    """
+    if mode == Gamemode.STANDARD:
+        return OsuAccuracyCalculator
+    elif mode == Gamemode.TAIKO:
+        return TaikoAccuracyCalculator
+    elif mode == Gamemode.MANIA:
+        return ManiaAccuracyCalculator
+    elif mode == Gamemode.CTB:
+        return CatchAccuracyCalculator
+    else:
+        raise ValueError(f"Unknown gamemode: {mode}")
 
 
 class AbstractAccuracyCalculator(abc.ABC):

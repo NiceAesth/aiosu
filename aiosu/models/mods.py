@@ -137,7 +137,7 @@ class Mods(UserList):
             return
         if isinstance(mods, str):  # string of mods
             mods = [mods[i : i + 2] for i in range(0, len(mods), 2)]
-        if isinstance(mods, list):  # List of Mod types
+        if isinstance(mods, list) or isinstance(mods, Mods):  # List of Mod types
             self.data = [Mod(mod) for mod in mods]  # type: ignore
 
     @property

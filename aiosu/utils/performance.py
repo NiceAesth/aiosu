@@ -9,6 +9,7 @@ from typing import Callable
 from typing import TYPE_CHECKING
 
 from ..models import CatchPerformanceAttributes
+from ..models import Gamemode
 from ..models import ManiaPerformanceAttributes
 from ..models import Mod
 from ..models import OsuPerformanceAttributes
@@ -19,6 +20,7 @@ from .accuracy import OsuAccuracyCalculator
 from .accuracy import TaikoAccuracyCalculator
 
 if TYPE_CHECKING:
+    from typing import Type
     from ..models.score import Score
     from ..models.beatmap import BeatmapDifficultyAttributes
     from ..models.performance import PerformanceAttributes
@@ -48,6 +50,27 @@ class AbstractPerformanceCalculator(abc.ABC):
     @abc.abstractmethod
     def calculate(self, score: Score) -> PerformanceAttributes:
         ...
+
+
+def get_calculator(mode: Gamemode) -> Type[AbstractPerformanceCalculator]:
+    r"""Returns the performance calculator for the given gamemode.
+
+    :param mode: The gamemode to get the calculator for
+    :type mode: aiosu.models.gamemode.Gamemode
+    :raises ValueError: If the gamemode is unknown
+    :return: The performance calculator type for the given gamemode
+    :rtype: Type[AbstractPerformanceCalculator]
+    """
+    if mode == Gamemode.STANDARD:
+        return OsuPerformanceCalculator
+    elif mode == Gamemode.TAIKO:
+        return TaikoPerformanceCalculator
+    elif mode == Gamemode.MANIA:
+        return ManiaPerformanceCalculator
+    elif mode == Gamemode.CTB:
+        return CatchPerformanceCalculator
+    else:
+        raise ValueError(f"Unknown gamemode: {mode}")
 
 
 class OsuPerformanceCalculator(AbstractPerformanceCalculator):

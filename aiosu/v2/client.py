@@ -1154,8 +1154,8 @@ class Client(Eventable):
             param_name="ruleset_id",
             converter=lambda x: int(Gamemode(x)),  # type: ignore
         )
-        add_param(data, kwargs, key="mods", converter=lambda x: str(Mods(x)))
-        json = await self._request("POST", url, data=data)
+        add_param(data, kwargs, key="mods", converter=lambda x: int(Mods(x)))
+        json = await self._request("POST", url, json=data)
         return BeatmapDifficultyAttributes.parse_obj(json.get("attributes"))
 
     @prepare_client
@@ -1623,7 +1623,7 @@ class Client(Eventable):
                 param_name="poll_options",
             )
             data["forum_topic_poll"] = forum_topic_poll
-        json = await self._request("POST", url, data=data)
+        json = await self._request("POST", url, json=data)
         return ForumCreateTopicResponse.parse_obj(json)
 
     @prepare_client
@@ -1644,7 +1644,7 @@ class Client(Eventable):
         data: dict[str, str] = {
             "body": content,
         }
-        json = await self._request("POST", url, data=data)
+        json = await self._request("POST", url, json=data)
         return ForumPost.parse_obj(json)
 
     @prepare_client
@@ -1714,7 +1714,7 @@ class Client(Eventable):
         data: dict[str, Any] = {}
         add_param(data, kwargs, key="since")
         add_param(data, kwargs, key="silence_id_since", param_name="history_since")
-        json = await self._request("POST", url, data=data)
+        json = await self._request("POST", url, json=data)
         return from_list(ChatUserSilence.parse_obj, json.get("silences", []))
 
     @prepare_client
@@ -1871,7 +1871,7 @@ class Client(Eventable):
                 "description": kwargs["channel_description"],
             }
             data["channel"] = channel
-        json = await self._request("POST", url, data=data)
+        json = await self._request("POST", url, json=data)
         return ChatChannel.parse_obj(json)
 
     @prepare_client
@@ -1948,7 +1948,7 @@ class Client(Eventable):
             "message": message,
             "is_action": is_action,
         }
-        json = await self._request("POST", url, data=data)
+        json = await self._request("POST", url, json=data)
         return ChatMessage.parse_obj(json)
 
     @prepare_client
@@ -1983,7 +1983,7 @@ class Client(Eventable):
             "is_action": is_action,
         }
         add_param(data, kwargs, key="uuid")
-        json = await self._request("POST", url, data=data)
+        json = await self._request("POST", url, json=data)
         return ChatMessageCreateResponse.parse_obj(json)
 
     @prepare_client
