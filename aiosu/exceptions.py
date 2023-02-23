@@ -18,3 +18,14 @@ class APIException(Exception):
     def __init__(self, status: int, message: str = "") -> None:
         super().__init__(message)
         self.status = status
+
+
+class InvalidClientRequestedError(Exception):
+    """Invalid Client Requested Error
+
+    :param message: error message, defaults to ""
+    :type message: str, optional
+    """
+
+    def __init__(self, message: str = "") -> None:
+        super().__init__(message)
