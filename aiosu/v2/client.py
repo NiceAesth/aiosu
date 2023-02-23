@@ -97,10 +97,9 @@ def prepare_client(func: Callable) -> Callable:
 
     @functools.wraps(func)
     async def _prepare_client(self: Client, *args: Any, **kwargs: Any) -> Any:
-        if self._session is None:
-            self._session = aiohttp.ClientSession()
-        if not await self._token_exists():
-            await self._add_token(self._initial_token)
+        await self._prepare_token()
+        await self._prepare_session()
+
         return await func(self, *args, **kwargs)
 
     return _prepare_client
@@ -178,16 +177,23 @@ class Client(Eventable):
             "token_repository",
             SimpleTokenRepository(),
         )
+        max_rate, time_period = kwargs.pop("limiter", (600, 60))
+        if (
+            not isinstance(self._token_repository, SimpleTokenRepository)
+            and "session_id" not in kwargs
+        ):
+            warn(
+                "You are using a custom token repository, but did not provide a session ID. This may cause unexpected behavior.",
+            )
+        if (max_rate / time_period) > (1000 / 60):
+            warn(
+                "You are running at an insanely high rate limit. Doing so may result in your account being banned.",
+            )
         self.session_id: int = kwargs.pop("session_id", 0)
         self.client_id: int = kwargs.pop("client_id", None)
         self.client_secret: str = kwargs.pop("client_secret", None)
         self._initial_token: OAuthToken = kwargs.pop("token", OAuthToken())
         self.base_url: str = kwargs.pop("base_url", "https://osu.ppy.sh")
-        max_rate, time_period = kwargs.pop("limiter", (600, 60))
-        if (max_rate / time_period) > (1000 / 60):
-            warn(
-                "You are running at an insanely high rate limit. Doing so may result in your account being banned.",
-            )
         self._limiter: AsyncLimiter = AsyncLimiter(
             max_rate=max_rate,
             time_period=time_period,
@@ -224,6 +230,16 @@ class Client(Eventable):
     async def get_current_token(self) -> OAuthToken:
         """Get the current token"""
         return await self._token_repository.get(self.session_id)
+
+    async def _prepare_token(self) -> None:
+        """Prepare the token for use."""
+        if not await self._token_exists():
+            await self._add_token(self._initial_token)
+
+    async def _prepare_session(self) -> None:
+        """Prepare the session for use."""
+        if self._session is None:
+            self._session = aiohttp.ClientSession(headers=await self._get_headers())
 
     async def _add_token(self, token: OAuthToken) -> None:
         """Add a token to the current session"""
@@ -278,6 +294,7 @@ class Client(Eventable):
                 body = await resp.read()
                 content_type = get_content_type(resp.headers.get("content-type", ""))
                 if resp.status != 200:
+                    print(self._session.headers)
                     json = orjson.loads(body)
                     raise APIException(resp.status, json.get("error", ""))
                 if content_type == "application/json":

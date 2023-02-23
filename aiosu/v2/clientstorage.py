@@ -167,6 +167,7 @@ class ClientStorage(Eventable):
             **self._get_client_args(),
         )
         client._register_listener(self._process_event, ClientUpdateEvent)
+        await client._prepare_token()
         await self._process_event(
             ClientAddEvent(session_id=session_id, client=client),
         )
