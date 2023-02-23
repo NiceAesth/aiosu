@@ -1,13 +1,14 @@
 # To release a new version `make release ver=<args>`
 # https://python-poetry.org/docs/cli/#version
 
+CURRENT_BRANCH := $(shell git branch --show-current)
+
 shell:
 	poetry install --with dev
 	poetry shell
 
 release:
-	ifneq ($(shell git rev-parse --abbrev-ref HEAD),master)
-		$(error You must be on master branch to release)
+	@if [ "$(BRANCH)" != "master" ]; then echo "Not on master branch"; exit 1; fi
 	@poetry version $(ver)
 	@git add pyproject.toml
 	@git commit -m "v$$(poetry version -s)"
