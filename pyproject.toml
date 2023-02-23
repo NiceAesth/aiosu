@@ -14,7 +14,7 @@ testpaths = ["tests"]
 
 [tool.poetry]
 name = "aiosu"
-version = "1.2.2"
+version = "1.2.3"
 description = "Simple and fast osu! API v1 and v2 library"
 authors = ["Nice Aesthetics <nice@aesth.dev>"]
 license = "GPLv3+"
