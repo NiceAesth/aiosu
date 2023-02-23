@@ -1667,7 +1667,7 @@ class Client(Eventable):
                 "topic_title": new_title,
             },
         }
-        json = await self._request("PUT", url, data=data)
+        json = await self._request("PUT", url, json=data)
         return ForumTopic.parse_obj(json)
 
     @prepare_client
@@ -1688,7 +1688,7 @@ class Client(Eventable):
         data: dict[str, str] = {
             "body": new_content,
         }
-        json = await self._request("PUT", url, data=data)
+        json = await self._request("PUT", url, json=data)
         return ForumPost.parse_obj(json)
 
     @prepare_client
@@ -1746,14 +1746,14 @@ class Client(Eventable):
         if not 1 <= (limit := kwargs.get("limit", 50)) <= 50:
             raise ValueError("limit must be between 1 and 50")
         url = f"{self.base_url}/api/v2/chat/updates"
-        data: dict[str, Any] = {
+        params: dict[str, Any] = {
             "since": since,
             "limit:": limit,
         }
-        add_param(data, kwargs, key="channel_id")
-        add_param(data, kwargs, key="includes")
-        add_param(data, kwargs, key="silence_id_since", param_name="history_since")
-        json = await self._request("GET", url, data=data)
+        add_param(params, kwargs, key="channel_id")
+        add_param(params, kwargs, key="includes")
+        add_param(params, kwargs, key="silence_id_since", param_name="history_since")
+        json = await self._request("GET", url, params=params)
         return ChatUpdateResponse.parse_obj(json)
 
     @prepare_client
@@ -1815,12 +1815,12 @@ class Client(Eventable):
         if not 1 <= (limit := kwargs.get("limit", 50)) <= 50:
             raise ValueError("limit must be between 1 and 50")
         url = f"{self.base_url}/api/v2/chat/channels/{channel_id}/messages"
-        data: dict[str, Any] = {
+        params: dict[str, Any] = {
             "limit:": limit,
         }
-        add_param(data, kwargs, key="since")
-        add_param(data, kwargs, key="until")
-        json = await self._request("GET", url, data=data)
+        add_param(params, kwargs, key="since")
+        add_param(params, kwargs, key="until")
+        json = await self._request("GET", url, params=params)
         return from_list(ChatMessage.parse_obj, json)
 
     @prepare_client
