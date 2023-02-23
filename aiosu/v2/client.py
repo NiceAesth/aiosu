@@ -85,6 +85,11 @@ __all__ = ("Client",)
 ClientRequestType = Literal["GET", "POST", "DELETE", "PUT", "PATCH"]
 
 
+def to_lower_str(value: Any) -> str:
+    """Converts a value to a lowercase string."""
+    return str(value).lower()
+
+
 def get_content_type(content_type: str) -> str:
     """Returns the content type."""
     return content_type.split(";")[0]
@@ -300,7 +305,6 @@ class Client(Eventable):
                 body = await resp.read()
                 content_type = get_content_type(resp.headers.get("content-type", ""))
                 if resp.status != 200:
-                    print(self._session.headers)
                     json = orjson.loads(body)
                     raise APIException(resp.status, json.get("error", ""))
                 if content_type == "application/json":
@@ -396,7 +400,7 @@ class Client(Eventable):
         add_param(params, kwargs, key="length")
         add_param(params, kwargs, key="bpm")
         add_param(params, kwargs, key="query")
-        add_param(params, kwargs, key="is_default_sort")
+        add_param(params, kwargs, key="is_default_sort", converter=to_lower_str)
         add_param(params, kwargs, key="sort")
         add_param(params, kwargs, key="cursor_string")
         json = await self._request("GET", url)
@@ -830,7 +834,7 @@ class Client(Eventable):
             )
         url = f"{self.base_url}/api/v2/users/{user_id}/scores/{request_type}"
         params: dict[str, Any] = {
-            "include_fails": kwargs.pop("include_fails", False),
+            "include_fails": int(kwargs.pop("include_fails", False)),
             "limit": limit,
             "offset": kwargs.pop("offset", 0),
         }
@@ -875,8 +879,6 @@ class Client(Eventable):
                 Optional, gamemode to search for
             * *limit* (``int``) --
                 Optional, number of scores to get. Min: 1, Max: 100, defaults to 100
-            * *include_fails* (``bool``) --
-                Optional, whether to include failed scores, defaults to ``False``
             * *offset* (``int``) --
                 Optional, page offset to start from, defaults to 0
 
@@ -899,8 +901,6 @@ class Client(Eventable):
                 Optional, gamemode to search for
             * *limit* (``int``) --
                 Optional, number of scores to get. Min: 1, Max: 100, defaults to 100
-            * *include_fails* (``bool``) --
-                Optional, whether to include failed scores, defaults to ``False``
             * *offset* (``int``) --
                 Optional, page offset to start from, defaults to 0
 
@@ -1307,10 +1307,10 @@ class Client(Eventable):
         add_param(params, kwargs, key="limit")
         add_param(params, kwargs, key="page")
         add_param(params, kwargs, key="message_types")
-        add_param(params, kwargs, key="only_unresolved")
+        add_param(params, kwargs, key="only_unresolved", converter=to_lower_str)
         add_param(params, kwargs, key="sort")
         add_param(params, kwargs, key="user", param_name="user_id")
-        add_param(params, kwargs, key="with_deleted")
+        add_param(params, kwargs, key="with_deleted", converter=to_lower_str)
         add_param(params, kwargs, key="cursor_string")
         json = await self._request("GET", url, params=params)
         resp = BeatmapsetDiscussionResponse.parse_obj(json)
@@ -1359,7 +1359,7 @@ class Client(Eventable):
         add_param(params, kwargs, key="sort")
         add_param(params, kwargs, key="types")
         add_param(params, kwargs, key="user", param_name="user_id")
-        add_param(params, kwargs, key="with_deleted")
+        add_param(params, kwargs, key="with_deleted", converter=to_lower_str)
         add_param(params, kwargs, key="cursor_string")
         json = await self._request("GET", url, params=params)
         resp = BeatmapsetDiscussionPostResponse.parse_obj(json)
@@ -1411,7 +1411,7 @@ class Client(Eventable):
         add_param(params, kwargs, key="score")
         add_param(params, kwargs, key="sort")
         add_param(params, kwargs, key="user", param_name="user_id")
-        add_param(params, kwargs, key="with_deleted")
+        add_param(params, kwargs, key="with_deleted", converter=to_lower_str)
         add_param(params, kwargs, key="cursor_string")
         json = await self._request("GET", url, params=params)
         resp = BeatmapsetDiscussionVoteResponse.parse_obj(json)
