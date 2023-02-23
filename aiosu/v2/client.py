@@ -156,9 +156,9 @@ class Client(Eventable):
         * *session_id* (``int``) --
             Optional, ID of the session to search in the repository, defaults to 0
         * *client_id* (``int``) --
-            Optional, required for client credentials
+            Optional, required to refresh tokens
         * *client_secret* (``str``) --
-            Optional, required for client credentials
+            Optional, required to refresh tokens
         * *base_url* (``str``) --
             Optional, base API URL, defaults to "https://osu.ppy.sh"
         * *token* (``aiosu.models.oauthtoken.OAuthToken``) --
@@ -192,7 +192,7 @@ class Client(Eventable):
         self.session_id: int = kwargs.pop("session_id", 0)
         self.client_id: int = kwargs.pop("client_id", None)
         self.client_secret: str = kwargs.pop("client_secret", None)
-        self._initial_token: OAuthToken = kwargs.pop("token", OAuthToken())
+        self._initial_token: Optional[OAuthToken] = kwargs.pop("token", None)
         self.base_url: str = kwargs.pop("base_url", "https://osu.ppy.sh")
         self._limiter: AsyncLimiter = AsyncLimiter(
             max_rate=max_rate,
@@ -234,7 +234,13 @@ class Client(Eventable):
     async def _prepare_token(self) -> None:
         """Prepare the token for use."""
         if not await self._token_exists():
-            await self._add_token(self._initial_token)
+            token_to_add = self._initial_token
+            if token_to_add is None:
+                token_to_add = OAuthToken()
+            await self._add_token(token_to_add)
+        elif self._initial_token is not None:
+            await self._update_token(self._initial_token)
+        self._initial_token = None
 
     async def _prepare_session(self) -> None:
         """Prepare the session for use."""
