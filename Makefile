@@ -6,6 +6,8 @@ shell:
 	poetry shell
 
 release:
+	ifneq ($(shell git rev-parse --abbrev-ref HEAD),master)
+		$(error You must be on master branch to release)
 	@poetry version $(ver)
 	@git add pyproject.toml
 	@git commit -m "v$$(poetry version -s)"
