@@ -5,6 +5,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from enum import Enum
+from enum import unique
 from typing import Any
 from typing import Literal
 from typing import Optional
@@ -48,19 +49,29 @@ UserAccountHistoryType = Literal[
     "tournament_ban",
 ]
 
+OLD_QUERY_TYPES = {
+    "id": "id",
+    "username": "string",
+}
 
+
+@unique
 class UserQueryType(Enum):
-    ID = ("id", "id")
-    USERNAME = ("string", "username")
+    ID = "id"
+    USERNAME = "username"
 
-    def __init__(self, old: str, new: str) -> None:
-        self.old_api_name = old
-        self.new_api_name = new
+    @property
+    def old_api_name(self) -> str:
+        return OLD_QUERY_TYPES[self.name]
+
+    @property
+    def new_api_name(self) -> str:
+        return self.value
 
     @classmethod
     def _missing_(cls, query: object) -> UserQueryType:
         for q in list(UserQueryType):
-            if query in q.value:
+            if query in (q.old_api_name, q.new_api_name):
                 return q
         raise ValueError(f"UserQueryType {query} does not exist.")
 

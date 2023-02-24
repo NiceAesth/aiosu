@@ -697,7 +697,7 @@ class Client(Eventable):
         """
         url = f"{self.base_url}/api/v2/me"
         if "mode" in kwargs:
-            mode = Gamemode(kwargs.pop("mode"))  # type: ignore
+            mode = Gamemode(kwargs.pop("mode"))
             url += f"/{mode}"
         json = await self._request("GET", url)
         return User.parse_obj(json)
@@ -739,14 +739,14 @@ class Client(Eventable):
         url = f"{self.base_url}/api/v2/users/{user_query}"
         params: dict[str, Any] = {}
         if "mode" in kwargs:
-            mode = Gamemode(kwargs.pop("mode"))  # type: ignore
+            mode = Gamemode(kwargs.pop("mode"))
             url += f"/{mode}"
         add_param(
             params,
             kwargs,
             key="qtype",
             param_name="type",
-            converter=lambda x: UserQueryType(x).new_api_name,  # type: ignore
+            converter=lambda x: UserQueryType(x).new_api_name,
         )
         json = await self._request("GET", url, params=params)
         return User.parse_obj(json)
@@ -838,7 +838,7 @@ class Client(Eventable):
             "limit": limit,
             "offset": kwargs.pop("offset", 0),
         }
-        add_param(params, kwargs, key="mode", converter=lambda x: str(Gamemode(x)))  # type: ignore
+        add_param(params, kwargs, key="mode", converter=lambda x: str(Gamemode(x)))
         json = await self._request("GET", url, params=params)
         return from_list(Score.parse_obj, json)
 
@@ -934,7 +934,7 @@ class Client(Eventable):
         """
         url = f"{self.base_url}/api/v2/beatmaps/{beatmap_id}/scores/users/{user_id}/all"
         params: dict[str, Any] = {}
-        add_param(params, kwargs, key="mode", converter=lambda x: str(Gamemode(x)))  # type: ignore
+        add_param(params, kwargs, key="mode", converter=lambda x: str(Gamemode(x)))
         json = await self._request("GET", url, params=params)
         return from_list(Score.parse_obj, json.get("scores", []))
 
@@ -1053,7 +1053,7 @@ class Client(Eventable):
         """
         url = f"{self.base_url}/api/v2/beatmaps/{beatmap_id}/scores"
         params: dict[str, Any] = {}
-        add_param(params, kwargs, key="mode", converter=lambda x: str(Gamemode(x)))  # type: ignore
+        add_param(params, kwargs, key="mode", converter=lambda x: str(Gamemode(x)))
         add_param(params, kwargs, key="mods", converter=lambda x: str(Mods(x)))
         add_param(params, kwargs, key="type")
         json = await self._request("GET", url, params=params)
@@ -1152,7 +1152,7 @@ class Client(Eventable):
             kwargs,
             key="mode",
             param_name="ruleset_id",
-            converter=lambda x: int(Gamemode(x)),  # type: ignore
+            converter=lambda x: int(Gamemode(x)),
         )
         add_param(data, kwargs, key="mods", converter=lambda x: int(Mods(x)))
         json = await self._request("POST", url, json=data)

@@ -5,6 +5,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from enum import IntFlag
+from enum import unique
 from typing import Any
 from typing import Optional
 
@@ -41,6 +42,7 @@ def _parse_rng_seed(events: list[ReplayEvent]) -> int:
     return int(events[-1].keys)
 
 
+@unique
 class ReplayKey(IntFlag):
     """Replay key data."""
 

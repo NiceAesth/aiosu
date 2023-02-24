@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 from datetime import datetime
-from enum import Enum
+from enum import IntEnum
+from enum import unique
 from typing import Optional
 from typing import TYPE_CHECKING
 
@@ -27,20 +28,23 @@ __all__ = (
 )
 
 
-class MatchTeam(Enum):
+@unique
+class MatchTeam(IntEnum):
     NONE = 0
     BLUE = 1
     RED = 2
 
 
-class MatchScoringType(Enum):
+@unique
+class MatchScoringType(IntEnum):
     SCORE = 0
     ACCURACY = 1
     COMBO = 2
     SCOREV2 = 3
 
 
-class MatchTeamType(Enum):
+@unique
+class MatchTeamType(IntEnum):
     HEADTOHEAD = 0
     COOP = 1
     TEAMVS = 2

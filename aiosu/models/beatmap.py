@@ -5,6 +5,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from enum import Enum
+from enum import unique
 from typing import Any
 from typing import Literal
 from typing import Optional
@@ -90,22 +91,34 @@ BeatmapsetRequestStatus = Literal[
     "never_ranked",
 ]
 
+BEATMAP_RANK_STATUS_NAMES = {
+    -2: "graveyard",
+    -1: "wip",
+    0: "pending",
+    1: "ranked",
+    2: "approved",
+    3: "qualified",
+    4: "loved",
+}
 
+
+@unique
 class BeatmapRankStatus(Enum):
-    GRAVEYARD = (-2, "graveyard")
-    WIP = (-1, "wip")
-    PENDING = (0, "pending")
-    RANKED = (1, "ranked")
-    APPROVED = (2, "approved")
-    QUALIFIED = (3, "qualified")
-    LOVED = (4, "loved")
+    GRAVEYARD = -2
+    WIP = -1
+    PENDING = 0
+    RANKED = 1
+    APPROVED = 2
+    QUALIFIED = 3
+    LOVED = 4
 
-    def __init__(self, id: int, name_api: str) -> None:
-        self.id: int = id
-        self.name_api: str = name_api
+    @property
+    def id(self) -> int:
+        return self.value
 
-    def __int__(self) -> int:
-        return self.id
+    @property
+    def name_api(self) -> str:
+        return BEATMAP_RANK_STATUS_NAMES[self.id]
 
     def __str__(self) -> str:
         return self.name_api
@@ -229,7 +242,7 @@ class Beatmap(BaseModel):
         if values.get("url") is None:
             id = values["id"]
             beatmapset_id = values["beatmapset_id"]
-            mode = Gamemode(values["mode"])  # type: ignore
+            mode = Gamemode(values["mode"])
             values[
                 "url"
             ] = f"https://osu.ppy.sh/beatmapsets/{beatmapset_id}#{mode}/{id}"
