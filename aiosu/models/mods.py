@@ -122,8 +122,15 @@ class Mod(IntEnum):
         :rtype: Mod
         :raises ValueError: If the Mod does not exist
         """
+        from .lazer import LazerMod
+
         if isinstance(__o, cls):
             return __o
+        if isinstance(__o, LazerMod):
+            try:
+                return cls(__o.acronym)
+            except ValueError:
+                return cls.NoMod
         for mod in list(Mod):
             if __o == mod.short_name or __o == mod.bitmask:
                 return mod

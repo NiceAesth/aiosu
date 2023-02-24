@@ -77,6 +77,30 @@ class LazerScoreStatistics(BaseModel):
     perfect: int = 0
     legacy_combo_increase: int = 0
 
+    @property
+    def count_300(self) -> int:
+        return self.great
+
+    @property
+    def count_100(self) -> int:
+        return self.ok
+
+    @property
+    def count_50(self) -> int:
+        return self.meh
+
+    @property
+    def count_miss(self) -> int:
+        return self.miss
+
+    @property
+    def count_geki(self) -> int:
+        return self.perfect
+
+    @property
+    def count_katu(self) -> int:
+        return self.good
+
 
 class LazerReplayData(BaseModel):
     mods: list[LazerMod]
@@ -135,6 +159,10 @@ class LazerScore(BaseModel):
     @property
     def mode(self) -> Gamemode:
         return Gamemode(self.ruleset_id)
+
+    @property
+    def score(self) -> int:
+        return self.total_score
 
     @property
     def score_url(self) -> Optional[str]:

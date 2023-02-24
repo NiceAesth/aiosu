@@ -16,6 +16,7 @@ from ..utils.accuracy import TaikoAccuracyCalculator
 from .base import BaseModel
 from .beatmap import Beatmap
 from .beatmap import Beatmapset
+from .common import CurrentUserAttributes
 from .gamemode import Gamemode
 from .mods import Mods
 from .user import User
@@ -100,9 +101,17 @@ class ScoreStatistics(BaseModel):
     count_50: int
     count_100: int
     count_300: int
+    count_miss: int
     count_geki: int
     count_katu: int
-    count_miss: int
+
+    @root_validator(pre=True)
+    def _convert_none_to_zero(cls, values: dict[str, Any]) -> dict[str, Any]:
+        # Lazer API returns null for some statistics
+        for key in values:
+            if values[key] is None:
+                values[key] = 0
+        return values
 
     @classmethod
     def _from_api_v1(cls, data: Any) -> ScoreStatistics:
@@ -141,6 +150,8 @@ class Score(BaseModel):
     user: Optional[User]
     rank_global: Optional[int]
     rank_country: Optional[int]
+    type: Optional[str]
+    current_user_attributes: Optional[CurrentUserAttributes]
     beatmap_id: Optional[int]
     """Only present on API v1"""
 

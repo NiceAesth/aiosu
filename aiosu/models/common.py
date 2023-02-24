@@ -70,6 +70,12 @@ class HTMLBody(BaseModel):
     bbcode: Optional[str]
 
 
+class PinAttributes(BaseModel):
+    is_pinned: bool
+    score_id: int
+    score_type: str
+
+
 class CurrentUserAttributes(BaseModel):
     can_destroy: Optional[bool]
     can_reopen: Optional[bool]
@@ -81,7 +87,7 @@ class CurrentUserAttributes(BaseModel):
     last_read_id: Optional[int]
     can_new_comment: Optional[bool]
     can_new_comment_reason: Optional[str]
-    pin: Optional[bool]
+    pin: Optional[PinAttributes]
 
 
 class CursorModel(BaseModel):
