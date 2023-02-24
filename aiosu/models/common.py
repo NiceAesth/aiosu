@@ -81,6 +81,7 @@ class CurrentUserAttributes(BaseModel):
     last_read_id: Optional[int]
     can_new_comment: Optional[bool]
     can_new_comment_reason: Optional[str]
+    pin: Optional[bool]
 
 
 class CursorModel(BaseModel):

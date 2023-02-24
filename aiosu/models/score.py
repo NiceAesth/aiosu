@@ -182,7 +182,7 @@ class Score(BaseModel):
         """
         return (
             f"https://osu.ppy.sh/scores/{self.mode.name_api}/{self.best_id}/download"
-            if self.best_id
+            if self.best_id and self.replay
             else None
         )
 
