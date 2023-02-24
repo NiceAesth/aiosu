@@ -355,7 +355,7 @@ class Beatmapset(BaseModel):
                 "favourite_count": data["favourite_count"],
                 "creator": data["creator"],
                 "play_count": data["playcount"],
-                "preview_url": f"https://b.ppy.sh/preview/{data['beatmapset_id']}.mp3",
+                "preview_url": f"//b.ppy.sh/preview/{data['beatmapset_id']}.mp3",
                 "source": data["source"],
                 "status": int(data["approved"]),
                 "title": data["title"],
