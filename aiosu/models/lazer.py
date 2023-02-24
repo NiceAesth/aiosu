@@ -59,6 +59,9 @@ class LazerMod(BaseModel):
     acronym: str
     settings: dict[str, Any] = Field(default_factory=dict)
 
+    def __str__(self) -> str:
+        return self.acronym
+
 
 class LazerScoreStatistics(BaseModel):
     ok: int = 0
@@ -134,6 +137,10 @@ class LazerScore(BaseModel):
     legacy_perfect: Optional[bool]
     pp: Optional[float]
     weight: Optional[ScoreWeight]
+
+    @property
+    def mods_str(self) -> str:
+        return "".join(str(mod) for mod in self.mods)
 
     @property
     def created_at(self) -> datetime:

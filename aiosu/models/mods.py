@@ -122,13 +122,13 @@ class Mod(IntEnum):
         :rtype: Mod
         :raises ValueError: If the Mod does not exist
         """
-        from .lazer import LazerMod
+        from .lazer import LazerMod  # Lazy import to avoid circular imports
 
         if isinstance(__o, cls):
             return __o
         if isinstance(__o, LazerMod):
             try:
-                return cls(__o.acronym)
+                return cls.from_type(__o.acronym)
             except ValueError:
                 return cls.NoMod
         for mod in list(Mod):
