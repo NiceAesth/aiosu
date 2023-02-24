@@ -33,7 +33,6 @@ class BaseModel(pydantic.BaseModel):
         json_dumps = orjson_dumps
         json_encoders = {
             Mods: str,
-            Gamemode: str,
         }
 
 

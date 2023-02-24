@@ -4,29 +4,54 @@ This module contains models for Gamemode objects.
 from __future__ import annotations
 
 from enum import Enum
+from enum import unique
 
 __all__ = ("Gamemode",)
 
+GAMEMODE_NAMES = {
+    0: "Standard",
+    1: "Taiko",
+    2: "Catch the Beat",
+    3: "Mania",
+}
 
+GAMEMODE_SHORT_NAMES = {
+    0: "STD",
+    1: "Taiko",
+    2: "CTB",
+    3: "Mania",
+}
+
+GAMEMODE_API_NAMES = {
+    0: "osu",
+    1: "taiko",
+    2: "fruits",
+    3: "mania",
+}
+
+
+@unique
 class Gamemode(Enum):
-    STANDARD = (0, "https://i.imgur.com/lT2nqls.png", "Standard", "STD", "osu")
-    TAIKO = (1, "https://i.imgur.com/G6bzM0X.png", "Taiko", "Taiko", "taiko")
-    CTB = (2, "https://i.imgur.com/EsanYkH.png", "Catch the Beat", "CTB", "fruits")
-    MANIA = (3, "https://i.imgur.com/0uZM1PZ.png", "Mania", "Mania", "mania")
+    STANDARD = 0
+    TAIKO = 1
+    CTB = 2
+    MANIA = 3
 
-    def __init__(
-        self,
-        id: int,
-        icon: str,
-        name_full: str,
-        name_short: str,
-        name_api: str,
-    ) -> None:
-        self.id: int = id
-        self.icon: str = icon
-        self.name_full: str = name_full
-        self.name_short: str = name_short
-        self.name_api: str = name_api
+    @property
+    def id(self) -> int:
+        return self.value
+
+    @property
+    def name_full(self) -> str:
+        return GAMEMODE_NAMES[self.id]
+
+    @property
+    def name_short(self) -> str:
+        return GAMEMODE_SHORT_NAMES[self.id]
+
+    @property
+    def name_api(self) -> str:
+        return GAMEMODE_API_NAMES[self.id]
 
     def __int__(self) -> int:
         return self.id
@@ -54,7 +79,7 @@ class Gamemode(Enum):
         if isinstance(__o, cls):
             return __o
         for mode in list(Gamemode):
-            if __o in (mode.name_api, mode.name_short, mode.id):
+            if __o in (mode.name_api, mode.name_short, mode.name_full, mode.id):
                 return mode
         raise ValueError(f"Gamemode {__o} does not exist.")
 

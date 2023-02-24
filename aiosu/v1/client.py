@@ -145,14 +145,14 @@ class Client:
             "k": self.token,
             "u": user_query,
             "event_days": kwargs.pop("event_days", 1),
-            "m": int(Gamemode(kwargs.pop("mode", 0))),  # type: ignore
+            "m": int(Gamemode(kwargs.pop("mode", 0))),
         }
         add_param(
             params,
             kwargs,
             key="qtype",
             param_name="type",
-            converter=lambda x: UserQueryType(x).old_api_name,  # type: ignore
+            converter=lambda x: UserQueryType(x).old_api_name,
         )
         json = await self._request("GET", url, params=params)
         if not json:
@@ -194,14 +194,14 @@ class Client:
             "u": user_query,
             "limit": kwargs.pop("limit", 10),
         }
-        mode = Gamemode(kwargs.pop("mode", 0))  # type: ignore
+        mode = Gamemode(kwargs.pop("mode", 0))
         params["m"] = int(mode)
         add_param(
             params,
             kwargs,
             key="qtype",
             param_name="type",
-            converter=lambda x: UserQueryType(x).old_api_name,  # type: ignore
+            converter=lambda x: UserQueryType(x).old_api_name,
         )
         json = await self._request("GET", url, params=params)
         score_conv = lambda x: Score._from_api_v1(x, mode)
@@ -302,7 +302,7 @@ class Client:
             "k": self.token,
             "limit": limit,
             "a": int(kwargs.pop("converts", False)),
-            "m": int(Gamemode(kwargs.pop("mode", 0))),  # type: ignore
+            "m": int(Gamemode(kwargs.pop("mode", 0))),
         }
         added = add_param(params, kwargs, key="mods", converter=lambda x: str(Mods(x)))
         added |= add_param(params, kwargs, key="beatmap_id", param_name="b")
@@ -314,7 +314,7 @@ class Client:
                 kwargs,
                 key="qtype",
                 param_name="type",
-                converter=lambda x: UserQueryType(x).old_api_name,  # type: ignore
+                converter=lambda x: UserQueryType(x).old_api_name,
             )
         added |= add_param(params, kwargs, key="since", param_name="since")
         added |= add_param(params, kwargs, key="hash", param_name="h")
@@ -358,7 +358,7 @@ class Client:
             "b": beatmap_id,
             "limit": kwargs.pop("limit", 50),
         }
-        mode = Gamemode(kwargs.pop("mode", 0))  # type: ignore
+        mode = Gamemode(kwargs.pop("mode", 0))
         params["m"] = int(mode)
         if add_param(params, kwargs, key="user_query", param_name="u"):
             add_param(
@@ -366,7 +366,7 @@ class Client:
                 kwargs,
                 key="qtype",
                 param_name="type",
-                converter=lambda x: UserQueryType(x).old_api_name,  # type: ignore
+                converter=lambda x: UserQueryType(x).old_api_name,
             )
         add_param(params, kwargs, key="mods", converter=lambda x: str(Mods(x)))
         json = await self._request("GET", url, params=params)
@@ -418,7 +418,7 @@ class Client:
         url = f"{self.base_url}/api/get_replay"
         params = {
             "k": self.token,
-            "m": int(Gamemode(kwargs.pop("mode", 0))),  # type: ignore
+            "m": int(Gamemode(kwargs.pop("mode", 0))),
         }
         added = add_param(params, kwargs, key="score_id", param_name="s")
         if add_param(params, kwargs, key="beatmap_id", param_name="b") and add_param(
@@ -433,7 +433,7 @@ class Client:
                 kwargs,
                 key="qtype",
                 param_name="type",
-                converter=lambda x: UserQueryType(x).old_api_name,  # type: ignore
+                converter=lambda x: UserQueryType(x).old_api_name,
             )
         if not added:
             raise ValueError(
