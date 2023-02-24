@@ -130,7 +130,7 @@ class Mod(IntEnum):
         raise ValueError(f"Mod {__o!r} does not exist.")
 
     @classmethod
-    def _missing_(cls, query: Any) -> Mod:
+    def _missing_(cls, query: object) -> Any:
         return cls.from_type(query)
 
 
