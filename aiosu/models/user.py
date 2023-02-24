@@ -69,7 +69,7 @@ class UserQueryType(Enum):
         return self.value
 
     @classmethod
-    def _missing_(cls, query: object) -> UserQueryType:
+    def _missing_(cls, query: object) -> Any:
         for q in list(UserQueryType):
             if query in (q.old_api_name, q.new_api_name):
                 return q

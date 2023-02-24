@@ -8,7 +8,6 @@ from typing import TYPE_CHECKING
 import orjson
 import pydantic
 
-from .gamemode import Gamemode
 from .mods import Mods
 
 if TYPE_CHECKING:
