@@ -124,7 +124,7 @@ class BeatmapRankStatus(Enum):
         return self.name_api
 
     @classmethod
-    def _missing_(cls, query: object) -> BeatmapRankStatus:
+    def _missing_(cls, query: Any) -> BeatmapRankStatus:
         if isinstance(query, int):
             for status in list(BeatmapRankStatus):
                 if status.id == query:

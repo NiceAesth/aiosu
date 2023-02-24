@@ -114,6 +114,14 @@ class Mod(IntEnum):
 
     @classmethod
     def from_type(cls, __o: object) -> Mod:
+        """Get a Mod from a string or int.
+
+        :param __o: The string or int to get the Mod from
+        :type __o: object
+        :return: The Mod
+        :rtype: Mod
+        :raises ValueError: If the Mod does not exist
+        """
         if isinstance(__o, cls):
             return __o
         for mod in list(Mod):
@@ -122,7 +130,7 @@ class Mod(IntEnum):
         raise ValueError(f"Mod {__o!r} does not exist.")
 
     @classmethod
-    def _missing_(cls, query: object) -> Mod:
+    def _missing_(cls, query: Any) -> Mod:
         return cls.from_type(query)
 
 
@@ -187,10 +195,6 @@ class Mods(UserList):
     @classmethod
     def __get_validators__(cls) -> Generator:
         yield cls._validate
-
-    @classmethod
-    def __modify_schema__(cls, field_schema):  # type: ignore
-        pass  # Genuinely not sure about implementing this
 
     @classmethod
     def _validate(cls, v: object) -> Mods:
