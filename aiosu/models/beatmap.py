@@ -161,20 +161,24 @@ class BeatmapCovers(BaseModel):
     slimcover_2_x: Optional[str] = Field(alias="slimcover@2x")
 
     @classmethod
-    def _from_api_v1(cls, data: Any) -> BeatmapCovers:
+    def from_beatmapset_id(cls, beatmapset_id: int) -> BeatmapCovers:
         base_url = "https://assets.ppy.sh/beatmaps/"
         return cls.parse_obj(
             {
-                "cover": f"{base_url}{data['beatmapset_id']}/covers/cover.jpg",
-                "card": f"{base_url}{data['beatmapset_id']}/covers/card.jpg",
-                "list": f"{base_url}{data['beatmapset_id']}/covers/list.jpg",
-                "slimcover": f"{base_url}{data['beatmapset_id']}/covers/slimcover.jpg",
-                "cover_2_x": f"{base_url}{data['beatmapset_id']}/covers/cover@2x.jpg",
-                "card_2_x": f"{base_url}{data['beatmapset_id']}/covers/card@2x.jpg",
-                "list_2_x": f"{base_url}{data['beatmapset_id']}/covers/list@2x.jpg",
-                "slimcover_2_x": f"{base_url}{data['beatmapset_id']}/covers/slimcover@2x.jpg",
+                "cover": f"{base_url}{beatmapset_id}/covers/cover.jpg",
+                "card": f"{base_url}{beatmapset_id}/covers/card.jpg",
+                "list": f"{base_url}{beatmapset_id}/covers/list.jpg",
+                "slimcover": f"{base_url}{beatmapset_id}/covers/slimcover.jpg",
+                "cover_2_x": f"{base_url}{beatmapset_id}/covers/cover@2x.jpg",
+                "card_2_x": f"{base_url}{beatmapset_id}/covers/card@2x.jpg",
+                "list_2_x": f"{base_url}{beatmapset_id}/covers/list@2x.jpg",
+                "slimcover_2_x": f"{base_url}{beatmapset_id}/covers/slimcover@2x.jpg",
             },
         )
+
+    @classmethod
+    def _from_api_v1(cls, data: Any) -> BeatmapCovers:
+        return cls.from_beatmapset_id(data["beatmapset_id"])
 
 
 class BeatmapHype(BaseModel):
