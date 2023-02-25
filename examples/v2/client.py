@@ -27,6 +27,21 @@ async def main():
     user = await client.get_me()
     await client.close()
 
+    # client credentials example
+    app_client = aiosu.v2.Client(
+        client_secret="secret",
+        client_id=1000,
+    )
+    # if you pass a token without a refresh token, it will be treated as a client credentials token
+
+    # ratelimiter example
+    limit = (10, 1)  # 10 requests per second
+    app_client = aiosu.v2.Client(
+        client_secret="secret",
+        client_id=1000,
+        limiter=limit,
+    )
+
 
 if __name__ == "__main__":
     asyncio.run(main())

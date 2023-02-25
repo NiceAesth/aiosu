@@ -94,6 +94,7 @@ async def main():
     #     session_id=user.id,
     #     token=token,
     # )
+    # It is not recommended to use custom repositories with clients unless you provide a session_id.
 
 
 if __name__ == "__main__":

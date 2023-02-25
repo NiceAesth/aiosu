@@ -27,6 +27,9 @@ async def main():
     user = await client.get_me()
     await cs.close()
 
+    # client credentials example
+    app_client = await cs.app_client
+
 
 if __name__ == "__main__":
     asyncio.run(main())
