@@ -212,7 +212,7 @@ class UserStats(BaseModel):
         :return: PP per playtime
         :rtype: float
         """
-        if self.play_time == 0:
+        if not self.play_time or not self.pp:
             return 0
         return self.pp / self.play_time * 3600
 
