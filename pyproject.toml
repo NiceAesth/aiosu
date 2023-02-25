@@ -44,6 +44,7 @@ sphinx = {version="^6.0.0", optional = true}
 sphinx-rtd-theme = {version="^1.1.1", optional = true}
 types-toml = {version = "^0.10.8.1", optional = true}
 pyjwt = "^2.6.0"
+python-socketio = {extras = ["asyncio-client"], version = "^5.7.2", optional = true}
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.2.0"
@@ -60,6 +61,7 @@ black = {version = "^23.0.0", allow-prereleases = true}
 [tool.poetry.extras]
 test = ["pytest", "pytest-asyncio", "pytest-mock", "toml", "types-toml"]
 docs = ["Sphinx", "sphinx-rtd-theme", "toml"]
+ordr = ["python-socketio"]
 
 [build-system]
 requires = ["poetry-core"]
