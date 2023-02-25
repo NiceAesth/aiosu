@@ -51,8 +51,8 @@ UserAccountHistoryType = Literal[
 ]
 
 OLD_QUERY_TYPES = {
-    "id": "id",
-    "username": "string",
+    "ID": "id",
+    "USERNAME": "string",
 }
 
 
@@ -71,6 +71,8 @@ class UserQueryType(Enum):
 
     @classmethod
     def _missing_(cls, query: object) -> Any:
+        if isinstance(query, str):
+            query = query.lower()
         for q in list(UserQueryType):
             if query in (q.old_api_name, q.new_api_name):
                 return q
