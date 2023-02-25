@@ -307,6 +307,13 @@ def room_scores():
     return data
 
 
+@pytest.fixture
+def lazer_scores():
+    with open("tests/data/v2/multiple_score_lazer.json", "rb") as f:
+        data = f.read()
+    return data
+
+
 class TestCursor:
     @pytest.mark.asyncio
     async def test_get_featured_artists_cursor(self, mocker, token, artist_tracks):
@@ -653,6 +660,17 @@ class TestClient:
         data = await client.get_user_bests(7782553)
         assert isinstance(data, list) and all(
             isinstance(x, aiosu.models.Score) for x in data
+        )
+        await client.close()
+
+    @pytest.mark.asyncio
+    async def test_get_lazer_scores(self, mocker, token, lazer_scores):
+        client = aiosu.v2.Client(token=token)
+        resp = MockResponse(lazer_scores, 200)
+        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
+        data = await client.get_user_bests(7782553, new_format=True)
+        assert isinstance(data, list) and all(
+            isinstance(x, aiosu.models.LazerScore) for x in data
         )
         await client.close()
 

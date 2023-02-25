@@ -49,6 +49,7 @@ from ..models import ForumTopic
 from ..models import ForumTopicResponse
 from ..models import Gamemode
 from ..models import KudosuHistory
+from ..models import LazerScore
 from ..models import Mods
 from ..models import MultiplayerLeaderboardResponse
 from ..models import MultiplayerMatchesResponse
@@ -800,7 +801,7 @@ class Client(Eventable):
     @check_token
     async def __get_type_scores(
         self, user_id: int, request_type: str, **kwargs: Any
-    ) -> list[Score]:
+    ) -> list[Union[Score, LazerScore]]:
         r"""INTERNAL: Get a user's scores by type
 
         :param user_id: User ID to search by
@@ -819,12 +820,14 @@ class Client(Eventable):
                 Optional, gamemode to search for
             * *include_fails* (``bool``) --
                 Optional, whether to include failed scores, defaults to ``False``
+            * *new_format* (``bool``) --
+                Optional, whether to use the new format, defaults to ``False``
 
         :raises ValueError: If limit is not between 1 and 100
         :raises ValueError: If type is invalid
         :raises APIException: Contains status code and error message
         :return: List of requested scores
-        :rtype: list[aiosu.models.score.Score]
+        :rtype: list[aiosu.models.score.Score] or list[aiosu.models.score.LazerScore]
         """
         if not 1 <= (limit := kwargs.pop("limit", 100)) <= 100:
             raise ValueError("Invalid limit specified. Limit must be between 1 and 100")
@@ -839,10 +842,18 @@ class Client(Eventable):
             "offset": kwargs.pop("offset", 0),
         }
         add_param(params, kwargs, key="mode", converter=lambda x: str(Gamemode(x)))
-        json = await self._request("GET", url, params=params)
+        headers = {}
+        new_format = kwargs.pop("new_format", False)
+        if new_format:
+            headers = {"x-api-version": "20220705"}
+        json = await self._request("GET", url, params=params, headers=headers)
+        if new_format:
+            return from_list(LazerScore.parse_obj, json)
         return from_list(Score.parse_obj, json)
 
-    async def get_user_recents(self, user_id: int, **kwargs: Any) -> list[Score]:
+    async def get_user_recents(
+        self, user_id: int, **kwargs: Any
+    ) -> list[Union[Score, LazerScore]]:
         r"""Get a user's recent scores.
 
         :param user_id: User ID to search by
@@ -859,14 +870,18 @@ class Client(Eventable):
                 Optional, whether to include failed scores, defaults to ``False``
             * *offset* (``int``) --
                 Optional, page offset to start from, defaults to 0
+            * *new_format* (``bool``) --
+                Optional, whether to use the new format, defaults to ``False``
 
         :raises APIException: Contains status code and error message
         :return: List of requested scores
-        :rtype: list[aiosu.models.score.Score]
+        :rtype: list[aiosu.models.score.Score] or list[aiosu.models.score.LazerScore]
         """
         return await self.__get_type_scores(user_id, "recent", **kwargs)
 
-    async def get_user_bests(self, user_id: int, **kwargs: Any) -> list[Score]:
+    async def get_user_bests(
+        self, user_id: int, **kwargs: Any
+    ) -> list[Union[Score, LazerScore]]:
         r"""Get a user's top scores.
 
         :param user_id: User ID to search by
@@ -881,14 +896,18 @@ class Client(Eventable):
                 Optional, number of scores to get. Min: 1, Max: 100, defaults to 100
             * *offset* (``int``) --
                 Optional, page offset to start from, defaults to 0
+            * *new_format* (``bool``) --
+                Optional, whether to use the new format, defaults to ``False``
 
         :raises APIException: Contains status code and error message
         :return: List of requested scores
-        :rtype: list[aiosu.models.score.Score]
+        :rtype: list[aiosu.models.score.Score] or list[aiosu.models.score.LazerScore]
         """
         return await self.__get_type_scores(user_id, "best", **kwargs)
 
-    async def get_user_firsts(self, user_id: int, **kwargs: Any) -> list[Score]:
+    async def get_user_firsts(
+        self, user_id: int, **kwargs: Any
+    ) -> list[Union[Score, LazerScore]]:
         r"""Get a user's first place scores.
 
         :param user_id: User ID to search by
@@ -903,10 +922,12 @@ class Client(Eventable):
                 Optional, number of scores to get. Min: 1, Max: 100, defaults to 100
             * *offset* (``int``) --
                 Optional, page offset to start from, defaults to 0
+            * *new_format* (``bool``) --
+                Optional, whether to use the new format, defaults to ``False``
 
         :raises APIException: Contains status code and error message
         :return: List of requested scores
-        :rtype: list[aiosu.models.score.Score]
+        :rtype: list[aiosu.models.score.Score] or list[aiosu.models.score.LazerScore]
         """
         return await self.__get_type_scores(user_id, "firsts", **kwargs)
 

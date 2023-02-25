@@ -10,6 +10,7 @@ import pydantic
 
 from .mods import Mods
 
+
 if TYPE_CHECKING:
     from typing import Any
 
@@ -30,6 +31,7 @@ class BaseModel(pydantic.BaseModel):
         allow_population_by_field_name = True
         json_loads = orjson.loads
         json_dumps = orjson_dumps
+
         json_encoders = {
             Mods: str,
         }
