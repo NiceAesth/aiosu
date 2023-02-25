@@ -36,6 +36,7 @@ __all__ = (
     "UserRankHistoryElement",
     "UserStats",
     "UserAccountHistoryType",
+    "UserRankHighest",
 )
 
 
@@ -105,6 +106,11 @@ class UserRankHistoryElement(BaseModel):
         :rtype: float
         """
         return (self.data[1] - self.data[-1]) / len(self.data)
+
+
+class UserRankHighest(BaseModel):
+    rank: int
+    updated_at: datetime
 
 
 class UserProfileCover(BaseModel):
@@ -285,6 +291,7 @@ class User(BaseModel):
     support_level: Optional[int]
     user_achievements: Optional[list[UserAchievmement]]
     rank_history: Optional[UserRankHistoryElement]
+    rank_highest: Optional[UserRankHighest]
 
     @property
     def url(self) -> str:
