@@ -205,6 +205,17 @@ class UserStats(BaseModel):
     count_50: Optional[int]
     count_miss: Optional[int]
 
+    @property
+    def pp_per_playtime(self) -> float:
+        r"""PP per playtime.
+
+        :return: PP per playtime
+        :rtype: float
+        """
+        if self.play_time == 0:
+            return 0
+        return self.pp / self.play_time * 3600
+
     @classmethod
     def _from_api_v1(cls, data: Any) -> UserStats:
         """Some fields can be None, we want to force them to cast to a value."""
