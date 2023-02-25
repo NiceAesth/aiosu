@@ -250,7 +250,7 @@ class Client(Eventable):
 
     async def _prepare_session(self) -> None:
         """Prepare the session for use."""
-        if self._session is None:
+        if self._session is None or self._session.closed:
             self._session = aiohttp.ClientSession(headers=await self._get_headers())
 
     async def _add_token(self, token: OAuthToken) -> None:
