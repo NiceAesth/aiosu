@@ -30,3 +30,13 @@ Binary
 .. automodule:: aiosu.utils.binary
     :members:
     :undoc-members:
+
+o!rdr API
+---------
+
+Documentation for `o!rdr` API utilities.
+
+.. toctree::
+   :maxdepth: 1
+
+   ordr.rst

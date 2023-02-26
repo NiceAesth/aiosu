@@ -48,6 +48,18 @@ DeveloperModes = Literal["devmode_success", "devmode_fail", "devmode_wsfail"]
 
 class ordrClient:
     def __init__(self, **kwargs: Any) -> None:
+        r"""o!rdr API client.
+        :param \**kwargs:
+            See below
+
+        :Keyword Arguments:
+            * *developer_mode* (``DeveloperModes``) --
+                Optional, defaults to None
+            * *verification_key* (``str``) --
+                Optional, defaults to None. If not provided, rate limits will be forced to 1 request per 5 minutes
+            * *limiter* (``tuple[int, int]``) --
+                Optional, rate limit, defaults to (1, 300) (1 requests per 5 minutes)
+        """
         self._developer_mode: Optional[str] = kwargs.pop("developer_mode", None)
         self._verification_key: Optional[str] = kwargs.pop("verification_key", None)
 
@@ -67,6 +79,11 @@ class ordrClient:
             warn(
                 "You are running at an insanely high rate limit. Doing so may result in your account being banned.",
             )
+
+        if not self._verification_key:
+            max_rate = 1
+            time_period = 300
+
         self._limiter: AsyncLimiter = AsyncLimiter(
             max_rate=max_rate,
             time_period=time_period,
