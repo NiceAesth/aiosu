@@ -312,6 +312,8 @@ class Client(Eventable):
                     return orjson.loads(body)
                 if content_type == "application/octet-stream":
                     return BytesIO(body)
+                if content_type.startswith("application/x-osu"):
+                    return BytesIO(body)
                 if content_type == "text/plain":
                     return body.decode()
                 raise APIException(415, f"Unhandled Content Type '{content_type}'")
