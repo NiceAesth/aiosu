@@ -91,7 +91,7 @@ class ordrClient:
 
         self.socket = sio_async()
 
-    def on_render_added(self) -> Callable:
+    def on_render_added(self, func: Callable) -> Callable:
         r"""Returns a callable that is called when a render is added, to be used as:
         @client.on_render_added()
         async def render_added(data: dict):
@@ -99,9 +99,10 @@ class ordrClient:
         You can view the data here:
         https://ordr.issou.best/docs/#section/Websocket
         """
-        return self.socket.on("render_added_json")
+        self.socket.on("render_added_json", func)
+        return func
 
-    def on_render_progress(self) -> Callable:
+    def on_render_progress(self, func: Callable) -> Callable:
         r"""Returns a callable that is called when a render is updated, to be used as:
         @client.on_render_progress()
         async def render_progress(data: dict):
@@ -109,9 +110,10 @@ class ordrClient:
         You can view the data here:
         https://ordr.issou.best/docs/#section/Websocket
         """
-        return self.socket.on("render_progress_json")
+        self.socket.on("render_progress_json", func)
+        return func
 
-    def on_render_fail(self) -> Callable:
+    def on_render_fail(self, func: Callable) -> Callable:
         r"""Returns a callable that is called when a render fails, to be used as:
         @client.on_render_fail()
         async def render_fail(data: dict):
@@ -119,9 +121,10 @@ class ordrClient:
         You can view the data here:
         https://ordr.issou.best/docs/#section/Websocket
         """
-        return self.socket.on("render_failed_json")
+        self.socket.on("render_failed_json", func)
+        return func
 
-    async def on_render_finish(self) -> Callable:
+    def on_render_finish(self, func: Callable) -> Callable:
         r"""Returns a callable that is called when a render finishes, to be used as:
         @client.on_render_finish()
         async def render_finish(data: dict):
@@ -129,7 +132,8 @@ class ordrClient:
         You can view the data here:
         https://ordr.issou.best/docs/#section/Websocket
         """
-        return self.socket.on("render_done_json")
+        self.socket.on("render_done_json", func)
+        return func
 
     async def __aenter__(self) -> ordrClient:
         await self.connect()
@@ -411,9 +415,9 @@ class ordrClient:
         :rtype: ``aiosu.utils.ordr.models.render.RenderCreateResponse``
         """
 
-        headers = {
-            "Content-Type": "multipart/form-data",
-        }
+        if "replay_file" not in kwargs and "replay_url" not in kwargs:
+            raise ValueError("Either replay_file or replay_url must be provided")
+
         data = {
             "username": username,
             "skin": skin,
@@ -423,8 +427,6 @@ class ordrClient:
             data["verificationKey"] = self._verification_key
         add_param(data, kwargs, "replay_file", "replayFile")
         add_param(data, kwargs, "replay_url", "replayURL")
-        if "replay_file" not in data and "replay_url" not in data:
-            raise ValueError("Either replay_file or replay_url must be provided")
         add_param(data, kwargs, "global_volume", "globalVolume")
         add_param(data, kwargs, "music_volume", "musicVolume")
         add_param(data, kwargs, "hitsound_volume", "hitsoundVolume")
@@ -475,7 +477,6 @@ class ordrClient:
         json = await self._request(
             "POST",
             f"{self._base_url}/ordr/renders",
-            headers=headers,
             data=data,
         )
         return RenderCreateResponse.parse_obj(json)
