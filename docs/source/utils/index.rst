@@ -35,6 +35,7 @@ o!rdr API
 ---------
 
 Documentation for `o!rdr` API utilities.
+Note: In order to use these utilities, you must install `aiosu` with the `ordr` extra.
 
 .. toctree::
    :maxdepth: 1

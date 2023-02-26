@@ -31,6 +31,16 @@ To install the library, simply run the following commands
     # Windows
     py -3 -m pip install -U aiosu
 
+If you wish to use the o!rdr API utility functions, you will need to install aiosu with the ``ordr`` extra.
+
+.. code:: sh
+
+    # Linux/macOS
+    python3 -m pip install -U aiosu[ordr]
+
+    # Windows
+    py -3 -m pip install -U aiosu[ordr]
+
 To install the development version, do the following:
 
 .. code:: sh
