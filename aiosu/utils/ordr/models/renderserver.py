@@ -5,7 +5,6 @@ from datetime import datetime
 from pydantic import Field
 
 from aiosu.models import BaseModel
-from aiosu.models import Mods
 
 __all__ = (
     "RenderServerOptions",

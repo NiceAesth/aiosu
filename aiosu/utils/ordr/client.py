@@ -27,7 +27,7 @@ if TYPE_CHECKING:
     from typing import Callable
 
 try:
-    from socketio import AsyncClient as sio_async
+    from socketio import AsyncClient as sio_async  # type: ignore
 except ImportError:
     raise ImportError(
         "You must install the library with the 'ordr' extra in order to use this module.",
@@ -165,15 +165,15 @@ class ordrClient:
         :rtype: ``aiosu.utils.ordr.models.skin.SkinCompact``
         """
         params = {"id": skin_id}
-        resp = await self._request(
+        json = await self._request(
             "GET",
             f"{self._base_url}/ordr/skins/custom",
             params=params,
         )
-        return SkinCompact(**resp)
+        return SkinCompact.parse_obj(json)
 
     async def get_skins(
-        self, page: int = 1, page_size=5, **kwargs: Any
+        self, page: int = 1, page_size: int = 5, **kwargs: Any
     ) -> SkinsResponse:
         r"""Get custom skins.
 
@@ -197,15 +197,15 @@ class ordrClient:
             "pageSize": page_size,
         }
         add_param(params, kwargs, "search")
-        resp = await self._request(
+        json = await self._request(
             "GET",
             f"{self._base_url}/ordr/skins",
             params=params,
         )
-        return SkinsResponse(**resp)
+        return SkinsResponse.parse_obj(json)
 
     async def get_render_list(
-        self, page: int = 1, page_size=5, **kwargs: Any
+        self, page: int = 1, page_size: int = 5, **kwargs: Any
     ) -> RendersResponse:
         r"""Get render list.
 
@@ -244,11 +244,11 @@ class ordrClient:
         add_param(params, kwargs, "no_bots", "nobots")
         add_param(params, kwargs, "link")
         add_param(params, kwargs, "beatmapset_id", "beatmapsetid")
-        resp = await self._request(
+        json = await self._request(
             "GET",
             f"{self._base_url}/ordr/renders",
         )
-        return RendersResponse(**resp)
+        return RendersResponse.parse_obj(json)
 
     async def get_server_list(self) -> list[RenderServer]:
         r"""Get the list of available servers.
@@ -258,11 +258,11 @@ class ordrClient:
         :return: List of servers
         :rtype: ``list[aiosu.utils.ordr.models.server.RenderServer]``
         """
-        resp = await self._request(
+        json = await self._request(
             "GET",
             f"{self._base_url}/servers",
         )
-        return from_list(RenderServer, resp.get("servers", []))
+        return from_list(RenderServer.parse_obj, json.get("servers", []))
 
     async def get_server_online_count(self) -> int:
         r"""Get the number of online servers.
@@ -272,13 +272,13 @@ class ordrClient:
         :return: Number of online servers
         :rtype: ``int``
         """
-        resp = await self._request(
+        data = await self._request(
             "GET",
             f"{self._base_url}/servers/onlinecount",
         )
         try:
-            return int(resp)
-        except:
+            return int(data)
+        except ValueError:
             return 0
 
     async def create_render(
@@ -455,13 +455,13 @@ class ordrClient:
         add_param(data, kwargs, "show_aim_error_meter", "showAimErrorMeter")
         add_param(data, kwargs, "play_nightcore_samples", "playNightcoreSamples")
         add_param(data, kwargs, "custom_skin", "customSkin")
-        resp = await self._request(
+        json = await self._request(
             "POST",
             f"{self._base_url}/ordr/renders",
             headers=headers,
             data=data,
         )
-        return RenderCreateResponse(**resp)
+        return RenderCreateResponse.parse_obj(json)
 
     async def connect(self) -> None:
         r"""Connects to the websocket server.
