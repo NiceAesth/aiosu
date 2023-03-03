@@ -200,17 +200,8 @@ class Score(BaseModel):
         )
 
     @root_validator
-    def _check_completion(cls, values: dict[str, Any]) -> dict[str, Any]:
-        if not values.get("beatmap"):
-            return values
-        completion = calculate_score_completion(
-            values["mode"],
-            values["statistics"],
-            values["beatmap"],
-        )
-        if completion != 100:
-            values["passed"] = False
-            values["perfect"] = False
+    def _fail_rank(cls, values: dict[str, Any]) -> dict[str, Any]:
+        if not values["passed"]:
             values["rank"] = "F"
         return values
 
