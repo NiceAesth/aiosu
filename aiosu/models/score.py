@@ -171,30 +171,32 @@ class Score(BaseModel):
 
     @property
     def score_url(self) -> Optional[str]:
-        # score.id has undefined behaviour, best_id is the one you should use as it returns None if the URL does not exist
         r"""Link to the score.
 
         :return: Link to the score on the osu! website
         :rtype: Optional[str]
         """
+        if (not self.id and not self.best_id) or not self.passed:
+            return None
         return (
             f"https://osu.ppy.sh/scores/{self.mode.name_api}/{self.best_id}"
             if self.best_id
-            else None
+            else f"https://osu.ppy.sh/scores/{self.id}"
         )
 
     @property
     def replay_url(self) -> Optional[str]:
-        # score.id has undefined behaviour, best_id is the one you should use as it returns None if the URL does not exist
         r"""Link to the replay.
 
         :return: Link to download the replay on the osu! website
         :rtype: Optional[str]
         """
+        if not self.replay:
+            return None
         return (
             f"https://osu.ppy.sh/scores/{self.mode.name_api}/{self.best_id}/download"
-            if self.best_id and self.replay
-            else None
+            if self.best_id
+            else f"https://osu.ppy.sh/scores/{self.id}/download"
         )
 
     @root_validator
