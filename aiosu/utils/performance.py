@@ -44,6 +44,8 @@ clamp: Callable[[float, float, float], float] = (
 
 
 class AbstractPerformanceCalculator(abc.ABC):
+    __slots__ = ("difficulty_attributes",)
+
     def __init__(self, difficulty_attributes: BeatmapDifficultyAttributes):
         self.difficulty_attributes = difficulty_attributes
 

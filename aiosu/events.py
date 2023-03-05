@@ -23,6 +23,8 @@ __all__ = (
 class Eventable(abc.ABC):
     """Abstract for classes that handle events"""
 
+    __slots__ = ("_listeners",)
+
     def __init__(self) -> None:
         self._listeners: dict[str, list[Callable]] = {}
 

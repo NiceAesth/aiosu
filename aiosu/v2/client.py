@@ -173,6 +173,17 @@ class Client(Eventable):
             Optional, rate limit, defaults to (600, 60) (600 requests per minute)
     """
 
+    __slots__ = (
+        "_token_repository",
+        "_initial_token",
+        "_session",
+        "_limiter",
+        "session_id",
+        "client_id",
+        "client_secret",
+        "base_url",
+    )
+
     def __init__(
         self,
         **kwargs: Any,

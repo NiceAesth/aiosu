@@ -66,6 +66,13 @@ class Client:
             Optional, rate limit, defaults to (600, 60) (600 requests per minute)
     """
 
+    __slots__ = (
+        "token",
+        "base_url",
+        "_limiter",
+        "_session",
+    )
+
     def __init__(self, token: str, **kwargs: Any) -> None:
         self.token: str = token
         self.base_url: str = kwargs.pop("base_url", "https://osu.ppy.sh")

@@ -167,6 +167,9 @@ class Score(BaseModel):
         if not self.beatmap:
             raise ValueError("Beatmap object is not set.")
 
+        if self.passed:
+            return 100.0
+
         return calculate_score_completion(self.mode, self.statistics, self.beatmap)
 
     @property

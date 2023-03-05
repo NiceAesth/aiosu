@@ -43,6 +43,15 @@ class ClientStorage(Eventable):
             Optional, whether to automatically create guest clients, defaults to True
     """
 
+    __slots__ = (
+        "_token_repository",
+        "client_secret",
+        "client_id",
+        "base_url",
+        "__create_app_client",
+        "clients",
+    )
+
     def __init__(self, **kwargs: Any) -> None:
         super().__init__()
         self._register_event(ClientAddEvent)
