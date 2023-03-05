@@ -36,6 +36,8 @@ class BaseTokenRepository(ABC):
 class SimpleTokenRepository(BaseTokenRepository):
     """Simple in-memory token repository."""
 
+    __slots__ = ("_tokens",)
+
     def __init__(self) -> None:
         self._tokens: dict[int, OAuthToken] = {}
 
