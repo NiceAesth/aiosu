@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING
 import jwt
 from pydantic import root_validator
 
-from .base import BaseModel
+from .base import FrozenModel
 from .scopes import Scopes
 
 if TYPE_CHECKING:
@@ -20,7 +20,7 @@ if TYPE_CHECKING:
 __all__ = ("OAuthToken",)
 
 
-class OAuthToken(BaseModel, keep_untouched=(cached_property,)):
+class OAuthToken(FrozenModel, keep_untouched=(cached_property,)):
     token_type: str = "Bearer"
     """Defaults to 'Bearer'"""
     access_token: str = ""
