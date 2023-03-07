@@ -314,6 +314,9 @@ class Client(Eventable):
 
         async with self._limiter:
             async with req[request_type](*args, **kwargs) as resp:
+                if resp.status == 204:
+                    return
+
                 body = await resp.read()
                 content_type = get_content_type(resp.headers.get("content-type", ""))
                 if resp.status != 200:
@@ -2233,6 +2236,7 @@ class Client(Eventable):
         """
         url = f"{self.base_url}/api/v2/oauth/tokens/current"
         await self._request("DELETE", url)
+        await self._token_repository.delete(self.session_id)
         await self.close()
 
     async def close(self) -> None:

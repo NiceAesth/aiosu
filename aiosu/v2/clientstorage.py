@@ -212,6 +212,22 @@ class ClientStorage(Eventable):
             "Either a valid id or token must be specified.",
         )
 
+    async def revoke_client(self, client_uid: int) -> None:
+        r"""Revokes a client from storage.
+
+        :param client_uid: The owner user ID of the client
+        :type client_uid: int
+        :raises InvalidClientRequestedError: If no client exists with the given ID
+        """
+        if self.client_exists(client_uid):
+            await self.clients[client_uid].revoke_token()
+            del self.clients[client_uid]
+            return
+
+        raise InvalidClientRequestedError(
+            "No client exists with the given ID.",
+        )
+
     async def close(self) -> None:
         r"""Closes all client sessions."""
         for client in self.clients.values():

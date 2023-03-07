@@ -58,6 +58,12 @@ class ExampleFileRepository(BaseTokenRepository):
         await self._write_file(tokens)
         return token
 
+    async def delete(self, session_id: int) -> None:
+        """Delete a token."""
+        tokens = await self._read_file()
+        del tokens[session_id]
+        await self._write_file(tokens)
+
 
 async def main():
     token = aiosu.models.OAuthToken(

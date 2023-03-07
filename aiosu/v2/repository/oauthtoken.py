@@ -32,6 +32,11 @@ class BaseTokenRepository(ABC):
         """Update a token."""
         ...
 
+    @abstractmethod
+    async def delete(self, session_id: int) -> None:
+        """Delete a token."""
+        ...
+
 
 class SimpleTokenRepository(BaseTokenRepository):
     """Simple in-memory token repository."""
@@ -58,3 +63,7 @@ class SimpleTokenRepository(BaseTokenRepository):
         """Update a token."""
         self._tokens[session_id] = token
         return token
+
+    async def delete(self, session_id: int) -> None:
+        """Delete a token."""
+        del self._tokens[session_id]
