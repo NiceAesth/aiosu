@@ -1013,3 +1013,13 @@ class TestClient:
         data = await client.get_multiplayer_scores(1, 1)
         assert isinstance(data, aiosu.models.MultiplayerScoresResponse)
         await client.close()
+
+    @pytest.mark.asyncio
+    async def test_revoke_token(self, mocker, token):
+        client = aiosu.v2.Client(token=token)
+        resp = MockResponse("", 204)
+        mocker.patch("aiohttp.ClientSession.delete", return_value=resp)
+        await client.revoke_token()
+        assert client._session.closed
+        with pytest.raises(KeyError):
+            await client.get_current_token()
