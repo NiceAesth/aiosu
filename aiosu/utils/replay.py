@@ -10,6 +10,7 @@ from ..models.lazer import LazerReplayData
 from ..models.mods import Mod
 from ..models.replay import Replay
 from ..models.replay import ReplayEvent
+from ..models.replay import ReplayKey
 from ..models.replay import ReplayLifebarEvent
 from .binary import pack_byte
 from .binary import pack_float64
@@ -47,7 +48,7 @@ def _parse_replay_data(data: str) -> list[ReplayEvent]:
         time: int = int(event_data[0])
         x: float = float(event_data[1])
         y: float = float(event_data[2])
-        keys: int = int(event_data[3])
+        keys: ReplayKey = ReplayKey(int(event_data[3]))
         events.append(ReplayEvent(time=time, keys=keys, x=x, y=y))
     return events
 
