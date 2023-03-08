@@ -1020,6 +1020,6 @@ class TestClient:
         resp = MockResponse("", 204)
         mocker.patch("aiohttp.ClientSession.delete", return_value=resp)
         await client.revoke_token()
-        assert client._session.closed
+        assert client._session is None
         with pytest.raises(KeyError):
             await client.get_current_token()

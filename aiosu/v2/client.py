@@ -96,19 +96,18 @@ def get_content_type(content_type: str) -> str:
     return content_type.split(";")[0]
 
 
-def prepare_client(func: Callable) -> Callable:
-    """A decorator that prepares the client, to be used as:
-    @prepare_client
+def prepare_token(func: Callable) -> Callable:
+    """A decorator that prepares the token for use, to be used as:
+    @prepare_token
     """
 
     @functools.wraps(func)
-    async def _prepare_client(self: Client, *args: Any, **kwargs: Any) -> Any:
+    async def _prepare_token(self: Client, *args: Any, **kwargs: Any) -> Any:
         await self._prepare_token()
-        await self._prepare_session()
 
         return await func(self, *args, **kwargs)
 
-    return _prepare_client
+    return _prepare_token
 
 
 def check_token(func: Callable) -> Callable:
@@ -215,7 +214,7 @@ class Client(Eventable):
             max_rate=max_rate,
             time_period=time_period,
         )
-        self._session: aiohttp.ClientSession = None  # type: ignore
+        self._session: Optional[aiohttp.ClientSession] = None
 
     async def __aenter__(self) -> Client:
         return self
@@ -259,11 +258,6 @@ class Client(Eventable):
             await self._update_token(self._initial_token)
         self._initial_token = None
 
-    async def _prepare_session(self) -> None:
-        """Prepare the session for use."""
-        if self._session is None:
-            self._session = aiohttp.ClientSession(headers=await self._get_headers())
-
     async def _add_token(self, token: OAuthToken) -> None:
         """Add a token to the current session"""
         await self._token_repository.add(self.session_id, token)
@@ -275,6 +269,10 @@ class Client(Eventable):
     async def _token_exists(self) -> bool:
         """Check if a token exists for the current session"""
         return await self._token_repository.exists(self.session_id)
+
+    async def _delete_token(self) -> None:
+        """Delete the current token"""
+        await self._token_repository.delete(self.session_id)
 
     async def _get_headers(self) -> dict[str, str]:
         token = await self.get_current_token()
@@ -304,6 +302,11 @@ class Client(Eventable):
     async def _request(
         self, request_type: ClientRequestType, *args: Any, **kwargs: Any
     ) -> Any:
+        await self._prepare_token()
+
+        if self._session is None:
+            self._session = aiohttp.ClientSession(headers=await self._get_headers())
+
         req: dict[str, Callable] = {
             "GET": self._session.get,
             "POST": self._session.post,
@@ -377,7 +380,7 @@ class Client(Eventable):
             ClientUpdateEvent(client=self, old_token=old_token, new_token=new_token),
         )
 
-    @prepare_client
+    @prepare_token
     async def get_featured_artists(self, **kwargs: Any) -> ArtistResponse:
         r"""Gets the current featured artists.
 
@@ -427,7 +430,7 @@ class Client(Eventable):
             resp.next = partial(self.get_featured_artists, **kwargs)
         return resp
 
-    @prepare_client
+    @prepare_token
     async def get_seasonal_backgrounds(self) -> SeasonalBackgroundSet:
         r"""Gets the current seasonal background set.
 
@@ -439,7 +442,7 @@ class Client(Eventable):
         json = await self._request("GET", url)
         return SeasonalBackgroundSet.parse_obj(json)
 
-    @prepare_client
+    @prepare_token
     async def get_changelog_listing(self, **kwargs: Any) -> ChangelogListing:
         r"""Gets the changelog listing.
 
@@ -480,7 +483,7 @@ class Client(Eventable):
             resp.next = partial(self.get_changelog_listing, **kwargs)
         return resp
 
-    @prepare_client
+    @prepare_token
     async def get_changelog_build(self, stream: str, build: str) -> Build:
         r"""Gets a specific build from the changelog.
 
@@ -494,7 +497,7 @@ class Client(Eventable):
         json = await self._request("GET", url)
         return Build.parse_obj(json)
 
-    @prepare_client
+    @prepare_token
     async def lookup_changelog_build(
         self, changelog_query: Union[str, int], **kwargs: Any
     ) -> Build:
@@ -524,7 +527,7 @@ class Client(Eventable):
         json = await self._request("GET", url, params=params)
         return Build.parse_obj(json)
 
-    @prepare_client
+    @prepare_token
     async def get_news_listing(self, **kwargs: Any) -> NewsListing:
         r"""Gets the news listing.
 
@@ -558,7 +561,7 @@ class Client(Eventable):
             resp.next = partial(self.get_news_listing, **kwargs)
         return resp
 
-    @prepare_client
+    @prepare_token
     async def get_news_post(
         self, news_query: Union[str, int], **kwargs: Any
     ) -> NewsPost:
@@ -586,7 +589,7 @@ class Client(Eventable):
         json = await self._request("GET", url, params=params)
         return NewsPost.parse_obj(json)
 
-    @prepare_client
+    @prepare_token
     async def get_wiki_page(self, locale: str, path: str) -> WikiPage:
         r"""Gets a wiki page.
 
@@ -602,7 +605,7 @@ class Client(Eventable):
         json = await self._request("GET", url)
         return WikiPage.parse_obj(json)
 
-    @prepare_client
+    @prepare_token
     async def get_comment(self, comment_id: int, **kwargs: Any) -> CommentBundle:
         r"""Gets a comment.
 
@@ -629,7 +632,7 @@ class Client(Eventable):
             resp.next = partial(self.get_comment, comment_id=comment_id, **kwargs)
         return resp
 
-    @prepare_client
+    @prepare_token
     async def get_comments(self, **kwargs: Any) -> CommentBundle:
         r"""Gets comments.
 
@@ -666,7 +669,7 @@ class Client(Eventable):
             resp.next = partial(self.get_comments, **kwargs)
         return resp
 
-    @prepare_client
+    @prepare_token
     @check_token
     async def search(self, query: str, **kwargs: Any) -> SearchResponse:
         r"""Searches for a user, beatmap, beatmapset, or wiki page.
@@ -695,7 +698,7 @@ class Client(Eventable):
         json = await self._request("GET", url, params=params)
         return SearchResponse.parse_obj(json)
 
-    @prepare_client
+    @prepare_token
     @check_token
     @requires_scope(Scopes.IDENTIFY)
     async def get_me(self, **kwargs: Any) -> User:
@@ -719,7 +722,7 @@ class Client(Eventable):
         json = await self._request("GET", url)
         return User.parse_obj(json)
 
-    @prepare_client
+    @prepare_token
     @check_token
     @requires_scope(Scopes.FRIENDS_READ)
     async def get_own_friends(self) -> list[User]:
@@ -733,7 +736,7 @@ class Client(Eventable):
         json = await self._request("GET", url)
         return from_list(User.parse_obj, json)
 
-    @prepare_client
+    @prepare_token
     @check_token
     async def get_user(self, user_query: Union[str, int], **kwargs: Any) -> User:
         r"""Gets a user by a query.
@@ -768,7 +771,7 @@ class Client(Eventable):
         json = await self._request("GET", url, params=params)
         return User.parse_obj(json)
 
-    @prepare_client
+    @prepare_token
     @check_token
     async def get_users(self, user_ids: list[int]) -> list[User]:
         r"""Get multiple user data.
@@ -786,7 +789,7 @@ class Client(Eventable):
         json = await self._request("GET", url, params=params)
         return from_list(User.parse_obj, json.get("users", []))
 
-    @prepare_client
+    @prepare_token
     @check_token
     async def get_user_kudosu(self, user_id: int, **kwargs: Any) -> list[KudosuHistory]:
         r"""Get a user's kudosu history.
@@ -813,7 +816,7 @@ class Client(Eventable):
         json = await self._request("GET", url, params=params)
         return from_list(KudosuHistory.parse_obj, json)
 
-    @prepare_client
+    @prepare_token
     @check_token
     async def __get_type_scores(
         self, user_id: int, request_type: str, **kwargs: Any
@@ -947,7 +950,7 @@ class Client(Eventable):
         """
         return await self.__get_type_scores(user_id, "firsts", **kwargs)
 
-    @prepare_client
+    @prepare_token
     @check_token
     async def get_user_beatmap_scores(
         self, user_id: int, beatmap_id: int, **kwargs: Any
@@ -977,7 +980,7 @@ class Client(Eventable):
 
     UserBeatmapType = Literal["favourite", "graveyard", "loved", "ranked", "pending"]
 
-    @prepare_client
+    @prepare_token
     @check_token
     async def get_user_beatmaps(
         self, user_id: int, type: UserBeatmapType, **kwargs: Any
@@ -1008,7 +1011,7 @@ class Client(Eventable):
         json = await self._request("GET", url, params=params)
         return from_list(Beatmapset.parse_obj, json)
 
-    @prepare_client
+    @prepare_token
     @check_token
     async def get_user_most_played(
         self, user_id: int, **kwargs: Any
@@ -1037,7 +1040,7 @@ class Client(Eventable):
         json = await self._request("GET", url, params=params)
         return from_list(BeatmapUserPlaycount.parse_obj, json)
 
-    @prepare_client
+    @prepare_token
     @check_token
     async def get_user_recent_activity(
         self, user_id: int, **kwargs: Any
@@ -1066,7 +1069,7 @@ class Client(Eventable):
         json = await self._request("GET", url, params=params)
         return from_list(Event.parse_obj, json)
 
-    @prepare_client
+    @prepare_token
     @check_token
     async def get_beatmap_scores(self, beatmap_id: int, **kwargs: Any) -> list[Score]:
         r"""Get scores submitted on a specific beatmap.
@@ -1096,7 +1099,7 @@ class Client(Eventable):
         json = await self._request("GET", url, params=params)
         return from_list(Score.parse_obj, json.get("scores", []))
 
-    @prepare_client
+    @prepare_token
     @check_token
     async def get_beatmap(self, beatmap_id: int) -> Beatmap:
         r"""Get beatmap data.
@@ -1111,7 +1114,7 @@ class Client(Eventable):
         json = await self._request("GET", url)
         return Beatmap.parse_obj(json)
 
-    @prepare_client
+    @prepare_token
     @check_token
     async def get_beatmaps(self, beatmap_ids: list[int]) -> list[Beatmap]:
         r"""Get multiple beatmap data.
@@ -1129,7 +1132,7 @@ class Client(Eventable):
         json = await self._request("GET", url, params=params)
         return from_list(Beatmap.parse_obj, json.get("beatmaps", []))
 
-    @prepare_client
+    @prepare_token
     @check_token
     async def lookup_beatmap(self, **kwargs: Any) -> Beatmap:
         r"""Lookup beatmap data.
@@ -1160,7 +1163,7 @@ class Client(Eventable):
         json = await self._request("GET", url, params=params)
         return Beatmap.parse_obj(json)
 
-    @prepare_client
+    @prepare_token
     @check_token
     async def get_beatmap_attributes(
         self, beatmap_id: int, **kwargs: Any
@@ -1195,7 +1198,7 @@ class Client(Eventable):
         json = await self._request("POST", url, json=data)
         return BeatmapDifficultyAttributes.parse_obj(json.get("attributes"))
 
-    @prepare_client
+    @prepare_token
     @check_token
     async def get_beatmapset(self, beatmapset_id: int) -> Beatmapset:
         r"""Get beatmapset data.
@@ -1210,7 +1213,7 @@ class Client(Eventable):
         json = await self._request("GET", url)
         return Beatmapset.parse_obj(json)
 
-    @prepare_client
+    @prepare_token
     @check_token
     async def lookup_beatmapset(self, beatmap_id: int) -> Beatmapset:
         r"""Lookup beatmap data.
@@ -1229,7 +1232,7 @@ class Client(Eventable):
         json = await self._request("GET", url, params=params)
         return Beatmapset.parse_obj(json)
 
-    @prepare_client
+    @prepare_token
     @check_token
     async def search_beatmapsets(
         self,
@@ -1261,7 +1264,7 @@ class Client(Eventable):
             resp.next = partial(self.search_beatmapsets, **kwargs)
         return resp
 
-    @prepare_client
+    @prepare_token
     @check_token
     async def get_beatmapset_events(self, **kwargs: Any) -> list[BeatmapsetEvent]:
         r"""Get beatmapset events.
@@ -1298,7 +1301,7 @@ class Client(Eventable):
         json = await self._request("GET", url, params=params)
         return from_list(BeatmapsetEvent.parse_obj, json.get("events", []))
 
-    @prepare_client
+    @prepare_token
     @check_token
     async def get_beatmapset_discussions(
         self, **kwargs: Any
@@ -1356,7 +1359,7 @@ class Client(Eventable):
             resp.next = partial(self.get_beatmapset_discussions, **kwargs)
         return resp
 
-    @prepare_client
+    @prepare_token
     @check_token
     async def get_beatmapset_discussion_posts(
         self, **kwargs: Any
@@ -1405,7 +1408,7 @@ class Client(Eventable):
             resp.next = partial(self.get_beatmapset_discussion_posts, **kwargs)
         return resp
 
-    @prepare_client
+    @prepare_token
     @check_token
     async def get_beatmapset_discussion_votes(
         self, **kwargs: Any
@@ -1457,7 +1460,7 @@ class Client(Eventable):
             resp.next = partial(self.get_beatmapset_discussion_votes, **kwargs)
         return resp
 
-    @prepare_client
+    @prepare_token
     @check_token
     async def get_score(
         self,
@@ -1479,7 +1482,7 @@ class Client(Eventable):
         json = await self._request("GET", url)
         return Score.parse_obj(json)
 
-    @prepare_client
+    @prepare_token
     @check_token
     @requires_scope(Scopes.IDENTIFY | Scopes.DELEGATE, any_scope=True)
     async def get_score_replay(
@@ -1501,7 +1504,7 @@ class Client(Eventable):
         url = f"{self.base_url}/api/v2/scores/{mode}/{score_id}/download"
         return await self._request("GET", url)
 
-    @prepare_client
+    @prepare_token
     @check_token
     async def get_rankings(
         self, mode: Gamemode, type: RankingType, **kwargs: Any
@@ -1545,7 +1548,7 @@ class Client(Eventable):
             resp.next = partial(self.get_rankings, mode=mode, type=type, **kwargs)
         return resp
 
-    @prepare_client
+    @prepare_token
     @check_token
     async def get_spotlights(self) -> list[Spotlight]:
         r"""Gets the current spotlights.
@@ -1558,7 +1561,7 @@ class Client(Eventable):
         json = await self._request("GET", url)
         return from_list(Spotlight.parse_obj, json.get("spotlights", []))
 
-    @prepare_client
+    @prepare_token
     @check_token
     async def get_forum_topic(self, topic_id: int, **kwargs: Any) -> ForumTopicResponse:
         r"""Gets a forum topic.
@@ -1601,7 +1604,7 @@ class Client(Eventable):
             resp.next = partial(self.get_forum_topic, topic_id, **kwargs)
         return resp
 
-    @prepare_client
+    @prepare_token
     @check_token
     @requires_scope(Scopes.FORUM_WRITE)
     async def create_forum_topic(
@@ -1663,7 +1666,7 @@ class Client(Eventable):
         json = await self._request("POST", url, json=data)
         return ForumCreateTopicResponse.parse_obj(json)
 
-    @prepare_client
+    @prepare_token
     @check_token
     @requires_scope(Scopes.FORUM_WRITE)
     async def reply_forum_topic(self, topic_id: int, content: str) -> ForumPost:
@@ -1684,7 +1687,7 @@ class Client(Eventable):
         json = await self._request("POST", url, json=data)
         return ForumPost.parse_obj(json)
 
-    @prepare_client
+    @prepare_token
     @check_token
     @requires_scope(Scopes.FORUM_WRITE)
     async def edit_forum_topic_title(self, topid_id: int, new_title: str) -> ForumTopic:
@@ -1707,7 +1710,7 @@ class Client(Eventable):
         json = await self._request("PUT", url, json=data)
         return ForumTopic.parse_obj(json)
 
-    @prepare_client
+    @prepare_token
     @check_token
     @requires_scope(Scopes.FORUM_WRITE)
     async def edit_forum_post(self, post_id: int, new_content: str) -> ForumPost:
@@ -1728,7 +1731,7 @@ class Client(Eventable):
         json = await self._request("PUT", url, json=data)
         return ForumPost.parse_obj(json)
 
-    @prepare_client
+    @prepare_token
     @check_token
     @requires_scope(Scopes.LAZER)
     async def get_chat_ack(self, **kwargs: Any) -> list[ChatUserSilence]:
@@ -1754,7 +1757,7 @@ class Client(Eventable):
         json = await self._request("POST", url, json=data)
         return from_list(ChatUserSilence.parse_obj, json.get("silences", []))
 
-    @prepare_client
+    @prepare_token
     @check_token
     @requires_scope(Scopes.LAZER)
     async def get_chat_updates(self, since: int, **kwargs: Any) -> ChatUpdateResponse:
@@ -1793,7 +1796,7 @@ class Client(Eventable):
         json = await self._request("GET", url, params=params)
         return ChatUpdateResponse.parse_obj(json)
 
-    @prepare_client
+    @prepare_token
     @check_token
     @requires_scope(Scopes.LAZER)
     async def get_channel(self, channel_id: int) -> ChatChannelResponse:
@@ -1809,7 +1812,7 @@ class Client(Eventable):
         json = await self._request("GET", url)
         return ChatChannelResponse.parse_obj(json)
 
-    @prepare_client
+    @prepare_token
     @check_token
     @requires_scope(Scopes.LAZER)
     async def get_channels(self) -> list[ChatChannel]:
@@ -1823,7 +1826,7 @@ class Client(Eventable):
         json = await self._request("GET", url)
         return from_list(ChatChannel.parse_obj, json)
 
-    @prepare_client
+    @prepare_token
     @check_token
     @requires_scope(Scopes.LAZER)
     async def get_channel_messages(
@@ -1860,7 +1863,7 @@ class Client(Eventable):
         json = await self._request("GET", url, params=params)
         return from_list(ChatMessage.parse_obj, json)
 
-    @prepare_client
+    @prepare_token
     @check_token
     @requires_scope(Scopes.CHAT_WRITE)
     async def create_chat_channel(
@@ -1911,7 +1914,7 @@ class Client(Eventable):
         json = await self._request("POST", url, json=data)
         return ChatChannel.parse_obj(json)
 
-    @prepare_client
+    @prepare_token
     @check_token
     @requires_scope(Scopes.LAZER)
     async def join_channel(self, channel_id: int, user_id: int) -> ChatChannel:
@@ -1929,7 +1932,7 @@ class Client(Eventable):
         json = await self._request("PUT", url)
         return ChatChannel.parse_obj(json)
 
-    @prepare_client
+    @prepare_token
     @check_token
     @requires_scope(Scopes.LAZER)
     async def leave_channel(self, channel_id: int, user_id: int) -> None:
@@ -1944,7 +1947,7 @@ class Client(Eventable):
         url = f"{self.base_url}/api/v2/chat/channels/{channel_id}/users/{user_id}"
         await self._request("DELETE", url)
 
-    @prepare_client
+    @prepare_token
     @check_token
     @requires_scope(Scopes.LAZER)
     async def mark_read(self, channel_id: int, message_id: int) -> None:
@@ -1959,7 +1962,7 @@ class Client(Eventable):
         url = f"{self.base_url}/api/v2/chat/channels/{channel_id}/mark-as-read/{message_id}"
         await self._request("PUT", url)
 
-    @prepare_client
+    @prepare_token
     @check_token
     @requires_scope(Scopes.LAZER)
     async def send_message(
@@ -1988,7 +1991,7 @@ class Client(Eventable):
         json = await self._request("POST", url, json=data)
         return ChatMessage.parse_obj(json)
 
-    @prepare_client
+    @prepare_token
     @check_token
     @requires_scope(Scopes.CHAT_WRITE)
     async def send_private_message(
@@ -2023,7 +2026,7 @@ class Client(Eventable):
         json = await self._request("POST", url, json=data)
         return ChatMessageCreateResponse.parse_obj(json)
 
-    @prepare_client
+    @prepare_token
     @check_token
     async def get_multiplayer_matches(
         self, **kwargs: Any
@@ -2060,7 +2063,7 @@ class Client(Eventable):
             resp.next = partial(self.get_multiplayer_matches, **kwargs)
         return resp
 
-    @prepare_client
+    @prepare_token
     @check_token
     async def get_multiplayer_match(
         self, match_id: int, **kwargs: Any
@@ -2096,7 +2099,7 @@ class Client(Eventable):
         json = await self._request("GET", url)
         return MultiplayerMatchResponse.parse_obj(json)
 
-    @prepare_client
+    @prepare_token
     @check_token
     async def get_multiplayer_rooms(self, **kwargs: Any) -> list[MultiplayerRoom]:
         r"""Gets the multiplayer rooms.
@@ -2136,7 +2139,7 @@ class Client(Eventable):
         json = await self._request("GET", url, params=params)
         return from_list(MultiplayerRoom.parse_obj, json)
 
-    @prepare_client
+    @prepare_token
     @check_token
     async def get_multiplayer_room(self, room_id: int) -> MultiplayerRoom:
         r"""Gets a multiplayer room.
@@ -2152,7 +2155,7 @@ class Client(Eventable):
         json = await self._request("GET", url)
         return MultiplayerRoom.parse_obj(json)
 
-    @prepare_client
+    @prepare_token
     @check_token
     async def get_multiplayer_leaderboard(
         self, room_id: int, **kwargs: Any
@@ -2182,7 +2185,7 @@ class Client(Eventable):
         json = await self._request("GET", url, params=params)
         return MultiplayerLeaderboardResponse.parse_obj(json)
 
-    @prepare_client
+    @prepare_token
     @check_token
     @requires_scope(Scopes.IDENTIFY | Scopes.DELEGATE, any_scope=True)
     async def get_multiplayer_scores(
@@ -2227,7 +2230,7 @@ class Client(Eventable):
             )
         return resp
 
-    @prepare_client
+    @prepare_token
     @check_token
     async def revoke_token(self) -> None:
         r"""Revokes the current token and closes the session.
@@ -2236,7 +2239,7 @@ class Client(Eventable):
         """
         url = f"{self.base_url}/api/v2/oauth/tokens/current"
         await self._request("DELETE", url)
-        await self._token_repository.delete(self.session_id)
+        await self._delete_token()
         await self.close()
 
     async def close(self) -> None:

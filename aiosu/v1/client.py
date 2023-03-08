@@ -85,7 +85,7 @@ class Client:
             max_rate=max_rate,
             time_period=time_period,
         )
-        self._session: aiohttp.ClientSession = None  # type: ignore
+        self._session: Optional[aiohttp.ClientSession] = None
 
     async def __aenter__(self) -> Client:
         return self
