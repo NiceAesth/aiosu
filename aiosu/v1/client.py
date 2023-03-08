@@ -467,3 +467,4 @@ class Client:
         """Closes the client session."""
         if self._session:
             await self._session.close()
+            self._session = None
