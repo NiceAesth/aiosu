@@ -6,7 +6,7 @@ from __future__ import annotations
 from datetime import datetime
 from functools import partial
 from typing import Any
-from typing import Awaitable
+from typing import Coroutine
 from typing import Literal
 from typing import Optional
 
@@ -99,5 +99,5 @@ class CursorModel(BaseModel):
     """
 
     cursor_string: Optional[str]
-    next: Optional[partial[Awaitable[Any]]] = Field(exclude=True)
+    next: Optional[partial[Coroutine[Any, Any, CursorModel]]] = Field(exclude=True)
     """Partial function to get the next page of results."""
