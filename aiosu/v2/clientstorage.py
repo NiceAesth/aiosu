@@ -4,7 +4,11 @@ This module handles multiple API v2 Client sessions.
 from __future__ import annotations
 
 import functools
+from typing import Any
+from typing import Callable
+from typing import cast
 from typing import TYPE_CHECKING
+from typing import TypeVar
 
 from . import Client
 from ..events import ClientAddEvent
@@ -17,13 +21,13 @@ from .repository import SimpleTokenRepository
 
 if TYPE_CHECKING:
     from types import TracebackType
-    from typing import Any
-    from typing import Callable
     from typing import Optional
     from typing import Type
     from typing import Union
 
 __all__ = ("ClientStorage",)
+
+F = TypeVar("F", bound=Callable[..., Any])
 
 
 class ClientStorage(Eventable):
@@ -77,7 +81,7 @@ class ClientStorage(Eventable):
     ) -> None:
         await self.close()
 
-    def on_client_add(self, func: Callable) -> Callable:
+    def on_client_add(self, func: F) -> F:
         """
         A decorator that is called whenever a client is added, to be used as:
 
@@ -91,9 +95,9 @@ class ClientStorage(Eventable):
         async def _on_client_add(*args: Any, **kwargs: Any) -> Any:
             return await func(*args, **kwargs)
 
-        return _on_client_add
+        return cast(F, _on_client_add)
 
-    def on_client_update(self, func: Callable) -> Callable:
+    def on_client_update(self, func: F) -> F:
         """
         A decorator that is called whenever any stored client is updated, to be used as:
 
@@ -107,7 +111,7 @@ class ClientStorage(Eventable):
         async def _on_client_update(*args: Any, **kwargs: Any) -> Any:
             return await func(*args, **kwargs)
 
-        return _on_client_update
+        return cast(F, _on_client_update)
 
     def _get_client_args(self) -> dict[str, Union[str, int]]:
         return {
