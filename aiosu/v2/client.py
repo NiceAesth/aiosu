@@ -9,8 +9,12 @@ import functools
 from datetime import datetime
 from functools import partial
 from io import BytesIO
+from typing import Any
+from typing import Callable
+from typing import cast
 from typing import Literal
 from typing import TYPE_CHECKING
+from typing import TypeVar
 from warnings import warn
 
 import aiohttp
@@ -75,14 +79,13 @@ from .repository import SimpleTokenRepository
 
 if TYPE_CHECKING:
     from types import TracebackType
-    from typing import Any
-    from typing import Callable
     from typing import Optional
     from typing import Type
     from typing import Union
 
 __all__ = ("Client",)
 
+F = TypeVar("F", bound=Callable[..., Any])
 ClientRequestType = Literal["GET", "POST", "DELETE", "PUT", "PATCH"]
 
 
@@ -96,7 +99,7 @@ def get_content_type(content_type: str) -> str:
     return content_type.split(";")[0]
 
 
-def prepare_token(func: Callable) -> Callable:
+def prepare_token(func: F) -> F:
     """A decorator that prepares the token for use, to be used as:
     @prepare_token
     """
@@ -107,10 +110,10 @@ def prepare_token(func: Callable) -> Callable:
 
         return await func(self, *args, **kwargs)
 
-    return _prepare_token
+    return cast(F, _prepare_token)
 
 
-def check_token(func: Callable) -> Callable:
+def check_token(func: F) -> F:
     """
     A decorator that checks the current token, to be used as:
     @check_token
@@ -123,16 +126,21 @@ def check_token(func: Callable) -> Callable:
             await self._refresh()
         return await func(self, *args, **kwargs)
 
-    return _check_token
+    return cast(F, _check_token)
 
 
-def requires_scope(required_scopes: Scopes, any_scope: bool = False) -> Callable:
+def requires_scope(
+    required_scopes: Scopes,
+    any_scope: bool = False,
+) -> Callable[[F], F]:
     """
     A decorator that enforces a scope, to be used as:
     @requires_scope(Scopes.PUBLIC)
     """
 
-    def _requires_scope(func: Callable) -> Callable:
+    def _requires_scope(
+        func: F,
+    ) -> F:
         @functools.wraps(func)
         async def _wrap(self: Client, *args: Any, **kwargs: Any) -> Any:
             token = await self.get_current_token()
@@ -144,7 +152,7 @@ def requires_scope(required_scopes: Scopes, any_scope: bool = False) -> Callable
 
             return await func(self, *args, **kwargs)
 
-        return _wrap
+        return cast(F, _wrap)
 
     return _requires_scope
 
@@ -227,7 +235,10 @@ class Client(Eventable):
     ) -> None:
         await self.close()
 
-    def on_client_update(self, func: Callable) -> Callable:
+    def on_client_update(
+        self,
+        func: F,
+    ) -> F:
         """
         A decorator that is called whenever a client is updated, to be used as:
 
@@ -241,7 +252,7 @@ class Client(Eventable):
         async def _on_client_update(*args: Any, **kwargs: Any) -> Any:
             return await func(*args, **kwargs)
 
-        return _on_client_update
+        return cast(F, _on_client_update)
 
     async def get_current_token(self) -> OAuthToken:
         """Get the current token"""
