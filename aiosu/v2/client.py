@@ -353,7 +353,6 @@ class Client(Eventable):
         """
         old_token = await self.get_current_token()
         url = f"{self.base_url}/oauth/token"
-        headers = {"Content-Type": "application/x-www-form-urlencoded"}
 
         data = {}
         if old_token.can_refresh:
@@ -361,9 +360,9 @@ class Client(Eventable):
         else:
             data = self._refresh_guest_data()
 
-        async with aiohttp.ClientSession(headers=headers) as temp_session:
+        async with aiohttp.ClientSession() as temp_session:
             async with self._limiter:
-                async with temp_session.post(url, data=data) as resp:
+                async with temp_session.post(url, json=data) as resp:
                     try:
                         body = await resp.read()
                         content_type = get_content_type(
