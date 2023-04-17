@@ -8,10 +8,8 @@ no_implicit_optional = true
 check_untyped_defs = true
 warn_unused_ignores = true
 show_error_codes = true
-
 [tools.pytest.ini_options]
 testpaths = ["tests"]
-
 [tool.poetry]
 name = "aiosu"
 version = "1.4.1"
@@ -56,6 +54,7 @@ sphinx = "^6.0.0"
 sphinx-rtd-theme = "^1.2.0"
 pytest-cov = "^4.0.0"
 black = {version = "^23.0.0", allow-prereleases = true}
+pre-commit = "^3.2.2"
 
 [tool.poetry.extras]
 test = ["pytest", "pytest-asyncio", "pytest-mock", "toml", "types-toml"]
