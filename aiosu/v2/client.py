@@ -6,7 +6,7 @@ You can read more about it here: https://osu.ppy.sh/docs/index.html
 from __future__ import annotations
 
 import functools
-from datetime import datetime
+from datetime import datetime, timezone
 from functools import partial
 from io import BytesIO
 from typing import Any
@@ -122,7 +122,7 @@ def check_token(func: F) -> F:
     @functools.wraps(func)
     async def _check_token(self: Client, *args: Any, **kwargs: Any) -> Any:
         token = await self.get_current_token()
-        if datetime.utcnow() > token.expires_on:
+        if datetime.now(tz=timezone.utc) > token.expires_on:
             await self._refresh()
         return await func(self, *args, **kwargs)
 
