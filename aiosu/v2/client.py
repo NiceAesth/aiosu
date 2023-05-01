@@ -6,7 +6,8 @@ You can read more about it here: https://osu.ppy.sh/docs/index.html
 from __future__ import annotations
 
 import functools
-from datetime import datetime, timezone
+from datetime import datetime
+from datetime import timezone
 from functools import partial
 from io import BytesIO
 from typing import Any
