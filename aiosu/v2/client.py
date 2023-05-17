@@ -123,12 +123,8 @@ def check_token(func: F) -> F:
     @functools.wraps(func)
     async def _check_token(self: Client, *args: Any, **kwargs: Any) -> Any:
         token = await self.get_current_token()
-        try:
-            if datetime.utcnow() > token.expires_on:
-                await self._refresh()
-        except TypeError:
-            if datetime.now(tz=timezone.utc) > token.expires_on:
-                await self._refresh()
+        if datetime.now(tz=timezone.utc) > token.expires_on:
+            await self._refresh()
         return await func(self, *args, **kwargs)
 
     return cast(F, _check_token)
