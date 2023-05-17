@@ -866,7 +866,7 @@ class Client(Eventable):
         """
         if not 1 <= (limit := kwargs.pop("limit", 100)) <= 100:
             raise ValueError("Invalid limit specified. Limit must be between 1 and 100")
-        if request_type not in ("recent", "best", "firsts"):
+        if request_type not in ("recent", "best", "firsts", "pinned"):
             raise ValueError(
                 f'"{request_type}" is not a valid request_type. Valid options are: "recent", "best", "firsts"',
             )
