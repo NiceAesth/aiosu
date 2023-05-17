@@ -7,7 +7,6 @@ from __future__ import annotations
 
 import functools
 from datetime import datetime
-from datetime import timezone
 from functools import partial
 from io import BytesIO
 from typing import Any
