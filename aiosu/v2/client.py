@@ -866,7 +866,7 @@ class Client(Eventable):
         """
         if not 1 <= (limit := kwargs.pop("limit", 100)) <= 100:
             raise ValueError("Invalid limit specified. Limit must be between 1 and 100")
-        if request_type not in ("recent", "best", "firsts"):
+        if request_type not in ("recent", "best", "firsts", "pinned"):
             raise ValueError(
                 f'"{request_type}" is not a valid request_type. Valid options are: "recent", "best", "firsts"',
             )
@@ -965,6 +965,32 @@ class Client(Eventable):
         :rtype: list[aiosu.models.score.Score] or list[aiosu.models.score.LazerScore]
         """
         return await self.__get_type_scores(user_id, "firsts", **kwargs)
+
+    async def get_user_pinned(
+        self, user_id: int, **kwargs: Any
+    ) -> list[Union[Score, LazerScore]]:
+        r"""Get a user's pinned scores.
+
+        :param user_id: User ID to search by
+        :type user_id: int
+        :param \**kwargs:
+            See below
+
+        :Keyword Arguments:
+            * *mode* (``aiosu.models.gamemode.Gamemode``) --
+                Optional, gamemode to search for
+            * *limit* (``int``) --
+                Optional, number of scores to get. Min: 1, Max: 100, defaults to 100
+            * *offset* (``int``) --
+                Optional, page offset to start from, defaults to 0
+            * *new_format* (``bool``) --
+                Optional, whether to use the new format, defaults to ``False``
+
+        :raises APIException: Contains status code and error message
+        :return: List of requested scores
+        :rtype: list[aiosu.models.score.Score] or list[aiosu.models.score.LazerScore]
+        """
+        return await self.__get_type_scores(user_id, "pinned", **kwargs)
 
     @prepare_token
     @check_token

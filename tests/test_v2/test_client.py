@@ -664,6 +664,29 @@ class TestClient:
         await client.close()
 
     @pytest.mark.asyncio
+    async def test_get_user_pinned(self, mocker, token, scores):
+        client = aiosu.v2.Client(token=token)
+        for mode in modes:
+            resp = MockResponse(scores(mode, "pinned"), 200)
+            mocker.patch("aiohttp.ClientSession.get", return_value=resp)
+            data = await client.get_user_pinned(7782553)
+            assert isinstance(data, list) and all(
+                isinstance(x, aiosu.models.Score) for x in data
+            )
+        await client.close()
+
+    @pytest.mark.asyncio
+    async def test_get_user_pinned_missing(self, mocker, token, empty):
+        client = aiosu.v2.Client(token=token)
+        resp = MockResponse(empty, 200)
+        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
+        data = await client.get_user_pinned(7782553)
+        assert isinstance(data, list) and all(
+            isinstance(x, aiosu.models.Score) for x in data
+        )
+        await client.close()
+
+    @pytest.mark.asyncio
     async def test_get_lazer_scores(self, mocker, token, lazer_scores):
         client = aiosu.v2.Client(token=token)
         resp = MockResponse(lazer_scores, 200)
