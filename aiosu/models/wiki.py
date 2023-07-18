@@ -18,5 +18,5 @@ class WikiPage(BaseModel):
     available_locales: list[str]
     layout: str
     markdown: str
-    subtitle: Optional[str]
-    tags: Optional[list[str]]
+    subtitle: Optional[str] = None
+    tags: Optional[list[str]] = None

@@ -7,7 +7,8 @@ from datetime import datetime
 from typing import Optional
 from typing import TYPE_CHECKING
 
-from pydantic import root_validator
+from pydantic import computed_field
+from pydantic import model_validator
 
 from ..utils.accuracy import CatchAccuracyCalculator
 from ..utils.accuracy import ManiaAccuracyCalculator
@@ -105,7 +106,8 @@ class ScoreStatistics(BaseModel):
     count_geki: int
     count_katu: int
 
-    @root_validator(pre=True)
+    @model_validator(mode="before")
+    @classmethod
     def _convert_none_to_zero(cls, values: dict[str, Any]) -> dict[str, Any]:
         # Lazer API returns null for some statistics
         for key in values:
@@ -115,7 +117,7 @@ class ScoreStatistics(BaseModel):
 
     @classmethod
     def _from_api_v1(cls, data: Any) -> ScoreStatistics:
-        return cls.parse_obj(
+        return cls.model_validate(
             {
                 "count_50": data["count50"],
                 "count_100": data["count100"],
@@ -140,21 +142,22 @@ class Score(BaseModel):
     created_at: datetime
     mode: Gamemode
     replay: bool
-    id: Optional[int]
+    id: Optional[int] = None
     """Always present except for API v1 recent scores."""
     pp: Optional[float] = 0
-    best_id: Optional[int]
-    beatmap: Optional[Beatmap]
-    beatmapset: Optional[Beatmapset]
-    weight: Optional[ScoreWeight]
-    user: Optional[User]
-    rank_global: Optional[int]
-    rank_country: Optional[int]
-    type: Optional[str]
-    current_user_attributes: Optional[CurrentUserAttributes]
-    beatmap_id: Optional[int]
+    best_id: Optional[int] = None
+    beatmap: Optional[Beatmap] = None
+    beatmapset: Optional[Beatmapset] = None
+    weight: Optional[ScoreWeight] = None
+    user: Optional[User] = None
+    rank_global: Optional[int] = None
+    rank_country: Optional[int] = None
+    type: Optional[str] = None
+    current_user_attributes: Optional[CurrentUserAttributes] = None
+    beatmap_id: Optional[int] = None
     """Only present on API v1"""
 
+    @computed_field  # type: ignore
     @property
     def completion(self) -> float:
         """Beatmap completion.
@@ -172,6 +175,7 @@ class Score(BaseModel):
 
         return calculate_score_completion(self.mode, self.statistics, self.beatmap)
 
+    @computed_field  # type: ignore
     @property
     def score_url(self) -> Optional[str]:
         r"""Link to the score.
@@ -187,6 +191,7 @@ class Score(BaseModel):
             else f"https://osu.ppy.sh/scores/{self.id}"
         )
 
+    @computed_field  # type: ignore
     @property
     def replay_url(self) -> Optional[str]:
         r"""Link to the replay.
@@ -202,7 +207,8 @@ class Score(BaseModel):
             else f"https://osu.ppy.sh/scores/{self.id}/download"
         )
 
-    @root_validator
+    @model_validator(mode="before")
+    @classmethod
     def _fail_rank(cls, values: dict[str, Any]) -> dict[str, Any]:
         if not values["passed"]:
             values["rank"] = "F"
@@ -231,7 +237,7 @@ class Score(BaseModel):
         mode: Gamemode,
     ) -> Score:
         statistics = ScoreStatistics._from_api_v1(data)
-        score = cls.parse_obj(
+        score = cls.model_validate(
             {
                 "id": data["score_id"],
                 "user_id": data["user_id"],

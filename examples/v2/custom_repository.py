@@ -38,7 +38,7 @@ class ExampleFileRepository(BaseTokenRepository):
     ) -> aiosu.models.OAuthToken:
         """Add a token."""
         tokens = await self._read_file()
-        tokens[session_id] = token.dict()
+        tokens[session_id] = token.model_dump()
         await self._write_file(tokens)
         return token
 
@@ -54,7 +54,7 @@ class ExampleFileRepository(BaseTokenRepository):
     ) -> aiosu.models.OAuthToken:
         """Update a token."""
         tokens = await self._read_file()
-        tokens[session_id] = token.dict()
+        tokens[session_id] = token.model_dump()
         await self._write_file(tokens)
         return token
 

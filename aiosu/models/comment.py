@@ -23,13 +23,13 @@ CommentSortType = Literal["new", "old", "top"]
 
 
 class Commentable(BaseModel):
-    id: Optional[int]
-    title: Optional[str]
-    url: Optional[str]
-    type: Optional[str]
-    owner_id: Optional[int]
-    owner_title: Optional[str]
-    current_user_attributes: Optional[CurrentUserAttributes]
+    id: Optional[int] = None
+    title: Optional[str] = None
+    url: Optional[str] = None
+    type: Optional[str] = None
+    owner_id: Optional[int] = None
+    owner_title: Optional[str] = None
+    current_user_attributes: Optional[CurrentUserAttributes] = None
 
 
 class Comment(BaseModel):
@@ -41,14 +41,14 @@ class Comment(BaseModel):
     pinned: bool
     votes_count: int
     replies_count: int
-    message: Optional[str]
-    message_html: Optional[str]
-    deleted_at: Optional[datetime]
-    edited_at: Optional[datetime]
-    edited_by_id: Optional[int]
-    parent_id: Optional[int]
-    legacy_name: Optional[str]
-    user_id: Optional[int]
+    message: Optional[str] = None
+    message_html: Optional[str] = None
+    deleted_at: Optional[datetime] = None
+    edited_at: Optional[datetime] = None
+    edited_by_id: Optional[int] = None
+    parent_id: Optional[int] = None
+    legacy_name: Optional[str] = None
+    user_id: Optional[int] = None
 
 
 class CommentBundle(CursorModel):
@@ -60,7 +60,7 @@ class CommentBundle(CursorModel):
     user_follow: bool
     user_votes: list[int]
     users: list[User]
-    pinned_comments: Optional[list[Comment]]
-    total: Optional[int]
-    top_level_count: Optional[int]
-    has_more_id: Optional[int]
+    pinned_comments: Optional[list[Comment]] = None
+    total: Optional[int] = None
+    top_level_count: Optional[int] = None
+    has_more_id: Optional[int] = None

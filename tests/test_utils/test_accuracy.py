@@ -27,7 +27,7 @@ def test_osu_accuracy(scores):
     calc = aiosu.utils.accuracy.OsuAccuracyCalculator()
     for score_type in types:
         score_list = scores("osu", score_type)
-        for score in from_list(aiosu.models.Score.parse_obj, score_list):
+        for score in from_list(aiosu.models.Score.model_validate, score_list):
             acc = calc.calculate(score)
             assert acc == score.accuracy
 
@@ -36,7 +36,7 @@ def test_taiko_accuracy(scores):
     calc = aiosu.utils.accuracy.TaikoAccuracyCalculator()
     for score_type in types:
         score_list = scores("taiko", score_type)
-        for score in from_list(aiosu.models.Score.parse_obj, score_list):
+        for score in from_list(aiosu.models.Score.model_validate, score_list):
             acc = calc.calculate(score)
             assert acc == score.accuracy
 
@@ -45,7 +45,7 @@ def test_mania_accuracy(scores):
     calc = aiosu.utils.accuracy.ManiaAccuracyCalculator()
     for score_type in types:
         score_list = scores("mania", score_type)
-        for score in from_list(aiosu.models.Score.parse_obj, score_list):
+        for score in from_list(aiosu.models.Score.model_validate, score_list):
             acc = calc.calculate(score)
             assert acc == score.accuracy
 
@@ -54,6 +54,6 @@ def test_catch_accuracy(scores):
     calc = aiosu.utils.accuracy.CatchAccuracyCalculator()
     for score_type in types:
         score_list = scores("fruits", score_type)
-        for score in from_list(aiosu.models.Score.parse_obj, score_list):
+        for score in from_list(aiosu.models.Score.model_validate, score_list):
             acc = calc.calculate(score)
             assert acc == score.accuracy

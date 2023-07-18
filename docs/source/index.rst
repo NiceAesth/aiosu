@@ -33,6 +33,19 @@ If you need assistance, you should look here:
 - Contact me on `Discord <https://discord.gg/ufHV3T3UPD>`_
 - Report bugs in the `issue tracker <https://github.com/NiceAesth/aiosu/issues>`_
 
+Breaking changes
+----------------
+
+**v2.0.0:** The library now uses *Pydantic v2*. This means that the following changes have occured:
+
+- The *dict* method has been renamed to *model_dump*
+- The *json* method has been renamed to *model_dump_json*
+- The *parse_obj* method has been renamed to *model_validate*
+- The *parse_raw* method has been renamed to *model_validate_json*
+- The *parse_file* method has been renamed to *model_validate_file*
+
+Note: The old methods are still available with a deprecation warning, but will be removed in Pydantic v3.
+
 Utilities
 ---------
 

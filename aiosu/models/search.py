@@ -22,5 +22,5 @@ class SearchResult(BaseModel):
 
 
 class SearchResponse(BaseModel):
-    users: Optional[SearchResult]
-    wiki_pages: Optional[SearchResult]
+    users: Optional[SearchResult] = None
+    wiki_pages: Optional[SearchResult] = None

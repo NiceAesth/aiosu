@@ -6,10 +6,9 @@ from __future__ import annotations
 from datetime import datetime
 from enum import IntFlag
 from enum import unique
-from typing import Any
 from typing import Optional
 
-from pydantic import root_validator
+from pydantic import model_validator
 
 from .base import BaseModel
 from .gamemode import Gamemode
@@ -99,10 +98,10 @@ class Replay(BaseModel):
     statistics: ScoreStatistics
     replay_data: list[ReplayEvent]
     lifebar_data: list[ReplayLifebarEvent]
-    mod_extras: Optional[float]
-    skip_offset: Optional[int]
-    rng_seed: Optional[int]
-    lazer_replay_data: Optional[LazerReplayData]
+    mod_extras: Optional[float] = None
+    skip_offset: Optional[int] = None
+    rng_seed: Optional[int] = None
+    lazer_replay_data: Optional[LazerReplayData] = None
 
     def __repr__(self) -> str:
         return f"<Replay {self.player_name} {self.map_md5}>"
@@ -110,17 +109,19 @@ class Replay(BaseModel):
     def __str__(self) -> str:
         return f"{self.player_name} {self.played_at} {self.map_md5} +{self.mods}"
 
-    @root_validator
-    def _add_skip_offset(cls, values: dict[str, Any]) -> dict[str, Any]:
-        if not values["skip_offset"]:
-            values["skip_offset"] = _parse_skip_offset(
-                values["replay_data"],
-                values["mods"],
+    @model_validator(mode="after")  # type: ignore
+    @classmethod
+    def _add_skip_offset(cls, obj: Replay) -> Replay:
+        if not obj.skip_offset:
+            obj.skip_offset = _parse_skip_offset(
+                obj.replay_data,
+                obj.mods,
             )
-        return values
+        return obj
 
-    @root_validator
-    def _add_rng_seed(cls, values: dict[str, Any]) -> dict[str, Any]:
-        if not values["rng_seed"] and values["version"] >= 2013_03_19:
-            values["rng_seed"] = _parse_rng_seed(values["replay_data"])
-        return values
+    @model_validator(mode="after")  # type: ignore
+    @classmethod
+    def _add_rng_seed(cls, obj: Replay) -> Replay:
+        if not obj.rng_seed and obj.version >= 2013_03_19:
+            obj.rng_seed = _parse_rng_seed(obj.replay_data)
+        return obj

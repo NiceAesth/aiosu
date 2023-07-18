@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import pydantic
 import pytest
 
 import aiosu
@@ -19,8 +20,8 @@ class SampleFrozenModel(aiosu.models.FrozenModel):
 
 def test_base_model():
     model = SampleBaseModel(simple="test", mods="HD", gamemode="osu")
-    model_json = model.json()
-    new_model = SampleBaseModel.parse_raw(model_json)
+    model_json = model.model_dump_json()
+    new_model = SampleBaseModel.model_validate_json(model_json)
 
     assert new_model == model
 
@@ -30,9 +31,9 @@ def test_base_model():
 
 def test_frozen_model():
     model = SampleFrozenModel(simple="test", mods="HD", gamemode="osu")
-    model_json = model.json()
-    new_model = SampleFrozenModel.parse_raw(model_json)
+    model_json = model.model_dump_json()
+    new_model = SampleFrozenModel.model_validate_json(model_json)
     assert new_model == model
 
-    with pytest.raises(TypeError):
+    with pytest.raises(pydantic.ValidationError):
         model.simple = "Test"

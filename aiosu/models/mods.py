@@ -7,12 +7,15 @@ from collections import UserList
 from enum import IntEnum
 from enum import unique
 from functools import reduce
+from typing import Type
 from typing import TYPE_CHECKING
+
+from pydantic import GetCoreSchemaHandler
+from pydantic_core import core_schema
+from pydantic_core import CoreSchema
 
 
 if TYPE_CHECKING:
-    from collections.abc import Generator
-
     from typing import Any
     from typing import Union
 
@@ -154,6 +157,10 @@ class Mods(UserList):
             mods = [mods[i : i + 2] for i in range(0, len(mods), 2)]
         if isinstance(mods, list) or isinstance(mods, Mods):  # List of Mod types
             self.data = [Mod(mod) for mod in mods]  # type: ignore
+            return
+        raise TypeError(
+            f"Mods must be a list of Mod types, a string, or an int. Not {type(mods)}",
+        )
 
     @property
     def bitwise(self) -> int:
@@ -200,14 +207,19 @@ class Mods(UserList):
         raise ValueError(f"Object {__o!r} is of invalid type.")
 
     @classmethod
-    def __get_validators__(cls) -> Generator:
-        yield cls._validate
-
-    @classmethod
-    def _validate(cls, v: object) -> Mods:
-        if not isinstance(v, (list, str, int)):
-            raise TypeError("Invalid type specified ")
-        return cls(v)
+    def __get_pydantic_core_schema__(
+        cls,
+        source_type: Type[Any],
+        handler: GetCoreSchemaHandler,
+    ) -> CoreSchema:
+        return core_schema.no_info_before_validator_function(
+            cls,
+            core_schema.json_or_python_schema(
+                json_schema=core_schema.list_schema(),
+                python_schema=handler(source_type),
+            ),
+            serialization=core_schema.to_string_ser_schema(when_used="json"),
+        )
 
 
 KeyMod = (

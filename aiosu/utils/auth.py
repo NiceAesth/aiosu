@@ -58,7 +58,7 @@ async def process_code(
                 json = orjson.loads(body)
                 if resp.status != 200:
                     raise APIException(resp.status, json.get("error", ""))
-                token = OAuthToken.parse_obj(json)
+                token = OAuthToken.model_validate(json)
                 return token
             except aiohttp.client_exceptions.ContentTypeError:
                 raise APIException(403, "Invalid code specified.")

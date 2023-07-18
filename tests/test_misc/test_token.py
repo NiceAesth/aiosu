@@ -27,13 +27,13 @@ def credentials_token():
 
 def test_auth_token(auth_token):
     expected_scopes = Scopes.PUBLIC | Scopes.IDENTIFY
-    token = aiosu.models.OAuthToken.parse_obj(auth_token)
+    token = aiosu.models.OAuthToken.model_validate(auth_token)
     assert token.scopes is expected_scopes
     assert token.can_refresh
 
 
 def test_credentials_token(credentials_token):
     expected_scopes = Scopes.PUBLIC
-    token = aiosu.models.OAuthToken.parse_obj(credentials_token)
+    token = aiosu.models.OAuthToken.model_validate(credentials_token)
     assert token.scopes is expected_scopes
     assert not token.can_refresh

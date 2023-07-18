@@ -381,7 +381,7 @@ class Client(Eventable):
                             raise APIException(resp.status, json.get("error", ""))
                         if self._session:
                             await self._session.close()
-                        new_token = OAuthToken.parse_obj(json)
+                        new_token = OAuthToken.model_validate(json)
                         await self._update_token(new_token)
                         self._session = aiohttp.ClientSession(
                             headers=await self._get_headers(),
@@ -437,7 +437,7 @@ class Client(Eventable):
         add_param(params, kwargs, key="sort")
         add_param(params, kwargs, key="cursor_string")
         json = await self._request("GET", url)
-        resp = ArtistResponse.parse_obj(json)
+        resp = ArtistResponse.model_validate(json)
         if resp.cursor_string:
             kwargs["cursor_string"] = resp.cursor_string
             resp.next = partial(self.get_featured_artists, **kwargs)
@@ -453,7 +453,7 @@ class Client(Eventable):
         """
         url = f"{self.base_url}/api/v2/seasonal-backgrounds"
         json = await self._request("GET", url)
-        return SeasonalBackgroundSet.parse_obj(json)
+        return SeasonalBackgroundSet.model_validate(json)
 
     @prepare_token
     async def get_changelog_listing(self, **kwargs: Any) -> ChangelogListing:
@@ -490,7 +490,7 @@ class Client(Eventable):
         add_param(params, kwargs, key="stream")
         add_param(params, kwargs, key="cursor_string")
         json = await self._request("GET", url, params=params)
-        resp = ChangelogListing.parse_obj(json)
+        resp = ChangelogListing.model_validate(json)
         if resp.cursor_string:  # Unused: API does not return cursor_string
             kwargs["cursor_string"] = resp.cursor_string
             resp.next = partial(self.get_changelog_listing, **kwargs)
@@ -508,7 +508,7 @@ class Client(Eventable):
         """
         url = f"{self.base_url}/api/v2/changelog/{stream}/{build}"
         json = await self._request("GET", url)
-        return Build.parse_obj(json)
+        return Build.model_validate(json)
 
     @prepare_token
     async def lookup_changelog_build(
@@ -540,7 +540,7 @@ class Client(Eventable):
         if "is_id" in kwargs or isinstance(changelog_query, int):
             params["key"] = "id"
         json = await self._request("GET", url, params=params)
-        return Build.parse_obj(json)
+        return Build.model_validate(json)
 
     @prepare_token
     async def get_news_listing(self, **kwargs: Any) -> NewsListing:
@@ -570,7 +570,7 @@ class Client(Eventable):
         add_param(params, kwargs, key="year")
         add_param(params, kwargs, key="cursor_string")
         json = await self._request("GET", url, params=params)
-        resp = NewsListing.parse_obj(json)
+        resp = NewsListing.model_validate(json)
         if resp.cursor_string:
             kwargs["cursor_string"] = resp.cursor_string
             resp.next = partial(self.get_news_listing, **kwargs)
@@ -604,7 +604,7 @@ class Client(Eventable):
         if "is_id" in kwargs or isinstance(news_query, int):
             params["key"] = "id"
         json = await self._request("GET", url, params=params)
-        return NewsPost.parse_obj(json)
+        return NewsPost.model_validate(json)
 
     @prepare_token
     async def get_wiki_page(self, locale: str, path: str) -> WikiPage:
@@ -620,7 +620,7 @@ class Client(Eventable):
         """
         url = f"{self.base_url}/api/v2/wiki/{locale}/{path}"
         json = await self._request("GET", url)
-        return WikiPage.parse_obj(json)
+        return WikiPage.model_validate(json)
 
     @prepare_token
     async def get_comment(self, comment_id: int, **kwargs: Any) -> CommentBundle:
@@ -643,7 +643,7 @@ class Client(Eventable):
         params: dict[str, Any] = {}
         add_param(params, kwargs, key="cursor_string")
         json = await self._request("GET", url, params=params)
-        resp = CommentBundle.parse_obj(json)
+        resp = CommentBundle.model_validate(json)
         if resp.cursor_string:  # Unused: API does not return cursor_string
             kwargs["cursor_string"] = resp.cursor_string
             resp.next = partial(self.get_comment, comment_id=comment_id, **kwargs)
@@ -680,7 +680,7 @@ class Client(Eventable):
         add_param(params, kwargs, key="sort")
         add_param(params, kwargs, key="cursor_string")
         json = await self._request("GET", url, params=params)
-        resp = CommentBundle.parse_obj(json)
+        resp = CommentBundle.model_validate(json)
         if resp.cursor_string:  # Unused: API does not return cursor_string
             kwargs["cursor_string"] = resp.cursor_string
             resp.next = partial(self.get_comments, **kwargs)
@@ -714,7 +714,7 @@ class Client(Eventable):
         }
         add_param(params, kwargs, key="page")
         json = await self._request("GET", url, params=params)
-        return SearchResponse.parse_obj(json)
+        return SearchResponse.model_validate(json)
 
     @prepare_token
     @check_token
@@ -738,7 +738,7 @@ class Client(Eventable):
             mode = Gamemode(kwargs.pop("mode"))
             url += f"/{mode}"
         json = await self._request("GET", url)
-        return User.parse_obj(json)
+        return User.model_validate(json)
 
     @prepare_token
     @check_token
@@ -753,7 +753,7 @@ class Client(Eventable):
         """
         url = f"{self.base_url}/api/v2/friends"
         json = await self._request("GET", url)
-        return from_list(User.parse_obj, json)
+        return from_list(User.model_validate, json)
 
     @prepare_token
     @check_token
@@ -789,7 +789,7 @@ class Client(Eventable):
             converter=lambda x: UserQueryType(x).new_api_name,
         )
         json = await self._request("GET", url, params=params)
-        return User.parse_obj(json)
+        return User.model_validate(json)
 
     @prepare_token
     @check_token
@@ -808,7 +808,7 @@ class Client(Eventable):
             "ids": user_ids,
         }
         json = await self._request("GET", url, params=params)
-        return from_list(User.parse_obj, json.get("users", []))
+        return from_list(User.model_validate, json.get("users", []))
 
     @prepare_token
     @check_token
@@ -836,7 +836,7 @@ class Client(Eventable):
         add_param(params, kwargs, key="limit")
         add_param(params, kwargs, key="offset")
         json = await self._request("GET", url, params=params)
-        return from_list(KudosuHistory.parse_obj, json)
+        return from_list(KudosuHistory.model_validate, json)
 
     @prepare_token
     @check_token
@@ -893,8 +893,8 @@ class Client(Eventable):
             headers = {"x-api-version": "20220705"}
         json = await self._request("GET", url, params=params, headers=headers)
         if new_format:
-            return from_list(LazerScore.parse_obj, json)
-        return from_list(Score.parse_obj, json)
+            return from_list(LazerScore.model_validate, json)
+        return from_list(Score.model_validate, json)
 
     async def get_user_recents(
         self,
@@ -1040,7 +1040,7 @@ class Client(Eventable):
         params: dict[str, Any] = {}
         add_param(params, kwargs, key="mode", converter=lambda x: str(Gamemode(x)))
         json = await self._request("GET", url, params=params)
-        return from_list(Score.parse_obj, json.get("scores", []))
+        return from_list(Score.model_validate, json.get("scores", []))
 
     UserBeatmapType = Literal["favourite", "graveyard", "loved", "ranked", "pending"]
 
@@ -1077,7 +1077,7 @@ class Client(Eventable):
         add_param(params, kwargs, key="limit")
         add_param(params, kwargs, key="offset")
         json = await self._request("GET", url, params=params)
-        return from_list(Beatmapset.parse_obj, json)
+        return from_list(Beatmapset.model_validate, json)
 
     @prepare_token
     @check_token
@@ -1109,7 +1109,7 @@ class Client(Eventable):
         add_param(params, kwargs, key="limit")
         add_param(params, kwargs, key="offset")
         json = await self._request("GET", url, params=params)
-        return from_list(BeatmapUserPlaycount.parse_obj, json)
+        return from_list(BeatmapUserPlaycount.model_validate, json)
 
     @prepare_token
     @check_token
@@ -1141,7 +1141,7 @@ class Client(Eventable):
         add_param(params, kwargs, key="limit")
         add_param(params, kwargs, key="offset")
         json = await self._request("GET", url, params=params)
-        return from_list(Event.parse_obj, json)
+        return from_list(Event.model_validate, json)
 
     @prepare_token
     @check_token
@@ -1172,7 +1172,7 @@ class Client(Eventable):
         add_param(params, kwargs, key="mods", converter=lambda x: str(Mods(x)))
         add_param(params, kwargs, key="type")
         json = await self._request("GET", url, params=params)
-        return from_list(Score.parse_obj, json.get("scores", []))
+        return from_list(Score.model_validate, json.get("scores", []))
 
     @prepare_token
     @check_token
@@ -1188,7 +1188,7 @@ class Client(Eventable):
         """
         url = f"{self.base_url}/api/v2/beatmaps/{beatmap_id}"
         json = await self._request("GET", url)
-        return Beatmap.parse_obj(json)
+        return Beatmap.model_validate(json)
 
     @prepare_token
     @check_token
@@ -1207,7 +1207,7 @@ class Client(Eventable):
             "ids": beatmap_ids,
         }
         json = await self._request("GET", url, params=params)
-        return from_list(Beatmap.parse_obj, json.get("beatmaps", []))
+        return from_list(Beatmap.model_validate, json.get("beatmaps", []))
 
     @prepare_token
     @check_token
@@ -1239,7 +1239,7 @@ class Client(Eventable):
         if not params:
             raise ValueError("One of checksum, filename or id must be provided.")
         json = await self._request("GET", url, params=params)
-        return Beatmap.parse_obj(json)
+        return Beatmap.model_validate(json)
 
     @prepare_token
     @check_token
@@ -1277,7 +1277,7 @@ class Client(Eventable):
         )
         add_param(data, kwargs, key="mods", converter=lambda x: int(Mods(x)))
         json = await self._request("POST", url, json=data)
-        return BeatmapDifficultyAttributes.parse_obj(json.get("attributes"))
+        return BeatmapDifficultyAttributes.model_validate(json.get("attributes"))
 
     @prepare_token
     @check_token
@@ -1293,7 +1293,7 @@ class Client(Eventable):
         """
         url = f"{self.base_url}/api/v2/beatmapsets/{beatmapset_id}"
         json = await self._request("GET", url)
-        return Beatmapset.parse_obj(json)
+        return Beatmapset.model_validate(json)
 
     @prepare_token
     @check_token
@@ -1313,7 +1313,7 @@ class Client(Eventable):
             "beatmap_id": beatmap_id,
         }
         json = await self._request("GET", url, params=params)
-        return Beatmapset.parse_obj(json)
+        return Beatmapset.model_validate(json)
 
     @prepare_token
     @check_token
@@ -1342,7 +1342,7 @@ class Client(Eventable):
         params: dict[str, Any] = {}
         add_param(params, kwargs, key="cursor_string")
         json = await self._request("GET", url)
-        resp = BeatmapsetSearchResponse.parse_obj(json)
+        resp = BeatmapsetSearchResponse.model_validate(json)
         if resp.cursor_string:
             kwargs["cursor_string"] = resp.cursor_string
             resp.next = partial(self.search_beatmapsets, **kwargs)
@@ -1384,7 +1384,7 @@ class Client(Eventable):
         add_param(params, kwargs, key="max_date")
         add_param(params, kwargs, key="types")
         json = await self._request("GET", url, params=params)
-        return from_list(BeatmapsetEvent.parse_obj, json.get("events", []))
+        return from_list(BeatmapsetEvent.model_validate, json.get("events", []))
 
     @prepare_token
     @check_token
@@ -1440,7 +1440,7 @@ class Client(Eventable):
         add_param(params, kwargs, key="with_deleted", converter=to_lower_str)
         add_param(params, kwargs, key="cursor_string")
         json = await self._request("GET", url, params=params)
-        resp = BeatmapsetDiscussionResponse.parse_obj(json)
+        resp = BeatmapsetDiscussionResponse.model_validate(json)
         if resp.cursor_string:
             kwargs["cursor_string"] = resp.cursor_string
             resp.next = partial(self.get_beatmapset_discussions, **kwargs)
@@ -1491,7 +1491,7 @@ class Client(Eventable):
         add_param(params, kwargs, key="with_deleted", converter=to_lower_str)
         add_param(params, kwargs, key="cursor_string")
         json = await self._request("GET", url, params=params)
-        resp = BeatmapsetDiscussionPostResponse.parse_obj(json)
+        resp = BeatmapsetDiscussionPostResponse.model_validate(json)
         if resp.cursor_string:
             kwargs["cursor_string"] = resp.cursor_string
             resp.next = partial(self.get_beatmapset_discussion_posts, **kwargs)
@@ -1545,7 +1545,7 @@ class Client(Eventable):
         add_param(params, kwargs, key="with_deleted", converter=to_lower_str)
         add_param(params, kwargs, key="cursor_string")
         json = await self._request("GET", url, params=params)
-        resp = BeatmapsetDiscussionVoteResponse.parse_obj(json)
+        resp = BeatmapsetDiscussionVoteResponse.model_validate(json)
         if resp.cursor_string:
             kwargs["cursor_string"] = resp.cursor_string
             resp.next = partial(self.get_beatmapset_discussion_votes, **kwargs)
@@ -1572,7 +1572,7 @@ class Client(Eventable):
         """
         url = f"{self.base_url}/api/v2/scores/{mode}/{score_id}"
         json = await self._request("GET", url)
-        return Score.parse_obj(json)
+        return Score.model_validate(json)
 
     @prepare_token
     @check_token
@@ -1639,7 +1639,7 @@ class Client(Eventable):
         add_param(params, kwargs, key="variant")
         add_param(params, kwargs, key="cursor_string")
         json = await self._request("GET", url, params=params)
-        resp = Rankings.parse_obj(json)
+        resp = Rankings.model_validate(json)
         if resp.cursor_string:  # Unused: API does not return cursor_string
             kwargs["cursor_string"] = resp.cursor_string
             resp.next = partial(self.get_rankings, mode=mode, type=type, **kwargs)
@@ -1657,7 +1657,7 @@ class Client(Eventable):
         """
         url = f"{self.base_url}/api/v2/spotlights"
         json = await self._request("GET", url)
-        return from_list(Spotlight.parse_obj, json.get("spotlights", []))
+        return from_list(Spotlight.model_validate, json.get("spotlights", []))
 
     @prepare_token
     @check_token
@@ -1697,7 +1697,7 @@ class Client(Eventable):
         add_param(params, kwargs, key="end")
         add_param(params, kwargs, key="cursor_string")
         json = await self._request("GET", url, params=params)
-        resp = ForumTopicResponse.parse_obj(json)
+        resp = ForumTopicResponse.model_validate(json)
         if resp.cursor_string:
             kwargs["cursor_string"] = resp.cursor_string
             resp.next = partial(self.get_forum_topic, topic_id, **kwargs)
@@ -1768,7 +1768,7 @@ class Client(Eventable):
             )
             data["forum_topic_poll"] = forum_topic_poll
         json = await self._request("POST", url, json=data)
-        return ForumCreateTopicResponse.parse_obj(json)
+        return ForumCreateTopicResponse.model_validate(json)
 
     @prepare_token
     @check_token
@@ -1790,7 +1790,7 @@ class Client(Eventable):
             "body": content,
         }
         json = await self._request("POST", url, json=data)
-        return ForumPost.parse_obj(json)
+        return ForumPost.model_validate(json)
 
     @prepare_token
     @check_token
@@ -1813,7 +1813,7 @@ class Client(Eventable):
             },
         }
         json = await self._request("PUT", url, json=data)
-        return ForumTopic.parse_obj(json)
+        return ForumTopic.model_validate(json)
 
     @prepare_token
     @check_token
@@ -1834,7 +1834,7 @@ class Client(Eventable):
             "body": new_content,
         }
         json = await self._request("PUT", url, json=data)
-        return ForumPost.parse_obj(json)
+        return ForumPost.model_validate(json)
 
     @prepare_token
     @check_token
@@ -1861,7 +1861,7 @@ class Client(Eventable):
         add_param(data, kwargs, key="since")
         add_param(data, kwargs, key="silence_id_since", param_name="history_since")
         json = await self._request("POST", url, json=data)
-        return from_list(ChatUserSilence.parse_obj, json.get("silences", []))
+        return from_list(ChatUserSilence.model_validate, json.get("silences", []))
 
     @prepare_token
     @check_token
@@ -1901,7 +1901,7 @@ class Client(Eventable):
         add_param(params, kwargs, key="includes")
         add_param(params, kwargs, key="silence_id_since", param_name="history_since")
         json = await self._request("GET", url, params=params)
-        return ChatUpdateResponse.parse_obj(json)
+        return ChatUpdateResponse.model_validate(json)
 
     @prepare_token
     @check_token
@@ -1918,7 +1918,7 @@ class Client(Eventable):
         """
         url = f"{self.base_url}/api/v2/chat/channels/{channel_id}"
         json = await self._request("GET", url)
-        return ChatChannelResponse.parse_obj(json)
+        return ChatChannelResponse.model_validate(json)
 
     @prepare_token
     @check_token
@@ -1933,7 +1933,7 @@ class Client(Eventable):
         """
         url = f"{self.base_url}/api/v2/chat/channels"
         json = await self._request("GET", url)
-        return from_list(ChatChannel.parse_obj, json)
+        return from_list(ChatChannel.model_validate, json)
 
     @prepare_token
     @check_token
@@ -1973,7 +1973,7 @@ class Client(Eventable):
         add_param(params, kwargs, key="since")
         add_param(params, kwargs, key="until")
         json = await self._request("GET", url, params=params)
-        return from_list(ChatMessage.parse_obj, json)
+        return from_list(ChatMessage.model_validate, json)
 
     @prepare_token
     @check_token
@@ -2027,7 +2027,7 @@ class Client(Eventable):
             }
             data["channel"] = channel
         json = await self._request("POST", url, json=data)
-        return ChatChannel.parse_obj(json)
+        return ChatChannel.model_validate(json)
 
     @prepare_token
     @check_token
@@ -2046,7 +2046,7 @@ class Client(Eventable):
         """
         url = f"{self.base_url}/api/v2/chat/channels/{channel_id}/users/{user_id}"
         json = await self._request("PUT", url)
-        return ChatChannel.parse_obj(json)
+        return ChatChannel.model_validate(json)
 
     @prepare_token
     @check_token
@@ -2108,7 +2108,7 @@ class Client(Eventable):
             "is_action": is_action,
         }
         json = await self._request("POST", url, json=data)
-        return ChatMessage.parse_obj(json)
+        return ChatMessage.model_validate(json)
 
     @prepare_token
     @check_token
@@ -2148,7 +2148,7 @@ class Client(Eventable):
         }
         add_param(data, kwargs, key="uuid")
         json = await self._request("POST", url, json=data)
-        return ChatMessageCreateResponse.parse_obj(json)
+        return ChatMessageCreateResponse.model_validate(json)
 
     @prepare_token
     @check_token
@@ -2183,7 +2183,7 @@ class Client(Eventable):
         }
         add_param(params, kwargs, key="sort")
         json = await self._request("GET", url, params=params)
-        resp = MultiplayerMatchesResponse.parse_obj(json)
+        resp = MultiplayerMatchesResponse.model_validate(json)
         if resp.cursor_string:
             kwargs["cursor_string"] = resp.cursor_string
             resp.next = partial(self.get_multiplayer_matches, **kwargs)
@@ -2226,7 +2226,7 @@ class Client(Eventable):
         add_param(params, kwargs, key="before")
         add_param(params, kwargs, key="after")
         json = await self._request("GET", url)
-        return MultiplayerMatchResponse.parse_obj(json)
+        return MultiplayerMatchResponse.model_validate(json)
 
     @prepare_token
     @check_token
@@ -2268,7 +2268,7 @@ class Client(Eventable):
         add_param(params, kwargs, key="category")
         add_param(params, kwargs, key="type", param_name="type_group")
         json = await self._request("GET", url, params=params)
-        return from_list(MultiplayerRoom.parse_obj, json)
+        return from_list(MultiplayerRoom.model_validate, json)
 
     @prepare_token
     @check_token
@@ -2285,7 +2285,7 @@ class Client(Eventable):
         """
         url = f"{self.base_url}/api/v2/rooms/{room_id}"
         json = await self._request("GET", url)
-        return MultiplayerRoom.parse_obj(json)
+        return MultiplayerRoom.model_validate(json)
 
     @prepare_token
     @check_token
@@ -2319,7 +2319,7 @@ class Client(Eventable):
             "limit": limit,
         }
         json = await self._request("GET", url, params=params)
-        return MultiplayerLeaderboardResponse.parse_obj(json)
+        return MultiplayerLeaderboardResponse.model_validate(json)
 
     @prepare_token
     @check_token
@@ -2361,7 +2361,7 @@ class Client(Eventable):
         add_param(params, kwargs, key="sort")
         add_param(params, kwargs, key="cursor_string")
         json = await self._request("GET", url, params=params)
-        resp = MultiplayerScoresResponse.parse_obj(json)
+        resp = MultiplayerScoresResponse.model_validate(json)
         if resp.cursor_string:
             kwargs["cursor_string"] = resp.cursor_string
             resp.next = partial(

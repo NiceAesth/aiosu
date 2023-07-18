@@ -31,7 +31,7 @@ ForumTopicType = Literal[
 class ForumPollOption(BaseModel):
     id: int
     text: HTMLBody
-    vote_count: Optional[int]
+    vote_count: Optional[int] = None
 
 
 class ForumPoll(BaseModel):
@@ -42,8 +42,8 @@ class ForumPoll(BaseModel):
     options: list[ForumPollOption]
     started_at: datetime
     title: HTMLBody
-    ended_at: Optional[datetime]
-    last_vote_at: Optional[datetime]
+    ended_at: Optional[datetime] = None
+    last_vote_at: Optional[datetime] = None
 
 
 class ForumTopic(BaseModel):
@@ -58,8 +58,8 @@ class ForumTopic(BaseModel):
     type: ForumTopicType
     updated_at: datetime
     user_id: int
-    deleted_at: Optional[datetime]
-    poll: Optional[ForumPoll]
+    deleted_at: Optional[datetime] = None
+    poll: Optional[ForumPoll] = None
 
 
 class ForumPost(BaseModel):
@@ -68,10 +68,10 @@ class ForumPost(BaseModel):
     forum_id: int
     topic_id: int
     user_id: int
-    edited_by_id: Optional[int]
-    edited_at: Optional[datetime]
-    deleted_at: Optional[datetime]
-    body: Optional[HTMLBody]
+    edited_by_id: Optional[int] = None
+    edited_at: Optional[datetime] = None
+    deleted_at: Optional[datetime] = None
+    body: Optional[HTMLBody] = None
 
 
 class ForumTopicResponse(CursorModel):

@@ -67,7 +67,7 @@ API v2 Example
 
 
     async def main():
-        token = aiosu.models.OAuthToken.parse_obj(json_token_from_api)
+        token = aiosu.models.OAuthToken.model_validate(json_token_from_api)
 
         token = aiosu.models.OAuthToken(
             access_token="access token",

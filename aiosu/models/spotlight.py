@@ -18,4 +18,4 @@ class Spotlight(BaseModel):
     type: str
     start_date: datetime
     end_date: datetime
-    participant_count: Optional[int]
+    participant_count: Optional[int] = None

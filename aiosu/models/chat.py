@@ -51,11 +51,12 @@ class ChatChannel(BaseModel):
     type: ChatChannelTypes
     name: str
     moderated: bool
-    icon: Optional[str]
-    description: Optional[str]
-    last_message_id: Optional[int]
-    user_ids: Optional[list[int]] = Field(alias="users")
-    current_user_attributes: Optional[CurrentUserAttributes]
+    message_length_limit: int
+    icon: Optional[str] = None
+    description: Optional[str] = None
+    last_message_id: Optional[int] = None
+    user_ids: Optional[list[int]] = Field(default=None, alias="users")
+    current_user_attributes: Optional[CurrentUserAttributes] = None
 
 
 class ChatMessage(BaseModel):
@@ -65,8 +66,8 @@ class ChatMessage(BaseModel):
     timestamp: str
     content: str
     is_action: bool
-    uuid: Optional[str]
-    sender: Optional[User]
+    uuid: Optional[str] = None
+    sender: Optional[User] = None
 
 
 class ChatMessageCreateResponse(BaseModel):
@@ -75,11 +76,11 @@ class ChatMessageCreateResponse(BaseModel):
 
 
 class ChatUpdateResponse(BaseModel):
-    messages: Optional[list[ChatMessage]]
-    presence: Optional[list[ChatChannel]]
+    messages: Optional[list[ChatMessage]] = None
+    presence: Optional[list[ChatChannel]] = None
     silences: list
 
 
 class ChatChannelResponse(BaseModel):
     channel: ChatChannel
-    users: Optional[list[User]]
+    users: Optional[list[User]] = None

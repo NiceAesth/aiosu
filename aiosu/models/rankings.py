@@ -26,6 +26,6 @@ RankingVariant = Literal["4k", "7k"]
 
 class Rankings(CursorModel):
     ranking: list[UserStats]
-    total: Optional[int]
-    spotlight: Optional[Spotlight]
-    beatmapsets: Optional[list[Beatmapset]]
+    total: Optional[int] = None
+    spotlight: Optional[Spotlight] = None
+    beatmapsets: Optional[list[Beatmapset]] = None

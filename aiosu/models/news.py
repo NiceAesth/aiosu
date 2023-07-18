@@ -25,8 +25,8 @@ class NewsSearch(BaseModel):
 
 
 class Navigation(BaseModel):
-    newer: Optional[NewsPost]
-    older: Optional[NewsPost]
+    newer: Optional[NewsPost] = None
+    older: Optional[NewsPost] = None
 
 
 class NewsPost(BaseModel):
@@ -37,10 +37,10 @@ class NewsPost(BaseModel):
     edit_url: str
     published_at: datetime
     updated_at: datetime
-    first_image: Optional[str]
-    content: Optional[str]
-    preview: Optional[str]
-    navigation: Optional[Navigation]
+    first_image: Optional[str] = None
+    content: Optional[str] = None
+    preview: Optional[str] = None
+    navigation: Optional[Navigation] = None
 
 
 class NewsSidebar(BaseModel):
@@ -55,4 +55,4 @@ class NewsListing(CursorModel):
     news_sidebar: NewsSidebar
 
 
-Navigation.update_forward_refs()
+Navigation.model_rebuild()
