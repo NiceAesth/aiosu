@@ -72,6 +72,7 @@ class Build(BaseModel):
     display_version: str
     users: int
     version: str
+    youtube_id: Optional[str] = None
     update_stream: Optional[UpdateStream] = None
     changelog_entries: Optional[list[ChangelogEntry]] = None
     versions: Optional[Version] = None

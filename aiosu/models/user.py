@@ -35,9 +35,11 @@ __all__ = (
     "UserProfileTournamentBanner",
     "UserQueryType",
     "UserRankHistoryElement",
+    "UserStatsVariant",
     "UserStats",
     "UserAccountHistoryType",
     "UserRankHighest",
+    "ManiaStatsVariantsType",
 )
 
 
@@ -49,6 +51,11 @@ UserAccountHistoryType = Literal[
     "restriction",
     "silence",
     "tournament_ban",
+]
+
+ManiaStatsVariantsType = Literal[
+    "4k",
+    "7k",
 ]
 
 OLD_QUERY_TYPES = {
@@ -186,6 +193,14 @@ class UserGroup(BaseModel):
     description: Optional[str] = None
 
 
+class UserStatsVariant(BaseModel):
+    mode: Gamemode
+    variant: str
+    pp: float
+    country_rank: Optional[int] = None
+    global_rank: Optional[int] = None
+
+
 class UserStats(BaseModel):
     """Fields are marked as optional since they might be missing from rankings other than performance."""
 
@@ -210,6 +225,7 @@ class UserStats(BaseModel):
     count_100: Optional[int] = None
     count_50: Optional[int] = None
     count_miss: Optional[int] = None
+    variants: Optional[list[UserStatsVariant]] = None
 
     @computed_field  # type: ignore
     @property

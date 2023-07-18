@@ -151,6 +151,13 @@ class BeatmapNominations(BaseModel):
     required: Optional[int] = None
 
 
+class BeatmapNomination(BaseModel):
+    beatmapset_id: int
+    reset: bool
+    user_id: int
+    rulesets: Optional[list[Gamemode]] = None
+
+
 class BeatmapCovers(BaseModel):
     cover: str
     card: str
@@ -331,11 +338,13 @@ class Beatmapset(BaseModel):
     is_scoreable: Optional[bool] = None
     last_updated: Optional[datetime] = None
     legacy_thread_url: Optional[str] = None
-    nominations_summary: Optional[BeatmapNominations] = None
+    nominations: Optional[BeatmapNominations] = None
+    current_nominations: Optional[list[BeatmapNomination]] = None
     ranked_date: Optional[datetime] = None
     storyboard: Optional[bool] = None
     submitted_date: Optional[datetime] = None
     tags: Optional[str] = None
+    pack_tags: Optional[str] = None
     ratings: Optional[list[int]] = None
     has_favourited: Optional[bool] = None
     beatmaps: Optional[list[Beatmap]] = None
