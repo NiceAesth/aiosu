@@ -99,7 +99,10 @@ class Client:
         await self.close()
 
     async def _request(
-        self, request_type: ClientRequestType, *args: Any, **kwargs: Any
+        self,
+        request_type: ClientRequestType,
+        *args: Any,
+        **kwargs: Any,
     ) -> Any:
         if self._session is None:
             self._session = aiohttp.ClientSession()
@@ -167,7 +170,10 @@ class Client:
         return User._from_api_v1(json[0])
 
     async def __get_type_scores(
-        self, user_query: Union[str, int], request_type: str, **kwargs: Any
+        self,
+        user_query: Union[str, int],
+        request_type: str,
+        **kwargs: Any,
     ) -> list[Score]:
         r"""INTERNAL: Get a user's scores by type
 
@@ -215,7 +221,9 @@ class Client:
         return from_list(score_conv, json)
 
     async def get_user_recents(
-        self, user_query: Union[str, int], **kwargs: Any
+        self,
+        user_query: Union[str, int],
+        **kwargs: Any,
     ) -> list[Score]:
         r"""Get a user's recent scores.
 
@@ -242,7 +250,9 @@ class Client:
         return await self.__get_type_scores(user_query, "recent", limit=limit, **kwargs)
 
     async def get_user_bests(
-        self, user_query: Union[str, int], **kwargs: Any
+        self,
+        user_query: Union[str, int],
+        **kwargs: Any,
     ) -> list[Score]:
         r"""Get a user's best scores.
 

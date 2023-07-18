@@ -311,7 +311,10 @@ class Client(Eventable):
         }
 
     async def _request(
-        self, request_type: ClientRequestType, *args: Any, **kwargs: Any
+        self,
+        request_type: ClientRequestType,
+        *args: Any,
+        **kwargs: Any,
     ) -> Any:
         await self._prepare_token()
 
@@ -509,7 +512,9 @@ class Client(Eventable):
 
     @prepare_token
     async def lookup_changelog_build(
-        self, changelog_query: Union[str, int], **kwargs: Any
+        self,
+        changelog_query: Union[str, int],
+        **kwargs: Any,
     ) -> Build:
         r"""Looks up a build from the changelog.
 
@@ -573,7 +578,9 @@ class Client(Eventable):
 
     @prepare_token
     async def get_news_post(
-        self, news_query: Union[str, int], **kwargs: Any
+        self,
+        news_query: Union[str, int],
+        **kwargs: Any,
     ) -> NewsPost:
         r"""Gets a news post.
 
@@ -835,7 +842,10 @@ class Client(Eventable):
     @check_token
     @requires_scope(Scopes.PUBLIC)
     async def __get_type_scores(
-        self, user_id: int, request_type: str, **kwargs: Any
+        self,
+        user_id: int,
+        request_type: str,
+        **kwargs: Any,
     ) -> list[Union[Score, LazerScore]]:
         r"""INTERNAL: Get a user's scores by type
 
@@ -887,7 +897,9 @@ class Client(Eventable):
         return from_list(Score.parse_obj, json)
 
     async def get_user_recents(
-        self, user_id: int, **kwargs: Any
+        self,
+        user_id: int,
+        **kwargs: Any,
     ) -> list[Union[Score, LazerScore]]:
         r"""Get a user's recent scores.
 
@@ -915,7 +927,9 @@ class Client(Eventable):
         return await self.__get_type_scores(user_id, "recent", **kwargs)
 
     async def get_user_bests(
-        self, user_id: int, **kwargs: Any
+        self,
+        user_id: int,
+        **kwargs: Any,
     ) -> list[Union[Score, LazerScore]]:
         r"""Get a user's top scores.
 
@@ -941,7 +955,9 @@ class Client(Eventable):
         return await self.__get_type_scores(user_id, "best", **kwargs)
 
     async def get_user_firsts(
-        self, user_id: int, **kwargs: Any
+        self,
+        user_id: int,
+        **kwargs: Any,
     ) -> list[Union[Score, LazerScore]]:
         r"""Get a user's first place scores.
 
@@ -967,7 +983,9 @@ class Client(Eventable):
         return await self.__get_type_scores(user_id, "firsts", **kwargs)
 
     async def get_user_pinned(
-        self, user_id: int, **kwargs: Any
+        self,
+        user_id: int,
+        **kwargs: Any,
     ) -> list[Union[Score, LazerScore]]:
         r"""Get a user's pinned scores.
 
@@ -996,7 +1014,10 @@ class Client(Eventable):
     @check_token
     @requires_scope(Scopes.PUBLIC)
     async def get_user_beatmap_scores(
-        self, user_id: int, beatmap_id: int, **kwargs: Any
+        self,
+        user_id: int,
+        beatmap_id: int,
+        **kwargs: Any,
     ) -> list[Score]:
         r"""Get a user's scores on a specific beatmap.
 
@@ -1027,7 +1048,10 @@ class Client(Eventable):
     @check_token
     @requires_scope(Scopes.PUBLIC)
     async def get_user_beatmaps(
-        self, user_id: int, type: UserBeatmapType, **kwargs: Any
+        self,
+        user_id: int,
+        type: UserBeatmapType,
+        **kwargs: Any,
     ) -> list[Beatmapset]:
         r"""Get a user's beatmaps.
 
@@ -1059,7 +1083,9 @@ class Client(Eventable):
     @check_token
     @requires_scope(Scopes.PUBLIC)
     async def get_user_most_played(
-        self, user_id: int, **kwargs: Any
+        self,
+        user_id: int,
+        **kwargs: Any,
     ) -> list[BeatmapUserPlaycount]:
         r"""Get a user's most played beatmaps.
 
@@ -1089,7 +1115,9 @@ class Client(Eventable):
     @check_token
     @requires_scope(Scopes.PUBLIC)
     async def get_user_recent_activity(
-        self, user_id: int, **kwargs: Any
+        self,
+        user_id: int,
+        **kwargs: Any,
     ) -> list[Event]:
         r"""Get a user's recent activity.
 
@@ -1217,7 +1245,9 @@ class Client(Eventable):
     @check_token
     @requires_scope(Scopes.PUBLIC)
     async def get_beatmap_attributes(
-        self, beatmap_id: int, **kwargs: Any
+        self,
+        beatmap_id: int,
+        **kwargs: Any,
     ) -> BeatmapDifficultyAttributes:
         r"""Gets difficulty attributes for a beatmap.
 
@@ -1360,7 +1390,8 @@ class Client(Eventable):
     @check_token
     @requires_scope(Scopes.PUBLIC)
     async def get_beatmapset_discussions(
-        self, **kwargs: Any
+        self,
+        **kwargs: Any,
     ) -> BeatmapsetDiscussionResponse:
         r"""Get beatmapset discussions.
 
@@ -1419,7 +1450,8 @@ class Client(Eventable):
     @check_token
     @requires_scope(Scopes.PUBLIC)
     async def get_beatmapset_discussion_posts(
-        self, **kwargs: Any
+        self,
+        **kwargs: Any,
     ) -> BeatmapsetDiscussionPostResponse:
         r"""Get beatmapset discussion posts.
 
@@ -1469,7 +1501,8 @@ class Client(Eventable):
     @check_token
     @requires_scope(Scopes.PUBLIC)
     async def get_beatmapset_discussion_votes(
-        self, **kwargs: Any
+        self,
+        **kwargs: Any,
     ) -> BeatmapsetDiscussionVoteResponse:
         r"""Get beatmapset discussion votes.
 
@@ -1568,7 +1601,10 @@ class Client(Eventable):
     @check_token
     @requires_scope(Scopes.PUBLIC)
     async def get_rankings(
-        self, mode: Gamemode, type: RankingType, **kwargs: Any
+        self,
+        mode: Gamemode,
+        type: RankingType,
+        **kwargs: Any,
     ) -> Rankings:
         r"""Get rankings.
 
@@ -1672,7 +1708,11 @@ class Client(Eventable):
     @requires_scope(Scopes.FORUM_WRITE)
     @requires_scope(Scopes.IDENTIFY | Scopes.DELEGATE, any_scope=True)
     async def create_forum_topic(
-        self, forum_id: int, title: str, content: str, **kwargs: Any
+        self,
+        forum_id: int,
+        title: str,
+        content: str,
+        **kwargs: Any,
     ) -> ForumCreateTopicResponse:
         r"""Creates a forum topic.
 
@@ -1900,7 +1940,9 @@ class Client(Eventable):
     @requires_scope(Scopes.LAZER)
     @requires_scope(Scopes.IDENTIFY | Scopes.DELEGATE, any_scope=True)
     async def get_channel_messages(
-        self, channel_id: int, **kwargs: Any
+        self,
+        channel_id: int,
+        **kwargs: Any,
     ) -> list[ChatMessage]:
         r"""Gets channel messages.
 
@@ -1938,7 +1980,9 @@ class Client(Eventable):
     @requires_scope(Scopes.CHAT_WRITE)
     @requires_scope(Scopes.IDENTIFY | Scopes.DELEGATE, any_scope=True)
     async def create_chat_channel(
-        self, type: ChatChannelTypes, **kwargs: Any
+        self,
+        type: ChatChannelTypes,
+        **kwargs: Any,
     ) -> ChatChannel:
         r"""Creates a chat channel.
 
@@ -2071,7 +2115,11 @@ class Client(Eventable):
     @requires_scope(Scopes.CHAT_WRITE)
     @requires_scope(Scopes.IDENTIFY | Scopes.DELEGATE, any_scope=True)
     async def send_private_message(
-        self, user_id: int, message: str, is_action: bool, **kwargs: Any
+        self,
+        user_id: int,
+        message: str,
+        is_action: bool,
+        **kwargs: Any,
     ) -> ChatMessageCreateResponse:
         r"""Sends a message to a user.
 
@@ -2106,7 +2154,8 @@ class Client(Eventable):
     @check_token
     @requires_scope(Scopes.PUBLIC)
     async def get_multiplayer_matches(
-        self, **kwargs: Any
+        self,
+        **kwargs: Any,
     ) -> MultiplayerMatchesResponse:
         r"""Gets the multiplayer matches.
 
@@ -2144,7 +2193,9 @@ class Client(Eventable):
     @check_token
     @requires_scope(Scopes.PUBLIC)
     async def get_multiplayer_match(
-        self, match_id: int, **kwargs: Any
+        self,
+        match_id: int,
+        **kwargs: Any,
     ) -> MultiplayerMatchResponse:
         r"""Gets a multiplayer match.
 
@@ -2241,7 +2292,9 @@ class Client(Eventable):
     @requires_scope(Scopes.PUBLIC)
     @requires_scope(Scopes.IDENTIFY | Scopes.DELEGATE, any_scope=True)
     async def get_multiplayer_leaderboard(
-        self, room_id: int, **kwargs: Any
+        self,
+        room_id: int,
+        **kwargs: Any,
     ) -> MultiplayerLeaderboardResponse:
         r"""Gets the multiplayer leaderboard for a room.
 
@@ -2272,7 +2325,10 @@ class Client(Eventable):
     @check_token
     @requires_scope(Scopes.PUBLIC)
     async def get_multiplayer_scores(
-        self, room_id: int, playlist_id: int, **kwargs: Any
+        self,
+        room_id: int,
+        playlist_id: int,
+        **kwargs: Any,
     ) -> MultiplayerScoresResponse:
         r"""Gets the multiplayer scores for a room.
 
@@ -2309,7 +2365,10 @@ class Client(Eventable):
         if resp.cursor_string:
             kwargs["cursor_string"] = resp.cursor_string
             resp.next = partial(
-                self.get_multiplayer_scores, room_id, playlist_id, **kwargs
+                self.get_multiplayer_scores,
+                room_id,
+                playlist_id,
+                **kwargs,
             )
         return resp
 
