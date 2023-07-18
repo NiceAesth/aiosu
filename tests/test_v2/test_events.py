@@ -77,7 +77,7 @@ class TestEvents:
 
         resp = MockResponse(user(), 200)
         mocker.patch("aiohttp.ClientSession.get", return_value=resp)
-        resp_token = MockResponse(to_bytes(token.dict()), 200)
+        resp_token = MockResponse(to_bytes(token.model_dump()), 200)
         mocker.patch("aiohttp.ClientSession.post", return_value=resp_token)
 
         client = await client_storage.add_client(token=token_expired)
@@ -99,7 +99,7 @@ class TestEvents:
 
         resp = MockResponse(user(), 200)
         mocker.patch("aiohttp.ClientSession.get", return_value=resp)
-        resp_token = MockResponse(to_bytes(token.dict()), 200)
+        resp_token = MockResponse(to_bytes(token.model_dump()), 200)
         mocker.patch("aiohttp.ClientSession.post", return_value=resp_token)
 
         user = await client.get_me()
