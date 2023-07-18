@@ -8,7 +8,7 @@ shell:
 	poetry shell
 
 release:
-	@if [ "$(CURRENT_BRANCH)" != "master" ]; then echo "Not on master branch"; exit 1; fi
+	$(if $(filter $(CURRENT_BRANCH),master),,$(error Not on master branch))
 	@poetry version $(ver)
 	@git add pyproject.toml
 	@git commit -m "v$$(poetry version -s)"
