@@ -43,6 +43,7 @@ Breaking changes
 - The *parse_obj* method has been renamed to *model_validate*
 - The *parse_raw* method has been renamed to *model_validate_json*
 - The *parse_file* method has been renamed to *model_validate_file*
+- Renamed *Beatmapset.nomination_summary* to *Beatmapset.nominations*
 
 Note: The old methods are still available with a deprecation warning, but will be removed in Pydantic v3.
 
