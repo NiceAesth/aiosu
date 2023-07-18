@@ -105,7 +105,9 @@ def parse_file(file: BinaryIO) -> Replay:
         replay["mod_extras"] = unpack_float64(file)
     if replay["version"] >= 30000001:
         lazer_replay_data_str = unpack_replay_data(file)
-        replay["lazer_replay_data"] = LazerReplayData.parse_raw(lazer_replay_data_str)
+        replay["lazer_replay_data"] = LazerReplayData.model_validate_json(
+            lazer_replay_data_str,
+        )
     return Replay(**replay)
 
 
@@ -169,7 +171,10 @@ def write_replay(file: BinaryIO, replay: Replay) -> None:
     if replay.lazer_replay_data is not None:
         pack_replay_data(
             file,
-            replay.lazer_replay_data.json(exclude_unset=True, exclude_none=True),
+            replay.lazer_replay_data.model_dump_json(
+                exclude_unset=True,
+                exclude_none=True,
+            ),
         )
 
 

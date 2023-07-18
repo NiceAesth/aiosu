@@ -405,7 +405,7 @@ class Client:
             "mp": match_id,
         }
         json = await self._request("GET", url, params=params)
-        return Match.parse_obj(json)
+        return Match.model_validate(json)
 
     async def get_replay(self, **kwargs: Any) -> ReplayCompact:
         r"""Gets data for a replay.
@@ -458,7 +458,7 @@ class Client:
             )
         add_param(params, kwargs, key="mods", converter=lambda x: str(Mods(x)))
         json = await self._request("GET", url, params=params)
-        return ReplayCompact.parse_obj(json)
+        return ReplayCompact.model_validate(json)
 
     async def get_beatmap_osu(self, beatmap_id: int) -> StringIO:
         r"""Returns the Buffer of the beatmap file requested.

@@ -11,6 +11,7 @@ from typing import Literal
 from typing import Optional
 from typing import TYPE_CHECKING
 
+from pydantic import computed_field
 from pydantic import Field
 
 from .base import BaseModel
@@ -61,10 +62,12 @@ class UserQueryType(Enum):
     ID = "id"
     USERNAME = "username"
 
+    @computed_field  # type: ignore
     @property
     def old_api_name(self) -> str:
         return OLD_QUERY_TYPES[self.name]
 
+    @computed_field  # type: ignore
     @property
     def new_api_name(self) -> str:
         return self.value
@@ -88,7 +91,7 @@ class UserLevel(BaseModel):
         level = cast_float(data["level"])
         current = int(level)
         progress = (level - current) * 100
-        return cls.parse_obj({"current": current, "progress": progress})
+        return cls.model_validate({"current": current, "progress": progress})
 
 
 class UserKudosu(BaseModel):
@@ -100,6 +103,7 @@ class UserRankHistoryElement(BaseModel):
     mode: str
     data: list[int]
 
+    @computed_field  # type: ignore
     @property
     def average_gain(self) -> float:
         r"""Average rank gain.
@@ -117,15 +121,15 @@ class UserRankHighest(BaseModel):
 
 class UserProfileCover(BaseModel):
     url: str
-    custom_url: Optional[str]
-    id: Optional[str]
+    custom_url: Optional[str] = None
+    id: Optional[str] = None
 
 
 class UserProfileTournamentBanner(BaseModel):
     tournament_id: int
-    id: Optional[int]
-    image: Optional[str]
-    image_2_x: Optional[str] = Field(alias="image@2x")
+    id: Optional[int] = None
+    image: Optional[str] = None
+    image_2_x: Optional[str] = Field(default=None, alias="image@2x")
 
 
 class UserBadge(BaseModel):
@@ -141,24 +145,24 @@ class UserAccountHistory(BaseModel):
     length: int
     permanent: bool
     type: UserAccountHistoryType
-    description: Optional[str]
+    description: Optional[str] = None
 
 
 class UserGradeCounts(BaseModel):
-    ssh: Optional[int]
+    ssh: Optional[int] = None
     """Number of Silver SS ranks achieved."""
-    ss: Optional[int]
+    ss: Optional[int] = None
     """Number of SS ranks achieved."""
-    sh: Optional[int]
+    sh: Optional[int] = None
     """Number of Silver S ranks achieved."""
-    s: Optional[int]
+    s: Optional[int] = None
     """Number of S ranks achieved."""
-    a: Optional[int]
+    a: Optional[int] = None
     """Number of A ranks achieved."""
 
     @classmethod
     def _from_api_v1(cls, data: Any) -> UserGradeCounts:
-        return cls.parse_obj(
+        return cls.model_validate(
             {
                 "ss": cast_int(data["count_rank_ss"]),
                 "ssh": cast_int(data["count_rank_ssh"]),
@@ -177,36 +181,37 @@ class UserGroup(BaseModel):
     has_listing: bool
     has_playmodes: bool
     is_probationary: bool
-    colour: Optional[str]
-    playmodes: Optional[list[Gamemode]]
-    description: Optional[str]
+    colour: Optional[str] = None
+    playmodes: Optional[list[Gamemode]] = None
+    description: Optional[str] = None
 
 
 class UserStats(BaseModel):
     """Fields are marked as optional since they might be missing from rankings other than performance."""
 
-    ranked_score: Optional[int]
-    play_count: Optional[int]
-    grade_counts: Optional[UserGradeCounts]
-    total_hits: Optional[int]
-    is_ranked: Optional[bool]
-    total_score: Optional[int]
-    level: Optional[UserLevel]
-    hit_accuracy: Optional[float]
-    play_time: Optional[int]
-    pp: Optional[float]
-    pp_exp: Optional[float]
-    replays_watched_by_others: Optional[int]
-    maximum_combo: Optional[int]
-    global_rank: Optional[int]
-    global_rank_exp: Optional[int]
-    country_rank: Optional[int]
-    user: Optional[User]
-    count_300: Optional[int]
-    count_100: Optional[int]
-    count_50: Optional[int]
-    count_miss: Optional[int]
+    ranked_score: Optional[int] = None
+    play_count: Optional[int] = None
+    grade_counts: Optional[UserGradeCounts] = None
+    total_hits: Optional[int] = None
+    is_ranked: Optional[bool] = None
+    total_score: Optional[int] = None
+    level: Optional[UserLevel] = None
+    hit_accuracy: Optional[float] = None
+    play_time: Optional[int] = None
+    pp: Optional[float] = None
+    pp_exp: Optional[float] = None
+    replays_watched_by_others: Optional[int] = None
+    maximum_combo: Optional[int] = None
+    global_rank: Optional[int] = None
+    global_rank_exp: Optional[int] = None
+    country_rank: Optional[int] = None
+    user: Optional[User] = None
+    count_300: Optional[int] = None
+    count_100: Optional[int] = None
+    count_50: Optional[int] = None
+    count_miss: Optional[int] = None
 
+    @computed_field  # type: ignore
     @property
     def pp_per_playtime(self) -> float:
         r"""PP per playtime.
@@ -221,7 +226,7 @@ class UserStats(BaseModel):
     @classmethod
     def _from_api_v1(cls, data: Any) -> UserStats:
         """Some fields can be None, we want to force them to cast to a value."""
-        return cls.parse_obj(
+        return cls.model_validate(
             {
                 "level": UserLevel._from_api_v1(data),
                 "pp": cast_float(data["pp_raw"]),
@@ -254,65 +259,66 @@ class User(BaseModel):
     country_code: str
     id: int
     username: str
-    default_group: Optional[str]
-    is_active: Optional[bool]
-    is_bot: Optional[bool]
-    is_online: Optional[bool]
-    is_supporter: Optional[bool]
-    pm_friends_only: Optional[bool]
-    profile_colour: Optional[str]
-    is_deleted: Optional[bool]
-    last_visit: Optional[datetime]
-    discord: Optional[str]
-    has_supported: Optional[bool]
-    interests: Optional[str]
-    join_date: Optional[datetime]
-    kudosu: Optional[UserKudosu]
-    location: Optional[str]
-    max_blocks: Optional[int]
-    max_friends: Optional[int]
-    occupation: Optional[str]
-    playmode: Optional[Gamemode]
-    playstyle: Optional[list[str]]
-    post_count: Optional[int]
-    profile_order: Optional[list[str]]
-    title: Optional[str]
-    twitter: Optional[str]
-    website: Optional[str]
-    country: Optional[Country]
-    cover: Optional[UserProfileCover]
-    is_restricted: Optional[bool]
-    account_history: Optional[list[UserAccountHistory]]
-    active_tournament_banner: Optional[UserProfileTournamentBanner]
-    badges: Optional[list[UserBadge]]
-    beatmap_playcounts_count: Optional[int]
-    favourite_beatmapset_count: Optional[int]
-    follower_count: Optional[int]
-    graveyard_beatmapset_count: Optional[int]
-    groups: Optional[list[UserGroup]]
-    loved_beatmapset_count: Optional[int]
-    monthly_playcounts: Optional[list[TimestampedCount]]
-    page: Optional[HTMLBody]
-    pending_beatmapset_count: Optional[int]
-    previous_usernames: Optional[list[str]]
-    ranked_beatmapset_count: Optional[int]
-    replays_watched_counts: Optional[list[TimestampedCount]]
-    scores_best_count: Optional[int]
-    scores_first_count: Optional[int]
-    scores_recent_count: Optional[int]
-    statistics: Optional[UserStats]
-    support_level: Optional[int]
-    user_achievements: Optional[list[UserAchievmement]]
-    rank_history: Optional[UserRankHistoryElement]
-    rank_highest: Optional[UserRankHighest]
+    default_group: Optional[str] = None
+    is_active: Optional[bool] = None
+    is_bot: Optional[bool] = None
+    is_online: Optional[bool] = None
+    is_supporter: Optional[bool] = None
+    pm_friends_only: Optional[bool] = None
+    profile_colour: Optional[str] = None
+    is_deleted: Optional[bool] = None
+    last_visit: Optional[datetime] = None
+    discord: Optional[str] = None
+    has_supported: Optional[bool] = None
+    interests: Optional[str] = None
+    join_date: Optional[datetime] = None
+    kudosu: Optional[UserKudosu] = None
+    location: Optional[str] = None
+    max_blocks: Optional[int] = None
+    max_friends: Optional[int] = None
+    occupation: Optional[str] = None
+    playmode: Optional[Gamemode] = None
+    playstyle: Optional[list[str]] = None
+    post_count: Optional[int] = None
+    profile_order: Optional[list[str]] = None
+    title: Optional[str] = None
+    twitter: Optional[str] = None
+    website: Optional[str] = None
+    country: Optional[Country] = None
+    cover: Optional[UserProfileCover] = None
+    is_restricted: Optional[bool] = None
+    account_history: Optional[list[UserAccountHistory]] = None
+    active_tournament_banner: Optional[UserProfileTournamentBanner] = None
+    badges: Optional[list[UserBadge]] = None
+    beatmap_playcounts_count: Optional[int] = None
+    favourite_beatmapset_count: Optional[int] = None
+    follower_count: Optional[int] = None
+    graveyard_beatmapset_count: Optional[int] = None
+    groups: Optional[list[UserGroup]] = None
+    loved_beatmapset_count: Optional[int] = None
+    monthly_playcounts: Optional[list[TimestampedCount]] = None
+    page: Optional[HTMLBody] = None
+    pending_beatmapset_count: Optional[int] = None
+    previous_usernames: Optional[list[str]] = None
+    ranked_beatmapset_count: Optional[int] = None
+    replays_watched_counts: Optional[list[TimestampedCount]] = None
+    scores_best_count: Optional[int] = None
+    scores_first_count: Optional[int] = None
+    scores_recent_count: Optional[int] = None
+    statistics: Optional[UserStats] = None
+    support_level: Optional[int] = None
+    user_achievements: Optional[list[UserAchievmement]] = None
+    rank_history: Optional[UserRankHistoryElement] = None
+    rank_highest: Optional[UserRankHighest] = None
 
+    @computed_field  # type: ignore
     @property
     def url(self) -> str:
         return f"https://osu.ppy.sh/users/{self.id}"
 
     @classmethod
     def _from_api_v1(cls, data: Any) -> User:
-        return cls.parse_obj(
+        return cls.model_validate(
             {
                 "avatar_url": f"https://s.ppy.sh/a/{data['user_id']}",
                 "country_code": data["country"],
@@ -324,4 +330,4 @@ class User(BaseModel):
         )
 
 
-UserStats.update_forward_refs()
+UserStats.model_rebuild()

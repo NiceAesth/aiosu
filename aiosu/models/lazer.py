@@ -7,8 +7,9 @@ from datetime import datetime
 from typing import Any
 from typing import Optional
 
+from pydantic import computed_field
 from pydantic import Field
-from pydantic import root_validator
+from pydantic import model_validator
 
 from .base import BaseModel
 from .beatmap import Beatmap
@@ -80,26 +81,32 @@ class LazerScoreStatistics(BaseModel):
     perfect: int = 0
     legacy_combo_increase: int = 0
 
+    @computed_field  # type: ignore
     @property
     def count_300(self) -> int:
         return self.great
 
+    @computed_field  # type: ignore
     @property
     def count_100(self) -> int:
         return self.ok
 
+    @computed_field  # type: ignore
     @property
     def count_50(self) -> int:
         return self.meh
 
+    @computed_field  # type: ignore
     @property
     def count_miss(self) -> int:
         return self.miss
 
+    @computed_field  # type: ignore
     @property
     def count_geki(self) -> int:
         return self.perfect
 
+    @computed_field  # type: ignore
     @property
     def count_katu(self) -> int:
         return self.good
@@ -131,21 +138,24 @@ class LazerScore(BaseModel):
     beatmap: Beatmap
     beatmapset: Beatmapset
     user: User
-    build_id: Optional[int]
-    started_at: Optional[datetime]
-    best_id: Optional[int]
-    legacy_perfect: Optional[bool]
-    pp: Optional[float]
-    weight: Optional[ScoreWeight]
+    build_id: Optional[int] = None
+    started_at: Optional[datetime] = None
+    best_id: Optional[int] = None
+    legacy_perfect: Optional[bool] = None
+    pp: Optional[float] = None
+    weight: Optional[ScoreWeight] = None
 
+    @computed_field  # type: ignore
     @property
     def mods_str(self) -> str:
         return "".join(str(mod) for mod in self.mods)
 
+    @computed_field  # type: ignore
     @property
     def created_at(self) -> datetime:
         return self.ended_at
 
+    @computed_field  # type: ignore
     @property
     def completion(self) -> float:
         """Beatmap completion.
@@ -163,14 +173,17 @@ class LazerScore(BaseModel):
 
         return calculate_score_completion(self.statistics, self.beatmap)
 
+    @computed_field  # type: ignore
     @property
     def mode(self) -> Gamemode:
         return Gamemode(self.ruleset_id)
 
+    @computed_field  # type: ignore
     @property
     def score(self) -> int:
         return self.total_score
 
+    @computed_field  # type: ignore
     @property
     def score_url(self) -> Optional[str]:
         r"""Link to the score.
@@ -186,6 +199,7 @@ class LazerScore(BaseModel):
             else f"https://osu.ppy.sh/scores/{self.id}"
         )
 
+    @computed_field  # type: ignore
     @property
     def replay_url(self) -> Optional[str]:
         r"""Link to the replay.
@@ -201,7 +215,8 @@ class LazerScore(BaseModel):
             else f"https://osu.ppy.sh/scores/{self.id}/download"
         )
 
-    @root_validator
+    @model_validator(mode="before")
+    @classmethod
     def _fail_rank(cls, values: dict[str, Any]) -> dict[str, Any]:
         if not values["passed"]:
             values["rank"] = "F"

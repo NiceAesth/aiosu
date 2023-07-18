@@ -9,7 +9,7 @@ from typing import Literal
 from typing import Optional
 
 from pydantic import Field
-from pydantic import root_validator
+from pydantic import model_validator
 
 from .base import BaseModel
 from .beatmap import Beatmap
@@ -79,30 +79,31 @@ class MultiplayerScore(BaseModel):
     passed: bool
     user: User
     statistics: LazerScoreStatistics
-    position: Optional[int]
-    scores_around: Optional[MultiplayerScoresAround]
+    position: Optional[int] = None
+    scores_around: Optional[MultiplayerScoresAround] = None
 
 
 class MultiplayerScoresResponse(CursorModel):
     scores: list[MultiplayerScore]
-    user_score: Optional[MultiplayerScore]
-    total: Optional[int]
+    user_score: Optional[MultiplayerScore] = None
+    total: Optional[int] = None
 
 
 class MultiplayerMatch(BaseModel):
     id: int
     name: str
     start_time: datetime
-    end_time: Optional[datetime]
+    end_time: Optional[datetime] = None
 
 
 class MultiplayerEvent(BaseModel):
     id: int
     timestamp: datetime
     type: MultiplayerEventTypes
-    user_id: Optional[int]
+    user_id: Optional[int] = None
 
-    @root_validator(pre=True)
+    @model_validator(mode="before")
+    @classmethod
     def _set_type(cls, values: dict[str, Any]) -> dict[str, Any]:
         if "detail" in values:
             values["type"] = values["detail"]["type"]
@@ -115,7 +116,7 @@ class MultiplayerMatchResponse(BaseModel):
     users: list[User]
     first_event_id: int
     latest_event_id: int
-    current_game_id: Optional[int]
+    current_game_id: Optional[int] = None
 
 
 class MultiplayerMatchesResponse(CursorModel):
@@ -132,8 +133,8 @@ class MultiplayerPlaylistItem(BaseModel):
     expired: bool
     owner_id: int
     beatmap: Beatmap
-    playlist_order: Optional[int]
-    played_at: Optional[datetime]
+    playlist_order: Optional[int] = None
+    played_at: Optional[datetime] = None
 
 
 class MultiplayerRoom(BaseModel):
@@ -150,10 +151,10 @@ class MultiplayerRoom(BaseModel):
     queue_mode: MultiplayerQueueMode
     playlist: list[MultiplayerPlaylistItem]
     recent_participants: list[User]
-    participant_count: Optional[int]
-    starts_at: Optional[datetime]
-    ends_at: Optional[datetime]
-    max_attempts: Optional[int]
+    participant_count: Optional[int] = None
+    starts_at: Optional[datetime] = None
+    ends_at: Optional[datetime] = None
+    max_attempts: Optional[int] = None
 
 
 class MultiplayerLeaderboardItem(BaseModel):
@@ -165,12 +166,12 @@ class MultiplayerLeaderboardItem(BaseModel):
     total_score: int
     user_id: int
     user: User
-    position: Optional[int]
+    position: Optional[int] = None
 
 
 class MultiplayerLeaderboardResponse(BaseModel):
     leaderboard: list[MultiplayerLeaderboardItem]
-    user_score: Optional[MultiplayerLeaderboardItem]
+    user_score: Optional[MultiplayerLeaderboardItem] = None
 
 
 class MultiplayerRoomsResponse(CursorModel):
@@ -179,4 +180,4 @@ class MultiplayerRoomsResponse(CursorModel):
     rooms: list[MultiplayerRoom]
 
 
-MultiplayerScoresAround.update_forward_refs()
+MultiplayerScoresAround.model_rebuild()

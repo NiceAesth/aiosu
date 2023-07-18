@@ -7,8 +7,10 @@ from typing import Optional
 from typing import TYPE_CHECKING
 
 from pydantic import Field
-from pydantic import root_validator
-from pydantic import validator
+from pydantic import field_serializer
+from pydantic import field_validator
+from pydantic import FieldSerializationInfo
+from pydantic import model_validator
 
 from ..base import BaseModel
 from ..gamemode import Gamemode
@@ -72,18 +74,21 @@ class MatchScore(BaseModel):
         """
         return Mods(self.enabled_mods | game.mods)
 
-    @root_validator(pre=True)
+    @model_validator(mode="before")
+    @classmethod
     def _set_statistics(cls, values: dict[str, Any]) -> dict[str, Any]:
         values["statistics"] = ScoreStatistics._from_api_v1(values)
         return values
 
-    @validator("enabled_mods", pre=True)
+    @field_validator("enabled_mods", mode="before")
+    @classmethod
     def _set_enabled_mods(cls, v: Any) -> int:
         if v is not None:
             return int(v)
         return 0
 
-    @validator("team", pre=True)
+    @field_validator("team", mode="before")
+    @classmethod
     def _set_team(cls, v: Any) -> int:
         return int(v)
 
@@ -100,24 +105,28 @@ class MatchGame(BaseModel):
     team_type: MatchTeamType
     scores: list[MatchScore]
     mods: Mods
-    end_time: Optional[datetime]
+    end_time: Optional[datetime] = None
     """None if game was aborted."""
 
-    @validator("mode", pre=True)
+    @field_validator("mode", mode="before")
+    @classmethod
     def _set_mode(cls, v: Any) -> int:
         return int(v)
 
-    @validator("mods", pre=True)
+    @field_validator("mods", mode="before")
+    @classmethod
     def _set_mods(cls, v: Any) -> int:
         if v is not None:
             return int(v)
         return 0
 
-    @validator("scoring_type", pre=True)
+    @field_validator("scoring_type", mode="before")
+    @classmethod
     def _set_scoring_type(cls, v: Any) -> int:
         return int(v)
 
-    @validator("team_type", pre=True)
+    @field_validator("team_type", mode="before")
+    @classmethod
     def _set_team_type(cls, v: Any) -> int:
         return int(v)
 
@@ -129,9 +138,10 @@ class Match(BaseModel):
     name: str
     start_time: datetime
     games: list[MatchGame]
-    end_time: Optional[datetime]
+    end_time: Optional[datetime] = None
     """None if game is ongoing."""
 
-    @root_validator(pre=True)
+    @model_validator(mode="before")
+    @classmethod
     def _format_values(cls, values: dict[str, Any]) -> dict[str, Any]:
         return {**values["match"], "games": values["games"]}

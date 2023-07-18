@@ -29,41 +29,41 @@ ChangelogMessageFormats = Literal["markdown", "html"]
 
 class GithubUser(BaseModel):
     display_name: str
-    github_url: Optional[str]
-    id: Optional[int]
-    osu_username: Optional[str]
-    user_id: Optional[int]
-    user_url: Optional[str]
+    github_url: Optional[str] = None
+    id: Optional[int] = None
+    osu_username: Optional[str] = None
+    user_id: Optional[int] = None
+    user_url: Optional[str] = None
 
 
 class ChangelogEntry(BaseModel):
     type: str
     category: str
     major: bool
-    id: Optional[int]
-    title: Optional[str]
-    created_at: Optional[datetime]
-    url: Optional[str]
-    github_url: Optional[str]
-    github_pull_request_id: Optional[int]
-    repository: Optional[str]
-    message: Optional[str]
-    message_html: Optional[str]
-    github_user: Optional[GithubUser]
+    id: Optional[int] = None
+    title: Optional[str] = None
+    created_at: Optional[datetime] = None
+    url: Optional[str] = None
+    github_url: Optional[str] = None
+    github_pull_request_id: Optional[int] = None
+    repository: Optional[str] = None
+    message: Optional[str] = None
+    message_html: Optional[str] = None
+    github_user: Optional[GithubUser] = None
 
 
 class Version(BaseModel):
-    next: Optional[Build]
-    previous: Optional[Build]
+    next: Optional[Build] = None
+    previous: Optional[Build] = None
 
 
 class UpdateStream(BaseModel):
     id: int
     is_featured: bool
     name: str
-    display_name: Optional[str]
-    user_count: Optional[int]
-    latest_build: Optional[Build]
+    display_name: Optional[str] = None
+    user_count: Optional[int] = None
+    latest_build: Optional[Build] = None
 
 
 class Build(BaseModel):
@@ -72,17 +72,17 @@ class Build(BaseModel):
     display_version: str
     users: int
     version: str
-    update_stream: Optional[UpdateStream]
-    changelog_entries: Optional[list[ChangelogEntry]]
-    versions: Optional[Version]
+    update_stream: Optional[UpdateStream] = None
+    changelog_entries: Optional[list[ChangelogEntry]] = None
+    versions: Optional[Version] = None
 
 
 class ChangelogSearch(BaseModel):
     limit: int
-    fro: Optional[str] = Field(alias="from")
-    to: Optional[str]
-    max_id: Optional[int]
-    stream: Optional[str]
+    fro: Optional[str] = Field(default=None, alias="from")
+    to: Optional[str] = None
+    max_id: Optional[int] = None
+    stream: Optional[str] = None
 
 
 class ChangelogListing(CursorModel):
@@ -91,5 +91,5 @@ class ChangelogListing(CursorModel):
     streams: list[UpdateStream]
 
 
-Version.update_forward_refs()
-UpdateStream.update_forward_refs()
+Version.model_rebuild()
+UpdateStream.model_rebuild()

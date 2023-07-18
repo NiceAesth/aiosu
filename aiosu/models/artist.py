@@ -40,7 +40,7 @@ class Album(BaseModel):
 class ArtistTrack(BaseModel):
     id: int
     artist_id: int
-    bpm: int
+    bpm: float
     cover_url: str
     exclusive: bool
     genre: str
@@ -50,14 +50,14 @@ class ArtistTrack(BaseModel):
     artist: Artist
     osz_url: str = Field(alias="osz")
     preview_url: str = Field(alias="preview")
-    album: Optional[Album]
-    album_id: Optional[int]
-    updated_at: Optional[datetime]
-    version: Optional[str]
+    album: Optional[Album] = None
+    album_id: Optional[int] = None
+    updated_at: Optional[datetime] = None
+    version: Optional[str] = None
 
 
 class ArtistResponse(CursorModel):
     """Artist response model."""
 
     artist_tracks: list[ArtistTrack]
-    search: Optional[ArtistSearch]
+    search: Optional[ArtistSearch] = None

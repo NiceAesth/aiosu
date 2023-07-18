@@ -56,7 +56,7 @@ class EventBeatmapset(BaseModel):
 class EventUser(BaseModel):
     username: str
     url: str
-    previous_username: Optional[str] = Field(alias="previousUsername")
+    previous_username: Optional[str] = Field(default=None, alias="previousUsername")
 
 
 class Event(BaseModel):
@@ -64,13 +64,13 @@ class Event(BaseModel):
     id: int
     type: EventType
     r"""Information on types: https://github.com/ppy/osu-web/blob/master/resources/assets/lib/interfaces/event-json.ts"""
-    parse_error: Optional[bool]
-    achievment: Optional[Achievement]
-    user: Optional[EventUser]
-    beatmap: Optional[EventBeatmap]
-    beatmapset: Optional[EventBeatmapset]
-    approval: Optional[BeatmapRankStatus]
-    count: Optional[int]
-    rank: Optional[int]
-    mode: Optional[Gamemode]
-    score_rank: Optional[str] = Field(alias="scoreRank")
+    parse_error: Optional[bool] = None
+    achievment: Optional[Achievement] = None
+    user: Optional[EventUser] = None
+    beatmap: Optional[EventBeatmap] = None
+    beatmapset: Optional[EventBeatmapset] = None
+    approval: Optional[BeatmapRankStatus] = None
+    count: Optional[int] = None
+    rank: Optional[int] = None
+    mode: Optional[Gamemode] = None
+    score_rank: Optional[str] = Field(default=None, alias="scoreRank")

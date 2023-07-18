@@ -33,7 +33,7 @@ class KudosuGiver(BaseModel):
 
 class KudosuPost(BaseModel):
     title: str
-    url: Optional[str]
+    url: Optional[str] = None
 
 
 class KudosuHistory(BaseModel):
@@ -42,5 +42,5 @@ class KudosuHistory(BaseModel):
     created_at: datetime
     amount: int
     model: str
-    giver: Optional[KudosuGiver]
-    post: Optional[KudosuPost]
+    giver: Optional[KudosuGiver] = None
+    post: Optional[KudosuPost] = None
