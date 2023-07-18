@@ -17,7 +17,6 @@ from .mods import Mods
 
 
 if TYPE_CHECKING:
-    from typing import Any
     from .lazer import LazerMod
 
 __all__ = (
@@ -31,14 +30,14 @@ T = TypeVar("T")
 class BaseModel(pydantic.BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True, populate_by_name=True)
 
-    def model_validate_file(self, path: str) -> Any:
+    def model_validate_file(self, path: str) -> BaseModel:
         """Validates a model from a file.
 
         :param path: The path to the file
         :type path: str
         :raises TypeError: If the file is not a JSON file
         :return: The validated model
-        :rtype: Any
+        :rtype: aiosu.models.base.BaseModel
         """
         with open(path) as f:
             return self.model_validate_json(f.read())
