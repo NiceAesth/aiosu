@@ -7,9 +7,7 @@ from typing import Optional
 from typing import TYPE_CHECKING
 
 from pydantic import Field
-from pydantic import field_serializer
 from pydantic import field_validator
-from pydantic import FieldSerializationInfo
 from pydantic import model_validator
 
 from ..base import BaseModel

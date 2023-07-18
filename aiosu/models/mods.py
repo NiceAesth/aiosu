@@ -16,8 +16,6 @@ from pydantic_core import CoreSchema
 
 
 if TYPE_CHECKING:
-    from collections.abc import Generator
-
     from typing import Any
     from typing import Union
 
