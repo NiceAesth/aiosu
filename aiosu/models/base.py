@@ -3,8 +3,6 @@ This module contains base models for objects.
 """
 from __future__ import annotations
 
-from typing import TypeVar
-
 import pydantic
 from pydantic import ConfigDict
 
@@ -12,8 +10,6 @@ __all__ = (
     "BaseModel",
     "FrozenModel",
 )
-
-T = TypeVar("T")
 
 
 class BaseModel(pydantic.BaseModel):
