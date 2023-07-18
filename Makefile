@@ -8,15 +8,23 @@ shell:
 	poetry shell
 
 release:
-	@if [ "$(CURRENT_BRANCH)" != "master" ]; then echo "Not on master branch"; exit 1; fi
-	@poetry version $(ver)
+	$(if $(filter $(CURRENT_BRANCH),master),,$(error ERR: Not on master branch))
+	$(eval VERSION := $(shell poetry version $(ver) -s))
 	@git add pyproject.toml
-	@git commit -m "v$$(poetry version -s)"
-	@git tag v$$(poetry version -s)
+	@git commit -m "v$(VERSION)"
+	@git tag v$(VERSION)
 	@git push
 	@git push --tags
 	@poetry version
 
+release-dry:
+	$(if $(filter $(CURRENT_BRANCH),master),,$(warning WARN: Not on master branch))
+	$(eval VERSION := $(shell poetry version $(ver) -s --dry-run))
+	@echo "Dry run: git add pyproject.toml"
+	@echo "Dry run: git tag v$(VERSION)"
+	@echo "Dry run: git push"
+	@echo "Dry run: git push --tags"
+	@echo "Run `make release ver=$(ver)` to release"
 
 lint:
 	poetry run pre-commit run --all-files
