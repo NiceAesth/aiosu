@@ -15,7 +15,8 @@ __all__ = (
 class BaseModel(pydantic.BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True, populate_by_name=True)
 
-    def model_validate_file(self, path: str) -> BaseModel:
+    @classmethod
+    def model_validate_file(cls, path: str) -> BaseModel:
         """Validates a model from a file.
 
         :param path: The path to the file
@@ -25,7 +26,7 @@ class BaseModel(pydantic.BaseModel):
         :rtype: aiosu.models.base.BaseModel
         """
         with open(path) as f:
-            return self.model_validate_json(f.read())
+            return cls.model_validate_json(f.read())
 
 
 class FrozenModel(BaseModel):
