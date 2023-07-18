@@ -51,6 +51,7 @@ class ChatChannel(BaseModel):
     type: ChatChannelTypes
     name: str
     moderated: bool
+    message_length_limit: int
     icon: Optional[str] = None
     description: Optional[str] = None
     last_message_id: Optional[int] = None
