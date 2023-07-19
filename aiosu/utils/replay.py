@@ -8,10 +8,10 @@ from typing import BinaryIO
 
 from ..models.lazer import LazerReplayData
 from ..models.mods import Mod
-from ..models.replay import Replay
-from ..models.replay import ReplayEvent
-from ..models.replay import ReplayKey
-from ..models.replay import ReplayLifebarEvent
+from ..models.files.replay import Replay
+from ..models.files.replay import ReplayEvent
+from ..models.files.replay import ReplayKey
+from ..models.files.replay import ReplayLifebarEvent
 from .binary import pack_byte
 from .binary import pack_float64
 from .binary import pack_int

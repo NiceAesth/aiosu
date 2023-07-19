@@ -10,12 +10,12 @@ from typing import Optional
 
 from pydantic import model_validator
 
-from .base import BaseModel
-from .gamemode import Gamemode
-from .lazer import LazerReplayData
-from .mods import Mod
-from .mods import Mods
-from .score import ScoreStatistics
+from ..base import BaseModel
+from ..gamemode import Gamemode
+from ..lazer import LazerReplayData
+from ..mods import Mod
+from ..mods import Mods
+from ..score import ScoreStatistics
 
 __all__ = (
     "Replay",
