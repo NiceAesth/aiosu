@@ -1,3 +1,3 @@
 from __future__ import annotations
 
-from replay import *
+from .replay import *

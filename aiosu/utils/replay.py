@@ -6,7 +6,7 @@ from __future__ import annotations
 from typing import Any
 from typing import BinaryIO
 
-from ..models import ReplayFile
+from ..models.files.replay import ReplayFile
 from ..models.files.replay import ReplayEvent
 from ..models.files.replay import ReplayKey
 from ..models.files.replay import ReplayLifebarEvent
