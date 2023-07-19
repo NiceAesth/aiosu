@@ -6,12 +6,12 @@ from __future__ import annotations
 from typing import Any
 from typing import BinaryIO
 
-from ..models.lazer import LazerReplayData
-from ..models.mods import Mod
 from ..models import ReplayFile
 from ..models.files.replay import ReplayEvent
 from ..models.files.replay import ReplayKey
 from ..models.files.replay import ReplayLifebarEvent
+from ..models.lazer import LazerReplayData
+from ..models.mods import Mod
 from .binary import pack_byte
 from .binary import pack_float64
 from .binary import pack_int
