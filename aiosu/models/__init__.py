@@ -22,7 +22,7 @@ from .news import *
 from .oauthtoken import *
 from .performance import *
 from .rankings import *
-from .files.replay import *
+from .files import *
 from .scopes import *
 from .score import *
 from .search import *
