@@ -63,7 +63,7 @@ Score
 Replay
 ------
 
-.. automodule:: aiosu.models.replay
+.. automodule:: aiosu.models.files.replay
     :members:
     :exclude-members: Config
     :undoc-members:

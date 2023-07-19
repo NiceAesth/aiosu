@@ -23,7 +23,7 @@ def test_parse_replay(replay_file):
     for mode in modes:
         data = BytesIO(replay_file(mode))
         replay = aiosu.utils.replay.parse_file(data)
-        assert isinstance(replay, aiosu.models.Replay)
+        assert isinstance(replay, aiosu.models.ReplayFile)
 
 
 def test_write_replay(replay_file):
