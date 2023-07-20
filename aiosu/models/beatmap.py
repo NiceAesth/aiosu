@@ -15,12 +15,16 @@ from pydantic import Field
 from pydantic import model_validator
 
 from .base import BaseModel
+from .common import CurrentUserAttributes
 from .common import CursorModel
 from .gamemode import Gamemode
 from .user import User
 
 __all__ = (
     "Beatmap",
+    "BeatmapDescription",
+    "BeatmapGenre",
+    "BeatmapLanguage",
     "BeatmapAvailability",
     "BeatmapCovers",
     "BeatmapDifficultyAttributes",
@@ -135,6 +139,21 @@ class BeatmapRankStatus(Enum):
                 if status.name_api == query.lower():
                     return status
         raise ValueError(f"BeatmapRankStatus {query} does not exist.")
+
+
+class BeatmapDescription(BaseModel):
+    bbcode: Optional[str] = None
+    description: Optional[str] = None
+
+
+class BeatmapGenre(BaseModel):
+    name: str
+    id: Optional[int] = None
+
+
+class BeatmapLanguage(BaseModel):
+    name: str
+    id: Optional[int] = None
 
 
 class BeatmapAvailability(BaseModel):
@@ -344,10 +363,17 @@ class Beatmapset(BaseModel):
     storyboard: Optional[bool] = None
     submitted_date: Optional[datetime] = None
     tags: Optional[str] = None
-    pack_tags: Optional[str] = None
+    pack_tags: Optional[list[str]] = None
+    track_id: Optional[int] = None
+    related_users: Optional[list[User]] = None
+    current_user_attributes: Optional[CurrentUserAttributes] = None
+    description: Optional[BeatmapDescription] = None
+    genre: Optional[BeatmapGenre] = None
+    language: Optional[BeatmapLanguage] = None
     ratings: Optional[list[int]] = None
     has_favourited: Optional[bool] = None
     beatmaps: Optional[list[Beatmap]] = None
+    converts: Optional[list[Beatmap]] = None
 
     @computed_field  # type: ignore
     @property

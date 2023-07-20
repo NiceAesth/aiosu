@@ -82,6 +82,18 @@ class PinAttributes(BaseModel):
 
 
 class CurrentUserAttributes(BaseModel):
+    can_beatmap_update_owner: Optional[bool] = None
+    can_delete: Optional[bool] = None
+    can_edit_metadata: Optional[bool] = None
+    can_edit_tags: Optional[bool] = None
+    can_hype: Optional[bool] = None
+    can_hype_reason: Optional[str] = None
+    can_love: Optional[bool] = None
+    can_remove_from_loved: Optional[bool] = None
+    is_watching: Optional[bool] = None
+    new_hype_time: Optional[datetime] = None
+    nomination_modes: Optional[list[Gamemode]] = None
+    remaining_hype: Optional[int] = None
     can_destroy: Optional[bool] = None
     can_reopen: Optional[bool] = None
     can_moderate_kudosu: Optional[bool] = None

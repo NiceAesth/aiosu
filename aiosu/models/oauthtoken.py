@@ -26,7 +26,7 @@ class OAuthToken(FrozenModel):
     """Defaults to 'Bearer'"""
     access_token: str = ""
     refresh_token: str = ""
-    expires_on: datetime = datetime.utcfromtimestamp(0)
+    expires_on: datetime = datetime.utcfromtimestamp(31536000)
     """Can be a datetime.datetime object or a string. Alternatively, expires_in may be passed representing the number of seconds the token will be valid for."""
 
     @computed_field  # type: ignore
