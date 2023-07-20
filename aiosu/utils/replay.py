@@ -6,12 +6,12 @@ from __future__ import annotations
 from typing import Any
 from typing import BinaryIO
 
+from ..models.files.replay import ReplayEvent
+from ..models.files.replay import ReplayFile
+from ..models.files.replay import ReplayKey
+from ..models.files.replay import ReplayLifebarEvent
 from ..models.lazer import LazerReplayData
 from ..models.mods import Mod
-from ..models.replay import Replay
-from ..models.replay import ReplayEvent
-from ..models.replay import ReplayKey
-from ..models.replay import ReplayLifebarEvent
 from .binary import pack_byte
 from .binary import pack_float64
 from .binary import pack_int
@@ -66,7 +66,7 @@ def _parse_life_graph_data(data: str) -> list[ReplayLifebarEvent]:
     return events
 
 
-def parse_file(file: BinaryIO) -> Replay:
+def parse_file(file: BinaryIO) -> ReplayFile:
     """Parse a replay file and return a dictionary with the replay data.
 
     :param file: The replay file.
@@ -108,10 +108,10 @@ def parse_file(file: BinaryIO) -> Replay:
         replay["lazer_replay_data"] = LazerReplayData.model_validate_json(
             lazer_replay_data_str,
         )
-    return Replay(**replay)
+    return ReplayFile(**replay)
 
 
-def parse_path(path: str) -> Replay:
+def parse_path(path: str) -> ReplayFile:
     """Parse a replay file and return a dictionary with the replay data.
 
     :param path: The path to the replay file.
@@ -123,7 +123,7 @@ def parse_path(path: str) -> Replay:
         return parse_file(file)
 
 
-def write_replay(file: BinaryIO, replay: Replay) -> None:
+def write_replay(file: BinaryIO, replay: ReplayFile) -> None:
     """Write a replay to a file.
 
     :param file: The file to write to.
@@ -178,7 +178,7 @@ def write_replay(file: BinaryIO, replay: Replay) -> None:
         )
 
 
-def write_path(path: str, replay: Replay) -> None:
+def write_path(path: str, replay: ReplayFile) -> None:
     """Write a replay to a file.
 
     :param path: The path to the file to write to.

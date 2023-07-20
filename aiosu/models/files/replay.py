@@ -10,15 +10,15 @@ from typing import Optional
 
 from pydantic import model_validator
 
-from .base import BaseModel
-from .gamemode import Gamemode
-from .lazer import LazerReplayData
-from .mods import Mod
-from .mods import Mods
-from .score import ScoreStatistics
+from ..base import BaseModel
+from ..gamemode import Gamemode
+from ..lazer import LazerReplayData
+from ..mods import Mod
+from ..mods import Mods
+from ..score import ScoreStatistics
 
 __all__ = (
-    "Replay",
+    "ReplayFile",
     "ReplayKey",
     "ReplayLifebarEvent",
     "ReplayEvent",
@@ -81,7 +81,7 @@ class ReplayEvent(BaseModel):
     keys: ReplayKey
 
 
-class Replay(BaseModel):
+class ReplayFile(BaseModel):
     """Replay file data."""
 
     mode: Gamemode
@@ -111,7 +111,7 @@ class Replay(BaseModel):
 
     @model_validator(mode="after")  # type: ignore
     @classmethod
-    def _add_skip_offset(cls, obj: Replay) -> Replay:
+    def _add_skip_offset(cls, obj: ReplayFile) -> ReplayFile:
         if not obj.skip_offset:
             obj.skip_offset = _parse_skip_offset(
                 obj.replay_data,
@@ -121,7 +121,7 @@ class Replay(BaseModel):
 
     @model_validator(mode="after")  # type: ignore
     @classmethod
-    def _add_rng_seed(cls, obj: Replay) -> Replay:
+    def _add_rng_seed(cls, obj: ReplayFile) -> ReplayFile:
         if not obj.rng_seed and obj.version >= 2013_03_19:
             obj.rng_seed = _parse_rng_seed(obj.replay_data)
         return obj

@@ -12,6 +12,7 @@ from .chat import *
 from .comment import *
 from .common import *
 from .event import *
+from .files import *
 from .forum import *
 from .gamemode import *
 from .kudosu import *
@@ -22,7 +23,6 @@ from .news import *
 from .oauthtoken import *
 from .performance import *
 from .rankings import *
-from .replay import *
 from .scopes import *
 from .score import *
 from .search import *
