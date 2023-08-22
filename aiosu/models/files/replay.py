@@ -109,17 +109,17 @@ class ReplayFile(BaseModel):
     def __str__(self) -> str:
         return f"{self.player_name} {self.played_at} {self.map_md5} +{self.mods}"
 
-    @model_validator(mode="after")  # type: ignore
+    @model_validator(mode="after")
     def _add_skip_offset(self) -> ReplayFile:
         if not self.skip_offset:
             self.skip_offset = _parse_skip_offset(
                 self.replay_data,
                 self.mods,
             )
-        return self  # type: ignore
+        return self
 
-    @model_validator(mode="after")  # type: ignore
+    @model_validator(mode="after")
     def _add_rng_seed(self) -> ReplayFile:
         if not self.rng_seed and self.version >= 2013_03_19:
             self.rng_seed = _parse_rng_seed(self.replay_data)
-        return self  # type: ignore
+        return self
