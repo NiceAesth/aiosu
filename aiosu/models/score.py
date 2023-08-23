@@ -45,7 +45,7 @@ def calculate_score_completion(
     mode: Gamemode,
     statistics: ScoreStatistics,
     beatmap: Beatmap,
-) -> float:
+) -> Optional[float]:
     """Calculates completion for a score.
 
     :param mode: The gamemode of the score
@@ -56,8 +56,11 @@ def calculate_score_completion(
     :type beatmap: aiosu.models.beatmap.Beatmap
     :raises ValueError: If the gamemode is unknown
     :return: Completion for the given score
-    :rtype: float
+    :rtype: Optional[float]
     """
+    if not beatmap.count_objects:
+        return None
+
     if mode == Gamemode.STANDARD:
         return (
             (
@@ -90,6 +93,7 @@ def calculate_score_completion(
             )
             / beatmap.count_objects
         ) * 100
+
     raise ValueError("Unknown mode specified.")
 
 
@@ -159,16 +163,15 @@ class Score(BaseModel):
 
     @computed_field  # type: ignore
     @property
-    def completion(self) -> float:
+    def completion(self) -> Optional[float]:
         """Beatmap completion.
 
-        :raises ValueError: If beatmap is None
         :raises ValueError: If mode is unknown
-        :return: Beatmap completion of a score (%). 100% for passes
-        :rtype: float
+        :return: Beatmap completion of a score (%). 100% for passes. None if no beatmap.
+        :rtype: Optional[float]
         """
         if not self.beatmap:
-            raise ValueError("Beatmap object is not set.")
+            return None
 
         if self.passed:
             return 100.0

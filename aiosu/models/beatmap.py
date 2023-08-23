@@ -287,19 +287,18 @@ class Beatmap(BaseModel):
 
     @computed_field  # type: ignore
     @property
-    def count_objects(self) -> int:
+    def count_objects(self) -> Optional[int]:
         """Total count of the objects.
 
-        :raises ValueError: Raised if object counts are none
-        :return: Sum of counts of all objects
-        :rtype: int
+        :return: Sum of counts of all objects. None if no object count information.
+        :rtype: Optional[int]
         """
         if (
             self.count_circles is None
             or self.count_spinners is None
             or self.count_sliders is None
         ):
-            raise ValueError("Beatmap contains no object count information.")
+            return None
         return self.count_spinners + self.count_circles + self.count_sliders
 
     @classmethod
