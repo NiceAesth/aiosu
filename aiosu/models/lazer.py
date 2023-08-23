@@ -30,7 +30,7 @@ __all__ = (
 def calculate_score_completion(
     statistics: LazerScoreStatistics,
     beatmap: Beatmap,
-) -> float:
+) -> Optional[float]:
     """Calculates completion for a score.
 
     :param statistics: The statistics of the score
@@ -39,8 +39,11 @@ def calculate_score_completion(
     :type beatmap: aiosu.models.beatmap.Beatmap
     :raises ValueError: If the gamemode is unknown
     :return: Completion for the given score
-    :rtype: float
+    :rtype: Optional[float]
     """
+    if not beatmap.count_objects:
+        return None
+
     return (
         (
             statistics.perfect
@@ -157,16 +160,14 @@ class LazerScore(BaseModel):
 
     @computed_field  # type: ignore
     @property
-    def completion(self) -> float:
+    def completion(self) -> Optional[float]:
         """Beatmap completion.
 
-        :raises ValueError: If beatmap is None
-        :raises ValueError: If mode is unknown
-        :return: Beatmap completion of a score (%). 100% for passes
-        :rtype: float
+        :return: Beatmap completion of a score (%). 100% for passes. None if no beatmap.
+        :rtype: Optional[float]
         """
-        if self.beatmap is None:
-            raise ValueError("Beatmap object is not set.")
+        if not self.beatmap:
+            return None
 
         if self.passed:
             return 100.0
