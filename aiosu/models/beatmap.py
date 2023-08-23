@@ -280,24 +280,25 @@ class Beatmap(BaseModel):
             ] = f"https://osu.ppy.sh/beatmapsets/{beatmapset_id}#{mode}/{id}"
         return values
 
-    @computed_field
+    @computed_field  # type: ignore
+    @property
     def discussion_url(self) -> str:
         return f"https://osu.ppy.sh/beatmapsets/{self.beatmapset_id}/discussion/{self.id}/general"
 
-    @computed_field
-    def count_objects(self) -> int:
+    @computed_field  # type: ignore
+    @property
+    def count_objects(self) -> Optional[int]:
         """Total count of the objects.
 
-        :raises ValueError: Raised if object counts are none
-        :return: Sum of counts of all objects
-        :rtype: int
+        :return: Sum of counts of all objects. None if no object count information.
+        :rtype: Optional[int]
         """
         if (
             self.count_circles is None
             or self.count_spinners is None
             or self.count_sliders is None
         ):
-            raise ValueError("Beatmap contains no object count information.")
+            return None
         return self.count_spinners + self.count_circles + self.count_sliders
 
     @classmethod
@@ -373,11 +374,13 @@ class Beatmapset(BaseModel):
     beatmaps: Optional[list[Beatmap]] = None
     converts: Optional[list[Beatmap]] = None
 
-    @computed_field
+    @computed_field  # type: ignore
+    @property
     def url(self) -> str:
         return f"https://osu.ppy.sh/beatmapsets/{self.id}"
 
-    @computed_field
+    @computed_field  # type: ignore
+    @property
     def discussion_url(self) -> str:
         return f"https://osu.ppy.sh/beatmapsets/{self.id}/discussion"
 

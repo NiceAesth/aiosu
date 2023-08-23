@@ -58,7 +58,8 @@ class Country(BaseModel):
     code: str
     name: str
 
-    @computed_field
+    @computed_field  # type: ignore
+    @property
     def flag_emoji(self) -> str:
         r"""Emoji for the flag.
 
