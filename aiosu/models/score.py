@@ -45,7 +45,7 @@ def calculate_score_completion(
     mode: Gamemode,
     statistics: ScoreStatistics,
     beatmap: Beatmap,
-) -> float:
+) -> Optional[float]:
     """Calculates completion for a score.
 
     :param mode: The gamemode of the score
@@ -56,8 +56,11 @@ def calculate_score_completion(
     :type beatmap: aiosu.models.beatmap.Beatmap
     :raises ValueError: If the gamemode is unknown
     :return: Completion for the given score
-    :rtype: float
+    :rtype: Optional[float]
     """
+    if not beatmap.count_objects:
+        return None
+
     if mode == Gamemode.STANDARD:
         return (
             (
@@ -90,6 +93,7 @@ def calculate_score_completion(
             )
             / beatmap.count_objects
         ) * 100
+
     raise ValueError("Unknown mode specified.")
 
 
@@ -157,7 +161,8 @@ class Score(BaseModel):
     beatmap_id: Optional[int] = None
     """Only present on API v1"""
 
-    @computed_field
+    @computed_field  # type: ignore
+    @property
     def completion(self) -> Optional[float]:
         """Beatmap completion.
 
@@ -173,7 +178,8 @@ class Score(BaseModel):
 
         return calculate_score_completion(self.mode, self.statistics, self.beatmap)
 
-    @computed_field
+    @computed_field  # type: ignore
+    @property
     def score_url(self) -> Optional[str]:
         r"""Link to the score.
 
@@ -188,7 +194,8 @@ class Score(BaseModel):
             else f"https://osu.ppy.sh/scores/{self.id}"
         )
 
-    @computed_field
+    @computed_field  # type: ignore
+    @property
     def replay_url(self) -> Optional[str]:
         r"""Link to the replay.
 

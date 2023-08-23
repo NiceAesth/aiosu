@@ -30,7 +30,7 @@ __all__ = (
 def calculate_score_completion(
     statistics: LazerScoreStatistics,
     beatmap: Beatmap,
-) -> float:
+) -> Optional[float]:
     """Calculates completion for a score.
 
     :param statistics: The statistics of the score
@@ -39,8 +39,11 @@ def calculate_score_completion(
     :type beatmap: aiosu.models.beatmap.Beatmap
     :raises ValueError: If the gamemode is unknown
     :return: Completion for the given score
-    :rtype: float
+    :rtype: Optional[float]
     """
+    if not beatmap.count_objects:
+        return None
+
     return (
         (
             statistics.perfect
@@ -81,27 +84,33 @@ class LazerScoreStatistics(BaseModel):
     perfect: int = 0
     legacy_combo_increase: int = 0
 
-    @computed_field
+    @computed_field  # type: ignore
+    @property
     def count_300(self) -> int:
         return self.great
 
-    @computed_field
+    @computed_field  # type: ignore
+    @property
     def count_100(self) -> int:
         return self.ok
 
-    @computed_field
+    @computed_field  # type: ignore
+    @property
     def count_50(self) -> int:
         return self.meh
 
-    @computed_field
+    @computed_field  # type: ignore
+    @property
     def count_miss(self) -> int:
         return self.miss
 
-    @computed_field
+    @computed_field  # type: ignore
+    @property
     def count_geki(self) -> int:
         return self.perfect
 
-    @computed_field
+    @computed_field  # type: ignore
+    @property
     def count_katu(self) -> int:
         return self.good
 
@@ -139,15 +148,18 @@ class LazerScore(BaseModel):
     pp: Optional[float] = None
     weight: Optional[ScoreWeight] = None
 
-    @computed_field
+    @computed_field  # type: ignore
+    @property
     def mods_str(self) -> str:
         return "".join(str(mod) for mod in self.mods)
 
-    @computed_field
+    @computed_field  # type: ignore
+    @property
     def created_at(self) -> datetime:
         return self.ended_at
 
-    @computed_field
+    @computed_field  # type: ignore
+    @property
     def completion(self) -> Optional[float]:
         """Beatmap completion.
 
@@ -162,15 +174,18 @@ class LazerScore(BaseModel):
 
         return calculate_score_completion(self.statistics, self.beatmap)
 
-    @computed_field
+    @computed_field  # type: ignore
+    @property
     def mode(self) -> Gamemode:
         return Gamemode(self.ruleset_id)
 
-    @computed_field
+    @computed_field  # type: ignore
+    @property
     def score(self) -> int:
         return self.total_score
 
-    @computed_field
+    @computed_field  # type: ignore
+    @property
     def score_url(self) -> Optional[str]:
         r"""Link to the score.
 
@@ -185,7 +200,8 @@ class LazerScore(BaseModel):
             else f"https://osu.ppy.sh/scores/{self.id}"
         )
 
-    @computed_field
+    @computed_field  # type: ignore
+    @property
     def replay_url(self) -> Optional[str]:
         r"""Link to the replay.
 
