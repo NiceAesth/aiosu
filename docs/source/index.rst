@@ -36,6 +36,8 @@ If you need assistance, you should look here:
 Breaking changes
 ----------------
 
+**v2.0.3:** The replay model has been moved to `models/files/replay.py` and the `Replay` class has been renamed to `ReplayFile`.
+
 **v2.0.0:** The library now uses *Pydantic v2*. This means that the following changes have occured:
 
 - The *dict* method has been renamed to *model_dump*
