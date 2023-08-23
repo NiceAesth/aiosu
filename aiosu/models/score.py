@@ -157,26 +157,23 @@ class Score(BaseModel):
     beatmap_id: Optional[int] = None
     """Only present on API v1"""
 
-    @computed_field  # type: ignore
-    @property
-    def completion(self) -> float:
+    @computed_field
+    def completion(self) -> Optional[float]:
         """Beatmap completion.
 
-        :raises ValueError: If beatmap is None
         :raises ValueError: If mode is unknown
-        :return: Beatmap completion of a score (%). 100% for passes
-        :rtype: float
+        :return: Beatmap completion of a score (%). 100% for passes. None if no beatmap.
+        :rtype: Optional[float]
         """
         if not self.beatmap:
-            raise ValueError("Beatmap object is not set.")
+            return None
 
         if self.passed:
             return 100.0
 
         return calculate_score_completion(self.mode, self.statistics, self.beatmap)
 
-    @computed_field  # type: ignore
-    @property
+    @computed_field
     def score_url(self) -> Optional[str]:
         r"""Link to the score.
 
@@ -191,8 +188,7 @@ class Score(BaseModel):
             else f"https://osu.ppy.sh/scores/{self.id}"
         )
 
-    @computed_field  # type: ignore
-    @property
+    @computed_field
     def replay_url(self) -> Optional[str]:
         r"""Link to the replay.
 

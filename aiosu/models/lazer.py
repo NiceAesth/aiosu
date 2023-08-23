@@ -81,33 +81,27 @@ class LazerScoreStatistics(BaseModel):
     perfect: int = 0
     legacy_combo_increase: int = 0
 
-    @computed_field  # type: ignore
-    @property
+    @computed_field
     def count_300(self) -> int:
         return self.great
 
-    @computed_field  # type: ignore
-    @property
+    @computed_field
     def count_100(self) -> int:
         return self.ok
 
-    @computed_field  # type: ignore
-    @property
+    @computed_field
     def count_50(self) -> int:
         return self.meh
 
-    @computed_field  # type: ignore
-    @property
+    @computed_field
     def count_miss(self) -> int:
         return self.miss
 
-    @computed_field  # type: ignore
-    @property
+    @computed_field
     def count_geki(self) -> int:
         return self.perfect
 
-    @computed_field  # type: ignore
-    @property
+    @computed_field
     def count_katu(self) -> int:
         return self.good
 
@@ -145,46 +139,38 @@ class LazerScore(BaseModel):
     pp: Optional[float] = None
     weight: Optional[ScoreWeight] = None
 
-    @computed_field  # type: ignore
-    @property
+    @computed_field
     def mods_str(self) -> str:
         return "".join(str(mod) for mod in self.mods)
 
-    @computed_field  # type: ignore
-    @property
+    @computed_field
     def created_at(self) -> datetime:
         return self.ended_at
 
-    @computed_field  # type: ignore
-    @property
-    def completion(self) -> float:
+    @computed_field
+    def completion(self) -> Optional[float]:
         """Beatmap completion.
 
-        :raises ValueError: If beatmap is None
-        :raises ValueError: If mode is unknown
-        :return: Beatmap completion of a score (%). 100% for passes
-        :rtype: float
+        :return: Beatmap completion of a score (%). 100% for passes. None if no beatmap.
+        :rtype: Optional[float]
         """
-        if self.beatmap is None:
-            raise ValueError("Beatmap object is not set.")
+        if not self.beatmap:
+            return None
 
         if self.passed:
             return 100.0
 
         return calculate_score_completion(self.statistics, self.beatmap)
 
-    @computed_field  # type: ignore
-    @property
+    @computed_field
     def mode(self) -> Gamemode:
         return Gamemode(self.ruleset_id)
 
-    @computed_field  # type: ignore
-    @property
+    @computed_field
     def score(self) -> int:
         return self.total_score
 
-    @computed_field  # type: ignore
-    @property
+    @computed_field
     def score_url(self) -> Optional[str]:
         r"""Link to the score.
 
@@ -199,8 +185,7 @@ class LazerScore(BaseModel):
             else f"https://osu.ppy.sh/scores/{self.id}"
         )
 
-    @computed_field  # type: ignore
-    @property
+    @computed_field
     def replay_url(self) -> Optional[str]:
         r"""Link to the replay.
 

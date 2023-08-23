@@ -280,13 +280,11 @@ class Beatmap(BaseModel):
             ] = f"https://osu.ppy.sh/beatmapsets/{beatmapset_id}#{mode}/{id}"
         return values
 
-    @computed_field  # type: ignore
-    @property
+    @computed_field
     def discussion_url(self) -> str:
         return f"https://osu.ppy.sh/beatmapsets/{self.beatmapset_id}/discussion/{self.id}/general"
 
-    @computed_field  # type: ignore
-    @property
+    @computed_field
     def count_objects(self) -> int:
         """Total count of the objects.
 
@@ -375,13 +373,11 @@ class Beatmapset(BaseModel):
     beatmaps: Optional[list[Beatmap]] = None
     converts: Optional[list[Beatmap]] = None
 
-    @computed_field  # type: ignore
-    @property
+    @computed_field
     def url(self) -> str:
         return f"https://osu.ppy.sh/beatmapsets/{self.id}"
 
-    @computed_field  # type: ignore
-    @property
+    @computed_field
     def discussion_url(self) -> str:
         return f"https://osu.ppy.sh/beatmapsets/{self.id}/discussion"
 
