@@ -65,7 +65,7 @@ class Event(BaseModel):
     type: EventType
     r"""Information on types: https://github.com/ppy/osu-web/blob/master/resources/assets/lib/interfaces/event-json.ts"""
     parse_error: Optional[bool] = None
-    achievment: Optional[Achievement] = None
+    achievement: Optional[Achievement] = None # typo achievment
     user: Optional[EventUser] = None
     beatmap: Optional[EventBeatmap] = None
     beatmapset: Optional[EventBeatmapset] = None
@@ -74,3 +74,4 @@ class Event(BaseModel):
     rank: Optional[int] = None
     mode: Optional[Gamemode] = None
     score_rank: Optional[str] = Field(default=None, alias="scoreRank")
+
