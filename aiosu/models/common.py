@@ -49,7 +49,7 @@ class Achievement(BaseModel):
     description: str  # typo  desciption
     grouping: str
     icon_url: str
-    mode: Gamemode
+    mode: Optional[Gamemode] = None
     ordering: int
     instructions: Optional[str] = None
 
