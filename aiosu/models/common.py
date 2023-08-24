@@ -46,7 +46,7 @@ class Achievement(BaseModel):
     id: int
     name: str
     slug: str
-    description: str # typo  desciption 
+    description: str  # typo  desciption
     grouping: str
     icon_url: str
     mode: Gamemode
