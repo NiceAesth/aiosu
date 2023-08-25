@@ -15,6 +15,7 @@ from .base import BaseModel
 from .beatmap import Beatmap
 from .beatmap import Beatmapset
 from .common import CurrentUserAttributes
+from .common import ScoreType
 from .gamemode import Gamemode
 from .score import ScoreWeight
 from .user import User
@@ -136,12 +137,14 @@ class LazerScore(BaseModel):
     total_score: int
     user_id: int
     replay: bool
-    type: str
+    type: ScoreType
     current_user_attributes: CurrentUserAttributes
     beatmap: Beatmap
     beatmapset: Beatmapset
     user: User
     build_id: Optional[int] = None
+    legacy_score_id: Optional[int] = None
+    legacy_total_score: Optional[int] = None
     started_at: Optional[datetime] = None
     best_id: Optional[int] = None
     legacy_perfect: Optional[bool] = None

@@ -21,10 +21,12 @@ __all__ = (
     "Version",
     "ChangelogListing",
     "ChangelogSearch",
-    "ChangelogMessageFormats",
+    "ChangelogMessageFormat",
+    "ChangelogEntryType",
 )
 
-ChangelogMessageFormats = Literal["markdown", "html"]
+ChangelogMessageFormat = Literal["markdown", "html"]
+ChangelogEntryType = Literal["add", "fix"]
 
 
 class GithubUser(BaseModel):
@@ -37,7 +39,7 @@ class GithubUser(BaseModel):
 
 
 class ChangelogEntry(BaseModel):
-    type: str
+    type: ChangelogEntryType
     category: str
     major: bool
     id: Optional[int] = None

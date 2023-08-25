@@ -16,12 +16,15 @@ __all__ = (
     "Navigation",
     "NewsListing",
     "NewsSearch",
+    "NewsSortType",
 )
+
+NewsSortType = Literal["published_asc", "published_desc"]
 
 
 class NewsSearch(BaseModel):
     limit: int
-    sort: Literal["published_desc"]
+    sort: NewsSortType
 
 
 class Navigation(BaseModel):

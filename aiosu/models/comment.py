@@ -17,9 +17,11 @@ __all__ = (
     "Comment",
     "CommentBundle",
     "CommentSortType",
+    "CommentableType",
 )
 
 CommentSortType = Literal["new", "old", "top"]
+CommentableType = Literal["beatmapset", "news_post", "build"]
 
 
 class Commentable(BaseModel):
@@ -35,7 +37,7 @@ class Commentable(BaseModel):
 class Comment(BaseModel):
     id: int
     commentable_id: int
-    commentable_type: str
+    commentable_type: CommentableType
     created_at: datetime
     updated_at: datetime
     pinned: bool
@@ -56,7 +58,7 @@ class CommentBundle(CursorModel):
     comments: list[Comment]
     has_more: bool
     included_comments: list[Comment]
-    sort: str
+    sort: CommentSortType
     user_follow: bool
     user_votes: list[int]
     users: list[User]

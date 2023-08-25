@@ -25,22 +25,22 @@ __all__ = (
     "MultiplayerScore",
     "MultiplayerScoresAround",
     "MultiplayerMatch",
-    "MultiplayerEventTypes",
+    "MultiplayerEventType",
     "MultiplayerEvent",
     "MultiplayerMatchResponse",
     "MultiplayerMatchesResponse",
     "MultiplayerRoomMode",
     "MultiplayerRoom",
     "MultiplayerRoomsResponse",
-    "MultiplayerRoomCategories",
-    "MultiplayerRoomTypeGroups",
+    "MultiplayerRoomCategory",
+    "MultiplayerRoomTypeGroup",
     "MultiplayerLeaderboardResponse",
     "MultiplayerLeaderboardItem",
     "MultiplayerQueueMode",
 )
 
 MultiplayerScoreSortType = Literal["score_asc", "score_desc"]
-MultiplayerEventTypes = Literal[
+MultiplayerEventType = Literal[
     "match-created",
     "match-disbanded",
     "host-changed",
@@ -55,8 +55,8 @@ MultiplayerEventTypes = Literal[
     "player-kicked-no-user",
 ]
 MultiplayerRoomMode = Literal["owned", "participated", "ended"]
-MultiplayerRoomCategories = Literal["normal", "spotlight", "featured_artists"]
-MultiplayerRoomTypeGroups = Literal["playlists", "realtime"]
+MultiplayerRoomCategory = Literal["normal", "spotlight", "featured_artists"]
+MultiplayerRoomTypeGroup = Literal["playlists", "realtime"]
 MultiplayerQueueMode = Literal["host_only", "all_players", "all_players_round_robin"]
 
 
@@ -99,7 +99,7 @@ class MultiplayerMatch(BaseModel):
 class MultiplayerEvent(BaseModel):
     id: int
     timestamp: datetime
-    type: MultiplayerEventTypes
+    type: MultiplayerEventType
     user_id: Optional[int] = None
 
     @model_validator(mode="before")
@@ -140,8 +140,8 @@ class MultiplayerPlaylistItem(BaseModel):
 class MultiplayerRoom(BaseModel):
     id: int
     name: str
-    category: MultiplayerRoomCategories
-    type: MultiplayerRoomTypeGroups
+    category: MultiplayerRoomCategory
+    type: MultiplayerRoomTypeGroup
     user_id: int
     channel_id: int
     active: bool

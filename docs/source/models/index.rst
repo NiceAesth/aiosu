@@ -10,7 +10,11 @@ Common
     :undoc-members:
     :inherited-members: BaseModel
 
-.. autodata:: aiosu.models.common.SortTypes
+.. autodata:: aiosu.models.common.SortType
+
+.. autodata:: aiosu.models.common.ScoreType
+
+.. autodata:: aiosu.models.common.BeatmapScoreboardType
 
 Rankings
 --------
@@ -124,13 +128,13 @@ Multiplayer
 
 .. autodata:: aiosu.models.multiplayer.MultiplayerScoreSortType
 
-.. autodata:: aiosu.models.multiplayer.MultiplayerEventTypes
+.. autodata:: aiosu.models.multiplayer.MultiplayerEventType
 
 .. autodata:: aiosu.models.multiplayer.MultiplayerRoomMode
 
-.. autodata:: aiosu.models.multiplayer.MultiplayerRoomCategories
+.. autodata:: aiosu.models.multiplayer.MultiplayerRoomCategory
 
-.. autodata:: aiosu.models.multiplayer.MultiplayerRoomTypeGroups
+.. autodata:: aiosu.models.multiplayer.MultiplayerRoomTypeGroup
 
 .. autodata:: aiosu.models.multiplayer.MultiplayerQueueMode
 
@@ -142,6 +146,8 @@ Featured Artists
     :exclude-members: Config
     :undoc-members:
     :inherited-members: BaseModel
+
+.. autodata:: aiosu.models.artist.ArtistSortType
 
 Backgrounds
 -----------
@@ -161,7 +167,9 @@ Changelogs
     :undoc-members:
     :inherited-members: BaseModel
 
-.. autodata:: aiosu.models.changelog.ChangelogMessageFormats
+.. autodata:: aiosu.models.changelog.ChangelogMessageFormat
+
+.. autodata:: aiosu.models.changelog.ChangelogEntryType
 
 Spotlights
 ----------
@@ -172,6 +180,8 @@ Spotlights
     :undoc-members:
     :inherited-members: BaseModel
 
+.. autodata:: aiosu.models.spotlight.SpotlightType
+
 News
 ----
 
@@ -180,6 +190,8 @@ News
     :exclude-members: Config
     :undoc-members:
     :inherited-members: BaseModel
+
+.. autodata:: aiosu.models.news.NewsSortType
 
 Forum
 -----
@@ -201,9 +213,9 @@ Chat
     :undoc-members:
     :inherited-members: BaseModel
 
-.. autodata:: aiosu.models.chat.ChatChannelTypes
+.. autodata:: aiosu.models.chat.ChatChannelType
 
-.. autodata:: aiosu.models.chat.ChatIncludeTypes
+.. autodata:: aiosu.models.chat.ChatIncludeType
 
 Wiki
 ----
@@ -244,6 +256,8 @@ Comments
     :inherited-members: BaseModel
 
 .. autodata:: aiosu.models.comment.CommentSortType
+
+.. autodata:: aiosu.models.comment.CommentableType
 
 API Events
 ----------
