@@ -1169,7 +1169,12 @@ class Client(Eventable):
         url = f"{self.base_url}/api/v2/beatmaps/{beatmap_id}/scores"
         params: dict[str, Any] = {}
         add_param(params, kwargs, key="mode", converter=lambda x: str(Gamemode(x)))
-        add_param(params, kwargs, key="mods", converter=lambda x: str(Mods(x)))
+        add_param(
+            params,
+            kwargs,
+            key="mods",
+            converter=lambda x: [str(y) for y in Mods(x)],
+        )
         add_param(params, kwargs, key="type")
         json = await self._request("GET", url, params=params)
         return from_list(Score.model_validate, json.get("scores", []))
