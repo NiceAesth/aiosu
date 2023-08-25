@@ -25,7 +25,8 @@ class Scopes(IntFlag):
     CHAT_WRITE = 1 << 6
     CHAT_WRITE_MANAGE = 1 << 7
     LAZER = 1 << 8  # unused, lazer endpoints are not planned for support
-
+    ALL = 1 << 9
+    
     def __flags__(self) -> list[Scopes]:
         scopes_list = [scope for scope in Scopes if self & scope]
         return scopes_list
@@ -52,6 +53,7 @@ API_SCOPE_NAMES = {
     "chat.write": Scopes.CHAT_WRITE,
     "chat.write_manage": Scopes.CHAT_WRITE_MANAGE,
     "lazer": Scopes.LAZER,
+    "*": Scopes.ALL,
 }
 VALID_CLIENT_SCOPES = Scopes.PUBLIC | Scopes.DELEGATE
 OWN_CLIENT_SCOPES = Scopes.CHAT_READ | Scopes.CHAT_WRITE | Scopes.CHAT_WRITE_MANAGE
