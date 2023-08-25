@@ -23,8 +23,8 @@ class Scopes(IntFlag):
     DELEGATE = 1 << 4
     CHAT_READ = 1 << 5
     CHAT_WRITE = 1 << 6
-    CHAT_WRITE_MANAGE = 1 << 6
-    LAZER = 1 << 7  # unused, lazer endpoints are not planned for support
+    CHAT_WRITE_MANAGE = 1 << 7
+    LAZER = 1 << 8  # unused, lazer endpoints are not planned for support
 
     def __flags__(self) -> list[Scopes]:
         scopes_list = [scope for scope in Scopes if self & scope]
