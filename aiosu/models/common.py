@@ -46,11 +46,11 @@ class Achievement(BaseModel):
     id: int
     name: str
     slug: str
-    desciption: str
+    description: str
     grouping: str
     icon_url: str
-    mode: Gamemode
     ordering: int
+    mode: Optional[Gamemode] = None
     instructions: Optional[str] = None
 
 
