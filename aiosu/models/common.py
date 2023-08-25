@@ -24,12 +24,26 @@ __all__ = (
     "CurrentUserAttributes",
     "TimestampedCount",
     "CursorModel",
-    "SortTypes",
+    "SortType",
+    "ScoreType",
+    "BeatmapScoreboardType",
     "HTMLBody",
 )
 
 
-SortTypes = Literal["id_asc", "id_desc"]
+SortType = Literal["id_asc", "id_desc"]
+ScoreType = Literal[
+    "solo_score",
+    "score_best_osu",
+    "score_best_taiko",
+    "score_best_fruits",
+    "score_best_mania",
+    "score_osu",
+    "score_taiko",
+    "score_fruits",
+    "score_mania",
+]
+BeatmapScoreboardType = Literal["global", "country", "friend"]
 
 
 class TimestampedCount(BaseModel):
@@ -78,7 +92,7 @@ class HTMLBody(BaseModel):
 class PinAttributes(BaseModel):
     is_pinned: bool
     score_id: int
-    score_type: str
+    score_type: ScoreType
 
 
 class CurrentUserAttributes(BaseModel):

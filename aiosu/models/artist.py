@@ -4,6 +4,7 @@ This module contains models for featured artists.
 from __future__ import annotations
 
 from datetime import datetime
+from typing import Literal
 from typing import Optional
 
 from pydantic import Field
@@ -14,12 +15,32 @@ from .common import CursorModel
 __all__ = (
     "ArtistTrack",
     "ArtistResponse",
+    "ArtistSortType",
 )
+
+ArtistSortType = Literal[
+    "album_asc",
+    "album_desc",
+    "artist_asc",
+    "artist_desc",
+    "bpm_asc",
+    "bpm_desc",
+    "genre_asc",
+    "genre_desc",
+    "length_asc",
+    "length_desc",
+    "relevance_asc",
+    "relevance_desc",
+    "title_asc",
+    "title_desc",
+    "update_asc",
+    "update_desc",
+]
 
 
 class ArtistSearch(BaseModel):
     is_default_sort: bool
-    sort: str
+    sort: ArtistSortType
 
 
 class Artist(BaseModel):

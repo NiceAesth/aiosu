@@ -40,7 +40,7 @@ from ..models import Build
 from ..models import ChangelogListing
 from ..models import ChatChannel
 from ..models import ChatChannelResponse
-from ..models import ChatChannelTypes
+from ..models import ChatChannelType
 from ..models import ChatMessage
 from ..models import ChatMessageCreateResponse
 from ..models import ChatUpdateResponse
@@ -1159,7 +1159,7 @@ class Client(Eventable):
                 Optional, gamemode to search for
             * *mods* (``aiosu.models.mods.Mods``) --
                 Optional, mods to search for
-            * *type* (``str``) --
+            * *type* (``aiosu.models.common.BeatmapScoreboardType``) --
                 Optional, beatmap score ranking type
 
         :raises APIException: Contains status code and error message
@@ -1986,7 +1986,7 @@ class Client(Eventable):
     @requires_scope(Scopes.IDENTIFY | Scopes.DELEGATE, any_scope=True)
     async def create_chat_channel(
         self,
-        type: ChatChannelTypes,
+        type: ChatChannelType,
         **kwargs: Any,
     ) -> ChatChannel:
         r"""Creates a chat channel.

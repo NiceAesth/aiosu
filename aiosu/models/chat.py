@@ -16,14 +16,14 @@ __all__ = (
     "ChatChannel",
     "ChatMessage",
     "ChatMessageCreateResponse",
-    "ChatChannelTypes",
-    "ChatIncludeTypes",
+    "ChatChannelType",
+    "ChatIncludeType",
     "ChatUpdateResponse",
     "ChatUserSilence",
     "ChatChannelResponse",
 )
 
-ChatChannelTypes = Literal[
+ChatChannelType = Literal[
     "PM",
     "PUBLIC",
     "PRIVATE",
@@ -34,7 +34,7 @@ ChatChannelTypes = Literal[
     "ANNOUNCE",
 ]
 
-ChatIncludeTypes = Literal[
+ChatIncludeType = Literal[
     "messages",
     "presence",
     "silences",
@@ -48,7 +48,7 @@ class ChatUserSilence(BaseModel):
 
 class ChatChannel(BaseModel):
     id: int = Field(alias="channel_id")
-    type: ChatChannelTypes
+    type: ChatChannelType
     name: str
     moderated: bool
     message_length_limit: int
