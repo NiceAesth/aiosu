@@ -9,6 +9,7 @@ from enum import unique
 __all__ = (
     "Scopes",
     "VALID_CLIENT_SCOPES",
+    "OWN_CLIENT_SCOPES",
 )
 
 
@@ -20,8 +21,10 @@ class Scopes(IntFlag):
     FRIENDS_READ = 1 << 2
     FORUM_WRITE = 1 << 3
     DELEGATE = 1 << 4
-    CHAT_WRITE = 1 << 5
-    LAZER = 1 << 6  # unused, lazer endpoints are not planned for support
+    CHAT_READ = 1 << 5
+    CHAT_WRITE = 1 << 6
+    CHAT_WRITE_MANAGE = 1 << 6
+    LAZER = 1 << 7  # unused, lazer endpoints are not planned for support
 
     def __flags__(self) -> list[Scopes]:
         scopes_list = [scope for scope in Scopes if self & scope]
@@ -45,7 +48,10 @@ API_SCOPE_NAMES = {
     "friends.read": Scopes.FRIENDS_READ,
     "forum.write": Scopes.FORUM_WRITE,
     "delegate": Scopes.DELEGATE,
+    "chat.read": Scopes.CHAT_READ,
     "chat.write": Scopes.CHAT_WRITE,
+    "chat.write_manage": Scopes.CHAT_WRITE_MANAGE,
     "lazer": Scopes.LAZER,
 }
 VALID_CLIENT_SCOPES = Scopes.PUBLIC | Scopes.DELEGATE
+OWN_CLIENT_SCOPES = Scopes.CHAT_READ | Scopes.CHAT_WRITE | Scopes.CHAT_WRITE_MANAGE

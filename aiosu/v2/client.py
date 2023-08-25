@@ -1838,7 +1838,7 @@ class Client(Eventable):
 
     @prepare_token
     @check_token
-    @requires_scope(Scopes.LAZER)
+    @requires_scope(Scopes.CHAT_READ)
     @requires_scope(Scopes.IDENTIFY | Scopes.DELEGATE, any_scope=True)
     async def get_chat_ack(self, **kwargs: Any) -> list[ChatUserSilence]:
         r"""Gets chat acknowledgement.
@@ -1905,7 +1905,7 @@ class Client(Eventable):
 
     @prepare_token
     @check_token
-    @requires_scope(Scopes.LAZER)
+    @requires_scope(Scopes.CHAT_READ)
     @requires_scope(Scopes.IDENTIFY | Scopes.DELEGATE, any_scope=True)
     async def get_channel(self, channel_id: int) -> ChatChannelResponse:
         r"""Gets channel.
@@ -1922,7 +1922,7 @@ class Client(Eventable):
 
     @prepare_token
     @check_token
-    @requires_scope(Scopes.LAZER)
+    @requires_scope(Scopes.CHAT_READ)
     @requires_scope(Scopes.IDENTIFY | Scopes.DELEGATE, any_scope=True)
     async def get_channels(self) -> list[ChatChannel]:
         r"""Gets a list of joinable public channels.
@@ -1937,7 +1937,7 @@ class Client(Eventable):
 
     @prepare_token
     @check_token
-    @requires_scope(Scopes.LAZER)
+    @requires_scope(Scopes.CHAT_READ)
     @requires_scope(Scopes.IDENTIFY | Scopes.DELEGATE, any_scope=True)
     async def get_channel_messages(
         self,
@@ -1977,7 +1977,7 @@ class Client(Eventable):
 
     @prepare_token
     @check_token
-    @requires_scope(Scopes.CHAT_WRITE)
+    @requires_scope(Scopes.CHAT_WRITE_MANAGE)
     @requires_scope(Scopes.IDENTIFY | Scopes.DELEGATE, any_scope=True)
     async def create_chat_channel(
         self,
@@ -2031,7 +2031,7 @@ class Client(Eventable):
 
     @prepare_token
     @check_token
-    @requires_scope(Scopes.LAZER)
+    @requires_scope(Scopes.CHAT_WRITE_MANAGE)
     @requires_scope(Scopes.IDENTIFY | Scopes.DELEGATE, any_scope=True)
     async def join_channel(self, channel_id: int, user_id: int) -> ChatChannel:
         r"""Joins a channel.
@@ -2050,7 +2050,7 @@ class Client(Eventable):
 
     @prepare_token
     @check_token
-    @requires_scope(Scopes.LAZER)
+    @requires_scope(Scopes.CHAT_WRITE_MANAGE)
     @requires_scope(Scopes.IDENTIFY | Scopes.DELEGATE, any_scope=True)
     async def leave_channel(self, channel_id: int, user_id: int) -> None:
         r"""Leaves a channel.
@@ -2066,7 +2066,7 @@ class Client(Eventable):
 
     @prepare_token
     @check_token
-    @requires_scope(Scopes.LAZER)
+    @requires_scope(Scopes.CHAT_READ)
     @requires_scope(Scopes.IDENTIFY | Scopes.DELEGATE, any_scope=True)
     async def mark_read(self, channel_id: int, message_id: int) -> None:
         r"""Marks a channel as read.
@@ -2082,7 +2082,7 @@ class Client(Eventable):
 
     @prepare_token
     @check_token
-    @requires_scope(Scopes.LAZER)
+    @requires_scope(Scopes.CHAT_WRITE)
     @requires_scope(Scopes.IDENTIFY | Scopes.DELEGATE, any_scope=True)
     async def send_message(
         self,
