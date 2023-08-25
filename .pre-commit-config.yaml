@@ -42,4 +42,4 @@ repos:
     -   id: poetry-check
 
 default_language_version:
-    python: python3.11
+    python: python3.9
