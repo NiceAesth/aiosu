@@ -35,10 +35,10 @@ __all__ = (
     "Beatmapset",
     "BeatmapsetDiscussion",
     "BeatmapsetDiscussionPost",
-    "BeatmapsetDisscussionTypes",
+    "BeatmapsetDisscussionType",
     "BeatmapsetEvent",
     "BeatmapsetEventComment",
-    "BeatmapsetEventTypes",
+    "BeatmapsetEventType",
     "BeatmapsetRequestStatus",
     "BeatmapsetVoteEvent",
     "BeatmapUserPlaycount",
@@ -48,7 +48,7 @@ __all__ = (
     "BeatmapsetSearchResponse",
 )
 
-BeatmapsetDisscussionTypes = Literal[
+BeatmapsetDisscussionType = Literal[
     "hype",
     "praise",
     "problem",
@@ -58,7 +58,7 @@ BeatmapsetDisscussionTypes = Literal[
 ]
 
 
-BeatmapsetEventTypes = Literal[
+BeatmapsetEventType = Literal[
     "approve",
     "beatmap_owner_change",
     "discussion_delete",
@@ -441,7 +441,7 @@ class BeatmapsetDiscussion(BaseModel):
     id: int
     beatmapset_id: int
     user_id: int
-    message_type: BeatmapsetDisscussionTypes
+    message_type: BeatmapsetDisscussionType
     resolved: bool
     can_be_resolved: bool
     can_grant_kudosu: bool
@@ -484,7 +484,7 @@ class BeatmapsetEventComment(BaseModel):
 
 class BeatmapsetEvent(BaseModel):
     id: int
-    type: BeatmapsetEventTypes
+    type: BeatmapsetEventType
     r"""Information on types: https://github.com/ppy/osu-web/blob/master/resources/assets/lib/interfaces/beatmapset-event-json.ts"""
     created_at: datetime
     user_id: int
