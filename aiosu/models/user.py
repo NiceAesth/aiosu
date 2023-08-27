@@ -91,14 +91,14 @@ class UserQueryType(Enum):
 
 class UserLevel(BaseModel):
     current: int
-    progress: float
+    progress: int
 
     @classmethod
     def _from_api_v1(cls, data: Any) -> UserLevel:
         level = cast_float(data["level"])
         current = int(level)
         progress = (level - current) * 100
-        return cls.model_validate({"current": current, "progress": progress})
+        return cls.model_validate({"current": current, "progress": int(progress)})
 
 
 class UserKudosu(BaseModel):
