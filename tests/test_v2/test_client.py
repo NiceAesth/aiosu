@@ -314,6 +314,13 @@ def lazer_scores():
     return data
 
 
+@pytest.fixture
+def cursor_events():
+    with open("tests/data/v2/multiple_cursor_event.json", "rb") as f:
+        data = f.read()
+    return data
+
+
 class TestCursor:
     @pytest.mark.asyncio
     async def test_get_featured_artists_cursor(self, mocker, token, artist_tracks):
@@ -774,6 +781,15 @@ class TestClient:
         assert isinstance(data, list) and all(
             isinstance(x, aiosu.models.Event) for x in data
         )
+        await client.close()
+
+    @pytest.mark.asyncio
+    async def test_get_events(self, mocker, token, cursor_events):
+        client = aiosu.v2.Client(token=token)
+        resp = MockResponse(cursor_events, 200)
+        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
+        data = await client.get_events()
+        assert isinstance(data, aiosu.models.EventResponse)
         await client.close()
 
     @pytest.mark.asyncio
