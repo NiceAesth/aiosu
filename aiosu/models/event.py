@@ -13,6 +13,7 @@ from pydantic import Field
 from .base import BaseModel
 from .beatmap import BeatmapRankStatus
 from .common import Achievement
+from .common import CursorModel
 from .gamemode import Gamemode
 
 if TYPE_CHECKING:
@@ -24,6 +25,7 @@ __all__ = (
     "EventBeatmapset",
     "EventUser",
     "EventType",
+    "EventResponse",
 )
 
 EventType = Literal[
@@ -74,3 +76,7 @@ class Event(BaseModel):
     rank: Optional[int] = None
     mode: Optional[Gamemode] = None
     score_rank: Optional[str] = Field(default=None, alias="scoreRank")
+
+
+class EventResponse(CursorModel):
+    events: list[Event]
