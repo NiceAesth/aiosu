@@ -47,6 +47,7 @@ from ..models import ChatUpdateResponse
 from ..models import ChatUserSilence
 from ..models import CommentBundle
 from ..models import Event
+from ..models import EventResponse
 from ..models import ForumCreateTopicResponse
 from ..models import ForumPost
 from ..models import ForumTopic
@@ -1142,6 +1143,20 @@ class Client(Eventable):
         add_param(params, kwargs, key="offset")
         json = await self._request("GET", url, params=params)
         return from_list(Event.model_validate, json)
+
+    @prepare_token
+    @check_token
+    @requires_scope(Scopes.PUBLIC)
+    async def get_events(self) -> EventResponse:
+        r"""Get global events.
+
+        :raises APIException: Contains status code and error message
+        :return: Event response object
+        :rtype: aiosu.models.event.EventResponse
+        """
+        url = f"{self.base_url}/api/v2/events"
+        json = await self._request("GET", url)
+        return EventResponse.model_validate(json)
 
     @prepare_token
     @check_token
