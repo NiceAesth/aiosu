@@ -91,7 +91,7 @@ class UserQueryType(Enum):
 
 class UserLevel(BaseModel):
     current: int
-    progress: float
+    progress: int
 
     @classmethod
     def _from_api_v1(cls, data: Any) -> UserLevel:
