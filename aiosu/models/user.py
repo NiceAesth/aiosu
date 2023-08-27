@@ -98,7 +98,7 @@ class UserLevel(BaseModel):
         level = cast_float(data["level"])
         current = int(level)
         progress = (level - current) * 100
-        return cls.model_validate({"current": current, "progress": progress})
+        return cls.model_validate({"current": current, "progress": int(progress)})
 
 
 class UserKudosu(BaseModel):
