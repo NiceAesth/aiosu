@@ -55,6 +55,7 @@ furo = "^2023.5.20"
 pytest-cov = "^4.0.0"
 black = {version = "^23.0.0", allow-prereleases = true}
 pre-commit = "^3.2.2"
+python-dotenv = "^1.0.0"
 
 [tool.poetry.extras]
 test = ["pytest", "pytest-asyncio", "pytest-mock", "toml", "types-toml"]
