@@ -52,8 +52,10 @@ class TimestampedCount(BaseModel):
 
     @field_validator("start_date", mode="before")
     @classmethod
-    def _date_validate(cls, v: str) -> datetime:
-        return datetime.strptime(v, "%Y-%m-%d")
+    def _date_validate(cls, v: Any) -> Any:
+        if isinstance(v, str):
+            return datetime.strptime(v, "%Y-%m-%d")
+        return v
 
 
 class Achievement(BaseModel):
