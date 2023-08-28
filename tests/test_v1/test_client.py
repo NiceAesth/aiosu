@@ -1,11 +1,9 @@
 from __future__ import annotations
 
-from io import BytesIO
-
-import orjson
 import pytest
 
 import aiosu
+from ..classes import mock_request
 
 STATUS_CAN_200 = {
     200: "application/json",
@@ -23,28 +21,6 @@ def get_data(func_name: str, status_code: int, extension: str = "json") -> bytes
     with open(f"tests/data/v1/{func_name}_{status_code}.{extension}", "rb") as f:
         data = f.read()
         return data
-
-
-def mock_request(status_code: int, content_type: str, data: bytes):
-    def mocked_request(*args, **kwargs):
-        if status_code == 204:
-            return
-
-        if status_code != 200:
-            json = {}
-            if content_type == "application/json":
-                json = orjson.loads(data)
-            raise aiosu.exceptions.APIException(status_code, json.get("error", ""))
-        if content_type == "application/json":
-            return orjson.loads(data)
-        if content_type == "application/octet-stream":
-            return BytesIO(data)
-        if content_type == "application/x-osu":
-            return BytesIO(data)
-        if content_type == "text/plain":
-            return data.decode()
-
-    return mocked_request
 
 
 def generate_test(
