@@ -46,6 +46,7 @@ __all__ = (
     "BeatmapsetDiscussionPostResponse",
     "BeatmapsetDiscussionVoteResponse",
     "BeatmapsetSearchResponse",
+    "UserBeatmapType",
 )
 
 BeatmapsetDisscussionType = Literal[
@@ -95,6 +96,8 @@ BeatmapsetRequestStatus = Literal[
     "disqualified",
     "never_ranked",
 ]
+
+UserBeatmapType = Literal["favourite", "graveyard", "loved", "ranked", "pending"]
 
 BEATMAP_RANK_STATUS_NAMES = {
     -2: "graveyard",

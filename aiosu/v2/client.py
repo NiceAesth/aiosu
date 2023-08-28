@@ -73,6 +73,7 @@ from ..models import SearchResponse
 from ..models import SeasonalBackgroundSet
 from ..models import Spotlight
 from ..models import User
+from ..models import UserBeatmapType
 from ..models import UserQueryType
 from ..models import WikiPage
 from .repository import BaseTokenRepository
@@ -652,7 +653,7 @@ class Client(Eventable):
             See below
 
         :Keyword Arguments:
-            * *commentable_type* (``Literal["beatmapset", "build", "news_post", "user"]``) --
+            * *commentable_type* (``aiosu.models.comment.CommentableType``) --
                 Optional, commentable type to get comments from
             * *commentable_id* (``int``) --
                 Optional, commentable ID to get comments from
@@ -693,7 +694,7 @@ class Client(Eventable):
             See below
 
         :Keyword Arguments:
-            * *mode* (``Literal["all", "user", "wiki_page"]``) --
+            * *mode* (``aiosu.models.search.SearchModes``) --
                 Optional, gamemode to search for, defaults to ``all``
             * *page* (``int``) --
                 Optional, page to get, ignored if mode is ``all``
@@ -1037,8 +1038,6 @@ class Client(Eventable):
         json = await self._request("GET", url, params=params)
         return from_list(Score.model_validate, json.get("scores", []))
 
-    UserBeatmapType = Literal["favourite", "graveyard", "loved", "ranked", "pending"]
-
     @prepare_token
     @check_token
     @requires_scope(Scopes.PUBLIC)
@@ -1053,7 +1052,7 @@ class Client(Eventable):
         :param user_id: ID of the user
         :type user_id: int
         :param type: Type of beatmaps to get
-        :type type: UserBeatmapType
+        :type type: aiosu.models.beatmap.UserBeatmapType
         :param \**kwargs:
             See below
 
