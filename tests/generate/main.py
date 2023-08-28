@@ -708,7 +708,7 @@ class TestGeneratorV2(TestGeneratorBase):
                         f"{BASE_URL}/api/v2/beatmaps/{score['beatmap']['id']}/attributes",
                         f"{DATA_DIR}/v2/difficulty_attributes_{mode}.json",
                         200,
-                        params={"mode": score["mode"]},
+                        params={"ruleset_id": score["mode_int"]},
                     )
 
         await self.client.close()
