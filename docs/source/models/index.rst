@@ -55,6 +55,8 @@ Beatmap
 
 .. autodata:: aiosu.models.beatmap.BeatmapsetRequestStatus
 
+.. autodata:: aiosu.models.beatmap.UserBeatmapType
+
 Score
 -----
 
@@ -245,6 +247,8 @@ Search
     :exclude-members: Config
     :undoc-members:
     :inherited-members: BaseModel
+
+.. autodata:: aiosu.models.search.SearchMode
 
 Comments
 --------

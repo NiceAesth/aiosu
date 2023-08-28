@@ -3,6 +3,7 @@ This module contains models for the search endpoint.
 """
 from __future__ import annotations
 
+from typing import Literal
 from typing import Optional
 from typing import Union
 
@@ -13,7 +14,10 @@ from .wiki import WikiPage
 __all__ = (
     "SearchResult",
     "SearchResponse",
+    "SearchMode",
 )
+
+SearchMode = Literal["all", "user", "wiki_page"]
 
 
 class SearchResult(BaseModel):

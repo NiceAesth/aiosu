@@ -33,7 +33,6 @@ if TYPE_CHECKING:
     from typing import Optional
     from typing import Type
     from typing import Union
-    from typing import Callable
 
 
 __all__ = ("Client",)
@@ -107,20 +106,14 @@ class Client:
         if self._session is None:
             self._session = aiohttp.ClientSession()
 
-        req: dict[str, Callable] = {
-            "GET": self._session.get,
-            "POST": self._session.post,
-            "DELETE": self._session.delete,
-            "PUT": self._session.put,
-            "PATCH": self._session.patch,
-        }
-
         async with self._limiter:
-            async with req[request_type](*args, **kwargs) as resp:
+            async with self._session.request(request_type, *args, **kwargs) as resp:
                 body = await resp.read()
                 content_type = get_content_type(resp.headers.get("content-type", ""))
                 if resp.status != 200:
-                    json = orjson.loads(body)
+                    json = {}
+                    if content_type == "application/json":
+                        json = orjson.loads(body)
                     raise APIException(resp.status, json.get("error", ""))
                 if content_type == "application/json":
                     return orjson.loads(body)

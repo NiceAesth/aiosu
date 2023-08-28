@@ -73,6 +73,7 @@ from ..models import SearchResponse
 from ..models import SeasonalBackgroundSet
 from ..models import Spotlight
 from ..models import User
+from ..models import UserBeatmapType
 from ..models import UserQueryType
 from ..models import WikiPage
 from .repository import BaseTokenRepository
@@ -322,23 +323,17 @@ class Client(Eventable):
         if self._session is None:
             self._session = aiohttp.ClientSession(headers=await self._get_headers())
 
-        req: dict[str, Callable] = {
-            "GET": self._session.get,
-            "POST": self._session.post,
-            "DELETE": self._session.delete,
-            "PUT": self._session.put,
-            "PATCH": self._session.patch,
-        }
-
         async with self._limiter:
-            async with req[request_type](*args, **kwargs) as resp:
+            async with self._session.request(request_type, *args, **kwargs) as resp:
                 if resp.status == 204:
                     return
 
                 body = await resp.read()
                 content_type = get_content_type(resp.headers.get("content-type", ""))
                 if resp.status != 200:
-                    json = orjson.loads(body)
+                    json = {}
+                    if content_type == "application/json":
+                        json = orjson.loads(body)
                     raise APIException(resp.status, json.get("error", ""))
                 if content_type == "application/json":
                     return orjson.loads(body)
@@ -658,7 +653,7 @@ class Client(Eventable):
             See below
 
         :Keyword Arguments:
-            * *commentable_type* (``Literal["beatmapset", "build", "news_post", "user"]``) --
+            * *commentable_type* (``aiosu.models.comment.CommentableType``) --
                 Optional, commentable type to get comments from
             * *commentable_id* (``int``) --
                 Optional, commentable ID to get comments from
@@ -699,7 +694,7 @@ class Client(Eventable):
             See below
 
         :Keyword Arguments:
-            * *mode* (``Literal["all", "user", "wiki_page"]``) --
+            * *mode* (``aiosu.models.search.SearchMode``) --
                 Optional, gamemode to search for, defaults to ``all``
             * *page* (``int``) --
                 Optional, page to get, ignored if mode is ``all``
@@ -1043,8 +1038,6 @@ class Client(Eventable):
         json = await self._request("GET", url, params=params)
         return from_list(Score.model_validate, json.get("scores", []))
 
-    UserBeatmapType = Literal["favourite", "graveyard", "loved", "ranked", "pending"]
-
     @prepare_token
     @check_token
     @requires_scope(Scopes.PUBLIC)
@@ -1059,7 +1052,7 @@ class Client(Eventable):
         :param user_id: ID of the user
         :type user_id: int
         :param type: Type of beatmaps to get
-        :type type: UserBeatmapType
+        :type type: aiosu.models.beatmap.UserBeatmapType
         :param \**kwargs:
             See below
 

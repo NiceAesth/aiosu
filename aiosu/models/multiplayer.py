@@ -53,6 +53,7 @@ MultiplayerEventType = Literal[
     "player-joined-no-user",
     "player-left-no-user",
     "player-kicked-no-user",
+    "other",
 ]
 MultiplayerRoomMode = Literal["owned", "participated", "ended"]
 MultiplayerRoomCategory = Literal["normal", "spotlight", "featured_artists"]
