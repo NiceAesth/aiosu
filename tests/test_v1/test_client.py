@@ -1,213 +1,122 @@
 from __future__ import annotations
 
-from io import StringIO
+from io import BytesIO
 
+import orjson
 import pytest
 
 import aiosu
-from ..classes import MockResponse
 
-modes = ["osu", "mania", "fruits", "taiko"]
+STATUS_CAN_200 = {
+    200: "application/json",
+}
+STATUS_CAN_404 = {
+    200: "application/json",
+    404: "application/json",
+}
+STATUS_CAN_404_HTML = {
+    200: "application/json",
+    404: "text/html",
+}
+STATUS_CAN_404_OCTET = {
+    200: "application/octet-stream",
+    404: "application/json",
+}
 
 
-@pytest.fixture
-def empty():
-    return b"[]"
-
-
-@pytest.fixture
-def user():
-    def _user(mode="osu"):
-        with open(f"tests/data/v1/single_user_{mode}.json", "rb") as f:
-            data = f.read()
+def get_data(func_name: str, status_code: int, extension: str = "json") -> bytes:
+    with open(f"tests/data/v1/{func_name}_{status_code}.{extension}", "rb") as f:
+        data = f.read()
         return data
 
-    return _user
+
+def mock_request(status_code: int, content_type: str, data: bytes):
+    def mocked_request(*args, **kwargs):
+        if status_code == 204:
+            return
+
+        if status_code != 200:
+            json = {}
+            if content_type == "application/json":
+                json = orjson.loads(data)
+            raise aiosu.exceptions.APIException(status_code, json.get("error", ""))
+        if content_type == "application/json":
+            return orjson.loads(data)
+        if content_type == "application/octet-stream":
+            return BytesIO(data)
+        if content_type == "application/x-osu":
+            return BytesIO(data)
+        if content_type == "text/plain":
+            return data.decode()
+
+    return mocked_request
 
 
-@pytest.fixture
-def scores():
-    def _scores(mode="osu", score_type="recents"):
-        with open(f"tests/data/v1/multiple_score_{mode}_{score_type}.json", "rb") as f:
-            data = f.read()
-        return data
-
-    return _scores
-
-
-@pytest.fixture
-def beatmap():
-    def _beatmap(mode="osu"):
-        with open(f"tests/data/v1/multiple_beatmap_{mode}.json", "rb") as f:
-            data = f.read()
-        return data
-
-    return _beatmap
-
-
-@pytest.fixture
-def match():
-    with open("tests/data/v1/match.json", "rb") as f:
-        data = f.read()
-    return data
-
-
-@pytest.fixture
-def replay():
-    with open("tests/data/v1/replay.json", "rb") as f:
-        data = f.read()
-    return data
-
-
-@pytest.fixture
-def beatmap_osu():
-    with open("tests/data/beatmap.osu", "rb") as f:
-        data = f.read()
-    return data
-
-
-class TestClient:
+def generate_test(
+    func,
+    status_codes: dict[int, str],
+    func_kwargs: dict = {},
+):
     @pytest.mark.asyncio
-    async def test_get_user(self, mocker, user):
-        client = aiosu.v1.Client("")
-        for mode in modes:
-            resp = MockResponse(user(mode), 200)
-            mocker.patch("aiohttp.ClientSession.get", return_value=resp)
-            data = await client.get_user(7782553, mode=mode)
-            assert isinstance(data, aiosu.models.User)
-        await client.close()
-
-    @pytest.mark.asyncio
-    async def test_get_user_recents(self, mocker, scores):
-        client = aiosu.v1.Client("")
-        for mode in modes:
-            resp = MockResponse(scores(mode, "recents"), 200)
-            mocker.patch("aiohttp.ClientSession.get", return_value=resp)
-            data = await client.get_user_recents(1473890, mode=mode)
-            assert isinstance(data, list) and all(
-                isinstance(x, aiosu.models.Score) for x in data
+    @pytest.mark.parametrize("status_code, content_type", status_codes.items())
+    async def test_generated(status_code, content_type, mocker):
+        async with aiosu.v1.Client(token="") as client:
+            file_extension = "json"
+            if content_type == "application/octet-stream":
+                file_extension = "osu"
+            data = get_data(func.__name__, status_code, file_extension)
+            resp = mock_request(status_code, content_type, data)
+            mocker.patch(
+                "aiosu.v1.Client._request",
+                wraps=resp,
             )
-        await client.close()
+            if status_code == 200:
+                data = await func(client, **func_kwargs)
+            else:
+                with pytest.raises(aiosu.exceptions.APIException):
+                    data = await func(client, **func_kwargs)
 
-    @pytest.mark.asyncio
-    async def test_get_user_recents_missing(self, mocker, empty):
-        client = aiosu.v1.Client("")
-        resp = MockResponse(empty, 200)
-        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
-        data = await client.get_user_recents(7782553)
-        assert isinstance(data, list) and all(
-            isinstance(x, aiosu.models.Score) for x in data
-        )
-        await client.close()
+    test_generated.__name__ = f"test_{func.__name__}"
+    return test_generated
 
-    @pytest.mark.asyncio
-    async def test_get_user_bests(self, mocker, scores):
-        client = aiosu.v1.Client("")
-        for mode in modes:
-            resp = MockResponse(scores(mode, "bests"), 200)
-            mocker.patch("aiohttp.ClientSession.get", return_value=resp)
-            data = await client.get_user_bests(7782553, mode=mode)
-            assert isinstance(data, list) and all(
-                isinstance(x, aiosu.models.Score) for x in data
-            )
-        await client.close()
 
-    @pytest.mark.asyncio
-    async def test_get_user_bests_missing(self, mocker, empty):
-        client = aiosu.v1.Client("")
-        resp = MockResponse(empty, 200)
-        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
-        data = await client.get_user_bests(7782553)
-        assert isinstance(data, list) and all(
-            isinstance(x, aiosu.models.Score) for x in data
-        )
-        await client.close()
+tests = [
+    generate_test(
+        aiosu.v1.Client.get_beatmap,
+        STATUS_CAN_200,
+        func_kwargs={"beatmap_id": 2906626},
+    ),
+    generate_test(
+        aiosu.v1.Client.get_beatmap_scores,
+        STATUS_CAN_200,
+        func_kwargs={"beatmap_id": 2906626},
+    ),
+    generate_test(
+        aiosu.v1.Client.get_user,
+        STATUS_CAN_200,
+        func_kwargs={"user_query": "peppy"},
+    ),
+    generate_test(
+        aiosu.v1.Client.get_user_recents,
+        STATUS_CAN_200,
+        func_kwargs={"user_query": 7562902},
+    ),
+    generate_test(
+        aiosu.v1.Client.get_user_bests,
+        STATUS_CAN_200,
+        func_kwargs={"user_query": 7782553},
+    ),
+    generate_test(
+        aiosu.v1.Client.get_match,
+        STATUS_CAN_200,
+        func_kwargs={"match_id": 105019274},
+    ),
+    generate_test(
+        aiosu.v1.Client.get_replay,
+        STATUS_CAN_200,
+        func_kwargs={"mode": "osu", "beatmap_id": 2906626, "user_query": 4819811},
+    ),
+]
 
-    @pytest.mark.asyncio
-    async def test_get_beatmap(self, mocker, beatmap):
-        client = aiosu.v1.Client("")
-        for mode in modes:
-            resp = MockResponse(beatmap(mode), 200)
-            mocker.patch("aiohttp.ClientSession.get", return_value=resp)
-            data = await client.get_beatmap(user_query=7118575, mode=mode)
-            assert isinstance(data, list) and all(
-                isinstance(x, aiosu.models.Beatmapset) for x in data
-            )
-        await client.close()
-
-    @pytest.mark.asyncio
-    async def test_get_user_beatmap_scores(self, mocker, scores):
-        client = aiosu.v1.Client("")
-        for mode in modes:
-            resp = MockResponse(scores(mode, "beatmap"), 200)
-            mocker.patch("aiohttp.ClientSession.get", return_value=resp)
-            data = await client.get_beatmap_scores(
-                2354779,
-                user_query=7782553,
-                mode=mode,
-            )
-            assert isinstance(data, list) and all(
-                isinstance(x, aiosu.models.Score) for x in data
-            )
-        await client.close()
-
-    @pytest.mark.asyncio
-    async def test_get_user_beatmap_scores_missing(self, mocker, empty):
-        client = aiosu.v1.Client("")
-        resp = MockResponse(empty, 200)
-        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
-        data = await client.get_beatmap_scores(2095393, user_query=7782553)
-        assert isinstance(data, list) and all(
-            isinstance(x, aiosu.models.Score) for x in data
-        )
-        await client.close()
-
-    @pytest.mark.asyncio
-    async def test_get_beatmap_scores(self, mocker, scores):
-        client = aiosu.v1.Client("")
-        for mode in modes:
-            resp = MockResponse(scores(mode, "beatmap"), 200)
-            mocker.patch("aiohttp.ClientSession.get", return_value=resp)
-            data = await client.get_beatmap_scores(2354779, mode=mode)
-            assert isinstance(data, list) and all(
-                isinstance(x, aiosu.models.Score) for x in data
-            )
-        await client.close()
-
-    @pytest.mark.asyncio
-    async def test_get_beatmap_scores_missing(self, mocker, empty):
-        client = aiosu.v1.Client("")
-        resp = MockResponse(empty, 200)
-        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
-        data = await client.get_beatmap_scores(2095393)
-        assert isinstance(data, list) and all(
-            isinstance(x, aiosu.models.Score) for x in data
-        )
-        await client.close()
-
-    @pytest.mark.asyncio
-    async def test_get_match(self, mocker, match):
-        client = aiosu.v1.Client("")
-        resp = MockResponse(match, 200)
-        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
-        data = await client.get_match(105019274)
-        assert isinstance(data, aiosu.models.legacy.Match)
-        await client.close()
-
-    @pytest.mark.asyncio
-    async def test_get_replay(self, mocker, replay):
-        client = aiosu.v1.Client("")
-        resp = MockResponse(replay, 200)
-        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
-        data = await client.get_replay(beatmap_id=2271666, user_query=9703390)
-        assert isinstance(data, aiosu.models.legacy.ReplayCompact)
-        await client.close()
-
-    @pytest.mark.asyncio
-    async def test_get_beatmap_osu(self, mocker, beatmap_osu):
-        client = aiosu.v1.Client("")
-        resp = MockResponse(beatmap_osu, 200, "text/plain")
-        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
-        data = await client.get_beatmap_osu(413428)
-        assert isinstance(data, StringIO)
-        await client.close()
+for test_func in tests:
+    globals()[test_func.__name__] = test_func

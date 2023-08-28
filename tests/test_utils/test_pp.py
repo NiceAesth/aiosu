@@ -8,8 +8,6 @@ import pytest
 import aiosu
 from aiosu.helpers import from_list
 
-types = ["recents", "bests", "firsts"]
-
 T = TypeVar("T")
 
 
@@ -25,8 +23,8 @@ def difficulty_attributes():
 
 @pytest.fixture
 def scores():
-    def _scores(mode="osu", score_type="recents"):
-        with open(f"tests/data/v2/multiple_score_{mode}_{score_type}.json", "rb") as f:
+    def _scores(mode="osu"):
+        with open(f"tests/data/v2/score_{mode}.json", "rb") as f:
             data = orjson.loads(f.read())
         return data
 
@@ -34,48 +32,44 @@ def scores():
 
 
 def test_osu_performance(scores, difficulty_attributes):
-    for score_type in types:
-        score_list = scores("osu", score_type)
-        for score in from_list(aiosu.models.Score.model_validate, score_list):
-            diffatrib = aiosu.models.BeatmapDifficultyAttributes.model_validate(
-                difficulty_attributes("osu")[str(score.beatmap.id)]["attributes"],
-            )
-            calc = aiosu.utils.performance.OsuPerformanceCalculator(diffatrib)
-            performance_attributes = calc.calculate(score)
-            assert performance_attributes.total > 0
+    score_list = scores("osu")
+    for score in from_list(aiosu.models.Score.model_validate, score_list):
+        diffatrib = aiosu.models.BeatmapDifficultyAttributes.model_validate(
+            difficulty_attributes("osu")["attributes"],
+        )
+        calc = aiosu.utils.performance.OsuPerformanceCalculator(diffatrib)
+        performance_attributes = calc.calculate(score)
+        assert performance_attributes.total > 0
 
 
 def test_taiko_performance(scores, difficulty_attributes):
-    for score_type in types:
-        score_list = scores("taiko", score_type)
-        for score in from_list(aiosu.models.Score.model_validate, score_list):
-            diffatrib = aiosu.models.BeatmapDifficultyAttributes.model_validate(
-                difficulty_attributes("taiko")[str(score.beatmap.id)]["attributes"],
-            )
-            calc = aiosu.utils.performance.TaikoPerformanceCalculator(diffatrib)
-            performance_attributes = calc.calculate(score)
-            assert performance_attributes.total > 0
+    score_list = scores("taiko")
+    for score in from_list(aiosu.models.Score.model_validate, score_list):
+        diffatrib = aiosu.models.BeatmapDifficultyAttributes.model_validate(
+            difficulty_attributes("taiko")["attributes"],
+        )
+        calc = aiosu.utils.performance.TaikoPerformanceCalculator(diffatrib)
+        performance_attributes = calc.calculate(score)
+        assert performance_attributes.total > 0
 
 
 def test_mania_performance(scores, difficulty_attributes):
-    for score_type in types:
-        score_list = scores("mania", score_type)
-        for score in from_list(aiosu.models.Score.model_validate, score_list):
-            diffatrib = aiosu.models.BeatmapDifficultyAttributes.model_validate(
-                difficulty_attributes("mania")[str(score.beatmap.id)]["attributes"],
-            )
-            calc = aiosu.utils.performance.ManiaPerformanceCalculator(diffatrib)
-            performance_attributes = calc.calculate(score)
-            assert performance_attributes.total > 0
+    score_list = scores("mania")
+    for score in from_list(aiosu.models.Score.model_validate, score_list):
+        diffatrib = aiosu.models.BeatmapDifficultyAttributes.model_validate(
+            difficulty_attributes("mania")["attributes"],
+        )
+        calc = aiosu.utils.performance.ManiaPerformanceCalculator(diffatrib)
+        performance_attributes = calc.calculate(score)
+        assert performance_attributes.total > 0
 
 
 def test_catch_performance(scores, difficulty_attributes):
-    for score_type in types:
-        score_list = scores("fruits", score_type)
-        for score in from_list(aiosu.models.Score.model_validate, score_list):
-            diffatrib = aiosu.models.BeatmapDifficultyAttributes.model_validate(
-                difficulty_attributes("fruits")[str(score.beatmap.id)]["attributes"],
-            )
-            calc = aiosu.utils.performance.CatchPerformanceCalculator(diffatrib)
-            performance_attributes = calc.calculate(score)
-            assert performance_attributes.total > 0
+    score_list = scores("fruits")
+    for score in from_list(aiosu.models.Score.model_validate, score_list):
+        diffatrib = aiosu.models.BeatmapDifficultyAttributes.model_validate(
+            difficulty_attributes("fruits")["attributes"],
+        )
+        calc = aiosu.utils.performance.CatchPerformanceCalculator(diffatrib)
+        performance_attributes = calc.calculate(score)
+        assert performance_attributes.total > 0

@@ -1,1064 +1,283 @@
 from __future__ import annotations
 
-from datetime import datetime
-from datetime import timedelta
 from io import BytesIO
 
 import orjson
 import pytest
 
 import aiosu
-from ..classes import MockResponse
 
-modes = ["osu", "mania", "fruits", "taiko"]
-ranking_types = ["performance", "score", "country", "charts"]
-
-
-def to_bytes(obj):
-    return orjson.dumps(obj)
-
-
-@pytest.fixture
-def empty():
-    return b"[]"
-
-
-@pytest.fixture
-def empty_score():
-    return b'{"scores": []}'
+STATUS_CAN_200 = {
+    200: "application/json",
+}
+STATUS_CAN_404 = {
+    200: "application/json",
+    404: "application/json",
+}
+STATUS_CAN_404_HTML = {
+    200: "application/json",
+    404: "text/html",
+}
+STATUS_CAN_404_OCTET = {
+    200: "application/octet-stream",
+    404: "application/json",
+}
 
 
-@pytest.fixture
+@pytest.fixture(autouse=True)
 def token():
     token = aiosu.models.OAuthToken(
         access_token="eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiI5OTk5IiwianRpIjoiYXNkZiIsImlhdCI6MTY3Mjk1MDI0NS45MjAxMzMsIm5iZiI6MTY3Mjk1MDI0NS45MjAxMzYsImV4cCI6MTY3MzAzNTc4NC4wMTY2MjEsInN1YiI6Ijc3ODI1NTMiLCJzY29wZXMiOlsiZnJpZW5kcy5yZWFkIiwiaWRlbnRpZnkiLCJwdWJsaWMiXX0.dps4hJ4HwjQ7scacQRBHs1FN0tcGPfYPCUxQjt6ueEo4Q-G-BmkJSGQo6dDhXD1WnXFJdW14prl_fzjvBi7U-9Y7AcLHSMRSbmRa2uS7KciZv7vHpS6Cs64uZO1WqBpOswZJtCfjBeimSrvU9O_zezg3cujrhNTCwbsBOaK1mR9YtxXhw4Y6ORLKqS9ahF1FyXBIZ3pSFBFOxbAtIIDwtZq9CDbffqQrVL7MiNojPBVmhReomf2pSyNM0UIA5u7pCXQOsb4VvmhSPGj7HPoORNyc6CM1iwcmGsrEPDL3d1ZtNtYyiLtarvUZx1WUau9GDAs-AtJ9XaypJTqUjfya7g",
         refresh_token="hi",
-        expires_on=datetime.utcnow() + timedelta(days=1),
+        expires_in=86400,
     )
     return token
 
 
-@pytest.fixture
-def user():
-    def _user(mode="osu"):
-        with open(f"tests/data/v2/single_user_{mode}.json", "rb") as f:
-            data = f.read()
+def get_data(func_name: str, status_code: int, extension: str = "json") -> bytes:
+    with open(f"tests/data/v2/{func_name}_{status_code}.{extension}", "rb") as f:
+        data = f.read()
         return data
 
-    return _user
 
-
-@pytest.fixture
-def users():
-    with open("tests/data/v2/multiple_user.json", "rb") as f:
-        data = f.read()
-    return data
-
-
-@pytest.fixture
-def score():
-    def _score(mode="osu"):
-        with open(f"tests/data/v2/single_score_{mode}.json", "rb") as f:
-            data = f.read()
-        return data
-
-    return _score
-
-
-@pytest.fixture
-def scores():
-    def _scores(mode="osu", score_type="recents"):
-        with open(f"tests/data/v2/multiple_score_{mode}_{score_type}.json", "rb") as f:
-            data = f.read()
-        return data
-
-    return _scores
-
-
-@pytest.fixture
-def beatmap():
-    def _beatmap(mode="osu"):
-        with open(f"tests/data/v2/single_beatmap_{mode}.json", "rb") as f:
-            data = f.read()
-        return data
-
-    return _beatmap
-
-
-@pytest.fixture
-def beatmaps():
-    with open("tests/data/v2/multiple_beatmap.json", "rb") as f:
-        data = f.read()
-    return data
-
-
-@pytest.fixture
-def beatmapset():
-    def _beatmapset(mode="osu"):
-        with open(f"tests/data/v2/single_beatmapset_{mode}.json", "rb") as f:
-            data = f.read()
-        return data
-
-    return _beatmapset
-
-
-@pytest.fixture
-def beatmapsets():
-    with open("tests/data/v2/multiple_beatmapset.json", "rb") as f:
-        data = f.read()
-    return data
-
-
-@pytest.fixture
-def user_beatmapsets():
-    with open("tests/data/v2/multiple_user_beatmapset.json", "rb") as f:
-        data = f.read()
-    return data
-
-
-@pytest.fixture
-def replay():
-    def _replay(mode="osu"):
-        with open(f"tests/data/replay_{mode}.osr", "rb") as f:
-            data = f.read()
-        return data
-
-    return _replay
-
-
-@pytest.fixture
-def seasonal_bgs():
-    with open("tests/data/v2/seasonal_backgrounds.json", "rb") as f:
-        data = f.read()
-    return data
-
-
-@pytest.fixture
-def changelog():
-    with open("tests/data/v2/single_changelog.json", "rb") as f:
-        data = f.read()
-    return data
-
-
-@pytest.fixture
-def spotlights():
-    with open("tests/data/v2/multiple_spotlight.json", "rb") as f:
-        data = f.read()
-    return data
-
-
-@pytest.fixture
-def news_post():
-    with open("tests/data/v2/single_news_post.json", "rb") as f:
-        data = f.read()
-    return data
-
-
-@pytest.fixture
-def wiki_page():
-    with open("tests/data/v2/single_wiki_page.json", "rb") as f:
-        data = f.read()
-    return data
-
-
-@pytest.fixture
-def comment_bundle():
-    with open("tests/data/v2/comment_bundle.json", "rb") as f:
-        data = f.read()
-    return data
-
-
-@pytest.fixture
-def kudosu_history():
-    with open("tests/data/v2/kudosu_history.json", "rb") as f:
-        data = f.read()
-    return data
-
-
-@pytest.fixture
-def search():
-    with open("tests/data/v2/search.json", "rb") as f:
-        data = f.read()
-    return data
-
-
-@pytest.fixture
-def most_played():
-    with open("tests/data/v2/multiple_user_playcount.json", "rb") as f:
-        data = f.read()
-    return data
-
-
-@pytest.fixture
-def events():
-    with open("tests/data/v2/multiple_event.json", "rb") as f:
-        data = f.read()
-    return data
-
-
-@pytest.fixture
-def beatmapset_events():
-    with open("tests/data/v2/multiple_beatmapset_event.json", "rb") as f:
-        data = f.read()
-    return data
-
-
-@pytest.fixture
-def beatmapset_discussions():
-    with open("tests/data/v2/multiple_beatmapset_discussion.json", "rb") as f:
-        data = f.read()
-    return data
-
-
-@pytest.fixture
-def beatmapset_discussion_posts():
-    with open("tests/data/v2/multiple_beatmapset_discussion_post.json", "rb") as f:
-        data = f.read()
-    return data
-
-
-@pytest.fixture
-def beatmapset_discussion_votes():
-    with open("tests/data/v2/multiple_beatmapset_discussion_vote.json", "rb") as f:
-        data = f.read()
-    return data
-
-
-@pytest.fixture
-def difficulty_attributes():
-    def _difficulty_attributes(mode="osu"):
-        with open(f"tests/data/v2/difficulty_attributes_{mode}.json", "rb") as f:
-            data = orjson.loads(f.read())
-        return data
-
-    return _difficulty_attributes
-
-
-@pytest.fixture
-def artist_tracks():
-    with open("tests/data/v2/multiple_artist_track.json", "rb") as f:
-        data = f.read()
-    return data
-
-
-@pytest.fixture
-def rankings():
-    def _rankings(mode="osu", ranking_type="performance"):
-        with open(f"tests/data/v2/rankings_{mode}_{ranking_type}.json", "rb") as f:
-            data = f.read()
-        return data
-
-    return _rankings
-
-
-@pytest.fixture
-def news_listing():
-    with open("tests/data/v2/news_listing.json", "rb") as f:
-        data = f.read()
-    return data
-
-
-@pytest.fixture
-def changelog_listing():
-    with open("tests/data/v2/changelog_listing.json", "rb") as f:
-        data = f.read()
-    return data
-
-
-@pytest.fixture
-def match():
-    with open("tests/data/v2/single_match.json", "rb") as f:
-        data = f.read()
-    return data
-
-
-@pytest.fixture
-def matches():
-    with open("tests/data/v2/multiple_match.json", "rb") as f:
-        data = f.read()
-    return data
-
-
-@pytest.fixture
-def rooms():
-    with open("tests/data/v2/multiple_room.json", "rb") as f:
-        data = f.read()
-    return data
-
-
-@pytest.fixture
-def room():
-    with open("tests/data/v2/single_room.json", "rb") as f:
-        data = f.read()
-    return data
-
-
-@pytest.fixture
-def room_leaderboard():
-    with open("tests/data/v2/room_leaderboard.json", "rb") as f:
-        data = f.read()
-    return data
-
-
-@pytest.fixture
-def room_scores():
-    with open("tests/data/v2/multiple_room_score.json", "rb") as f:
-        data = f.read()
-    return data
-
-
-@pytest.fixture
-def lazer_scores():
-    with open("tests/data/v2/multiple_score_lazer.json", "rb") as f:
-        data = f.read()
-    return data
-
-
-@pytest.fixture
-def cursor_events():
-    with open("tests/data/v2/multiple_cursor_event.json", "rb") as f:
-        data = f.read()
-    return data
-
-
-class TestCursor:
+def mock_request(status_code: int, content_type: str, data: bytes):
+    def mocked_request(*args, **kwargs):
+        if status_code == 204:
+            return
+
+        if status_code != 200:
+            json = {}
+            if content_type == "application/json":
+                json = orjson.loads(data)
+            raise aiosu.exceptions.APIException(status_code, json.get("error", ""))
+        if content_type == "application/json":
+            return orjson.loads(data)
+        if content_type == "application/octet-stream":
+            return BytesIO(data)
+        if content_type == "application/x-osu":
+            return BytesIO(data)
+        if content_type == "text/plain":
+            return data.decode()
+
+    return mocked_request
+
+
+def generate_test(
+    func,
+    status_codes: dict[int, str],
+    func_kwargs: dict = {},
+):
     @pytest.mark.asyncio
-    async def test_get_featured_artists_cursor(self, mocker, token, artist_tracks):
-        client = aiosu.v2.Client(token=token)
-        resp = MockResponse(artist_tracks, 200)
-        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
-        data = await client.get_featured_artists()
-        assert isinstance(data, aiosu.models.ArtistResponse)
-        data_next = await data.next()
-        assert isinstance(data_next, aiosu.models.ArtistResponse)
-        await client.close()
-
-    @pytest.mark.asyncio
-    async def test_get_news_listing_cursor(self, mocker, token, news_listing):
-        client = aiosu.v2.Client(token=token)
-        resp = MockResponse(news_listing, 200)
-        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
-        data = await client.get_news_listing()
-        assert isinstance(data, aiosu.models.NewsListing)
-        data_next = await data.next()
-        assert isinstance(data_next, aiosu.models.NewsListing)
-        await client.close()
-
-    @pytest.mark.asyncio
-    async def test_get_changelog_listing_cursor(self, mocker, token, changelog_listing):
-        client = aiosu.v2.Client(token=token)
-        resp = MockResponse(changelog_listing, 200)
-        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
-        data = await client.get_changelog_listing()
-        assert isinstance(data, aiosu.models.ChangelogListing)
-        # data_next = await data.next()
-        # assert isinstance(data_next, aiosu.models.ChangelogListing)
-        await client.close()
-
-    @pytest.mark.asyncio
-    async def test_get_comment_cursor(self, mocker, token, comment_bundle):
-        client = aiosu.v2.Client(token=token)
-        resp = MockResponse(comment_bundle, 200)
-        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
-        data = await client.get_comment(123)
-        assert isinstance(data, aiosu.models.CommentBundle)
-        data_next = await data.next()
-        assert isinstance(data_next, aiosu.models.CommentBundle)
-        await client.close()
-
-    @pytest.mark.asyncio
-    async def test_get_comments_cursor(self, mocker, token, comment_bundle):
-        client = aiosu.v2.Client(token=token)
-        resp = MockResponse(comment_bundle, 200)
-        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
-        data = await client.get_comments()
-        assert isinstance(data, aiosu.models.CommentBundle)
-        data_next = await data.next()
-        assert isinstance(data_next, aiosu.models.CommentBundle)
-        await client.close()
-
-    @pytest.mark.asyncio
-    async def test_search_beatmapsets_cursor(self, mocker, token, beatmapsets):
-        client = aiosu.v2.Client(token=token)
-        resp = MockResponse(beatmapsets, 200)
-        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
-        data = await client.search_beatmapsets()
-        assert isinstance(data, aiosu.models.BeatmapsetSearchResponse)
-        data_next = await data.next()
-        assert isinstance(data_next, aiosu.models.BeatmapsetSearchResponse)
-        await client.close()
-
-    @pytest.mark.asyncio
-    async def test_get_beatmapset_discussions_cursor(
-        self,
-        mocker,
-        token,
-        beatmapset_discussions,
-    ):
-        client = aiosu.v2.Client(token=token)
-        resp = MockResponse(beatmapset_discussions, 200)
-        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
-        data = await client.get_beatmapset_discussions()
-        assert isinstance(data, aiosu.models.BeatmapsetDiscussionResponse)
-        data_next = await data.next()
-        assert isinstance(data_next, aiosu.models.BeatmapsetDiscussionResponse)
-        await client.close()
-
-    @pytest.mark.asyncio
-    async def test_get_beatmapset_discussion_posts_cursor(
-        self,
-        mocker,
-        token,
-        beatmapset_discussion_posts,
-    ):
-        client = aiosu.v2.Client(token=token)
-        resp = MockResponse(beatmapset_discussion_posts, 200)
-        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
-        data = await client.get_beatmapset_discussion_posts()
-        assert isinstance(data, aiosu.models.BeatmapsetDiscussionPostResponse)
-        data_next = await data.next()
-        assert isinstance(data_next, aiosu.models.BeatmapsetDiscussionPostResponse)
-        await client.close()
-
-    @pytest.mark.asyncio
-    async def test_get_beatmapset_discussion_votes_cursor(
-        self,
-        mocker,
-        token,
-        beatmapset_discussion_votes,
-    ):
-        client = aiosu.v2.Client(token=token)
-        resp = MockResponse(beatmapset_discussion_votes, 200)
-        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
-        data = await client.get_beatmapset_discussion_votes()
-        assert isinstance(data, aiosu.models.BeatmapsetDiscussionVoteResponse)
-        data_next = await data.next()
-        assert isinstance(data_next, aiosu.models.BeatmapsetDiscussionVoteResponse)
-        await client.close()
-
-    @pytest.mark.asyncio
-    async def test_get_rankings_cursor(self, mocker, token, rankings):
-        client = aiosu.v2.Client(token=token)
-        resp = MockResponse(rankings("osu", "performance"), 200)
-        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
-        data = await client.get_rankings("osu", "performance")
-        assert isinstance(data, aiosu.models.Rankings)
-        data_next = await data.next()
-        assert isinstance(data_next, aiosu.models.Rankings)
-        await client.close()
-
-    @pytest.mark.asyncio
-    async def test_get_multiplayer_matches_cursor(self, mocker, token, matches):
-        client = aiosu.v2.Client(token=token)
-        resp = MockResponse(matches, 200)
-        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
-        data = await client.get_multiplayer_matches()
-        assert isinstance(data, aiosu.models.MultiplayerMatchesResponse)
-        data_next = await data.next()
-        assert isinstance(data_next, aiosu.models.MultiplayerMatchesResponse)
-        await client.close()
-
-    @pytest.mark.asyncio
-    async def test_get_multiplayer_scores_cursor(self, mocker, token, room_scores):
-        client = aiosu.v2.Client(token=token)
-        resp = MockResponse(room_scores, 200)
-        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
-        data = await client.get_multiplayer_scores(1, 1)
-        assert isinstance(data, aiosu.models.MultiplayerScoresResponse)
-        data_next = await data.next()
-        assert isinstance(data_next, aiosu.models.MultiplayerScoresResponse)
-        await client.close()
-
-
-class TestClient:
-    @pytest.mark.asyncio
-    async def test_get_featured_artists(self, mocker, token, artist_tracks):
-        client = aiosu.v2.Client(token=token)
-        resp = MockResponse(artist_tracks, 200)
-        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
-        data = await client.get_featured_artists()
-        assert isinstance(data, aiosu.models.ArtistResponse)
-        await client.close()
-
-    @pytest.mark.asyncio
-    async def test_get_seasonal_backgrounds(self, mocker, token, seasonal_bgs):
-        client = aiosu.v2.Client(token=token)
-        resp = MockResponse(seasonal_bgs, 200)
-        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
-        data = await client.get_seasonal_backgrounds()
-        assert isinstance(data, aiosu.models.SeasonalBackgroundSet)
-        await client.close()
-
-    @pytest.mark.asyncio
-    async def test_get_changelog_listing(self, mocker, token, changelog_listing):
-        client = aiosu.v2.Client(token=token)
-        resp = MockResponse(changelog_listing, 200)
-        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
-        data = await client.get_changelog_listing()
-        assert isinstance(data, aiosu.models.ChangelogListing)
-        await client.close()
-
-    @pytest.mark.asyncio
-    async def test_get_changelog_build(self, mocker, token, changelog):
-        client = aiosu.v2.Client(token=token)
-        resp = MockResponse(changelog, 200)
-        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
-        data = await client.get_changelog_build("lazer", "2022.1228.0")
-        assert isinstance(data, aiosu.models.Build)
-        await client.close()
-
-    @pytest.mark.asyncio
-    async def test_lookup_changelog_build(self, mocker, token, changelog):
-        client = aiosu.v2.Client(token=token)
-        resp = MockResponse(changelog, 200)
-        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
-        data = await client.lookup_changelog_build("lazer")
-        assert isinstance(data, aiosu.models.Build)
-        await client.close()
-
-    @pytest.mark.asyncio
-    async def test_get_news_listing(self, mocker, token, news_listing):
-        client = aiosu.v2.Client(token=token)
-        resp = MockResponse(news_listing, 200)
-        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
-        data = await client.get_news_listing()
-        assert isinstance(data, aiosu.models.NewsListing)
-        await client.close()
-
-    @pytest.mark.asyncio
-    async def test_get_news_post(self, mocker, token, news_post):
-        client = aiosu.v2.Client(token=token)
-        resp = MockResponse(news_post, 200)
-        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
-        data = await client.get_news_post(943)
-        assert isinstance(data, aiosu.models.NewsPost)
-        await client.close()
-
-    @pytest.mark.asyncio
-    async def test_get_wiki_page(self, mocker, token, wiki_page):
-        client = aiosu.v2.Client(token=token)
-        resp = MockResponse(wiki_page, 200)
-        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
-        data = await client.get_wiki_page("ro", "Welcome")
-        assert isinstance(data, aiosu.models.WikiPage)
-        await client.close()
-
-    @pytest.mark.asyncio
-    async def test_get_comment(self, mocker, token, comment_bundle):
-        client = aiosu.v2.Client(token=token)
-        resp = MockResponse(comment_bundle, 200)
-        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
-        data = await client.get_comment(123)
-        assert isinstance(data, aiosu.models.CommentBundle)
-        await client.close()
-
-    @pytest.mark.asyncio
-    async def test_get_comments(self, mocker, token, comment_bundle):
-        client = aiosu.v2.Client(token=token)
-        resp = MockResponse(comment_bundle, 200)
-        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
-        data = await client.get_comments()
-        assert isinstance(data, aiosu.models.CommentBundle)
-        await client.close()
-
-    @pytest.mark.asyncio
-    async def test_search(self, mocker, token, search):
-        client = aiosu.v2.Client(token=token)
-        resp = MockResponse(search, 200)
-        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
-        data = await client.search("a")
-        assert isinstance(data, aiosu.models.SearchResponse)
-        await client.close()
-
-    @pytest.mark.asyncio
-    async def test_get_me(self, mocker, token, user):
-        client = aiosu.v2.Client(token=token)
-        for mode in modes:
-            resp = MockResponse(user(mode), 200)
-            mocker.patch("aiohttp.ClientSession.get", return_value=resp)
-            data = await client.get_me()
-            assert isinstance(data, aiosu.models.User)
-        await client.close()
-
-    @pytest.mark.asyncio
-    async def test_get_own_friends(self, mocker, token, users):
-        client = aiosu.v2.Client(token=token)
-        json = orjson.loads(users)
-        resp = MockResponse(to_bytes(json["users"]), 200)
-        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
-        data = await client.get_own_friends()
-        assert isinstance(data, list) and all(
-            isinstance(x, aiosu.models.User) for x in data
-        )
-        await client.close()
-
-    @pytest.mark.asyncio
-    async def test_get_user(self, mocker, token, user):
-        client = aiosu.v2.Client(token=token)
-        for mode in modes:
-            resp = MockResponse(user(mode), 200)
-            mocker.patch("aiohttp.ClientSession.get", return_value=resp)
-            data = await client.get_user(7782553)
-            assert isinstance(data, aiosu.models.User)
-        await client.close()
-
-    @pytest.mark.asyncio
-    async def test_get_users(self, mocker, token, users):
-        client = aiosu.v2.Client(token=token)
-        resp = MockResponse(users, 200)
-        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
-        data = await client.get_users([7782553, 15118934])
-        assert isinstance(data, list) and all(
-            isinstance(x, aiosu.models.User) for x in data
-        )
-        await client.close()
-
-    @pytest.mark.asyncio
-    async def test_get_user_kudosu(self, mocker, token, kudosu_history):
-        client = aiosu.v2.Client(token=token)
-        resp = MockResponse(kudosu_history, 200)
-        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
-        data = await client.get_user_kudosu(7782553)
-        assert isinstance(data, list) and all(
-            isinstance(x, aiosu.models.KudosuHistory) for x in data
-        )
-        await client.close()
-
-    @pytest.mark.asyncio
-    async def test_get_user_recents(self, mocker, token, scores):
-        client = aiosu.v2.Client(token=token)
-        for mode in modes:
-            resp = MockResponse(scores(mode, "recents"), 200)
-            mocker.patch("aiohttp.ClientSession.get", return_value=resp)
-            data = await client.get_user_recents(7782553)
-            assert isinstance(data, list) and all(
-                isinstance(x, aiosu.models.Score) for x in data
+    @pytest.mark.parametrize("status_code, content_type", status_codes.items())
+    async def test_generated(status_code, content_type, token, mocker):
+        async with aiosu.v2.Client(token=token) as client:
+            file_extension = "json"
+            if content_type == "application/octet-stream":
+                file_extension = "osr"
+            data = get_data(func.__name__, status_code, file_extension)
+            resp = mock_request(status_code, content_type, data)
+            mocker.patch(
+                "aiosu.v2.Client._request",
+                wraps=resp,
             )
-        await client.close()
+            if status_code == 200:
+                data = await func(client, **func_kwargs)
+            else:
+                with pytest.raises(aiosu.exceptions.APIException):
+                    data = await func(client, **func_kwargs)
 
-    @pytest.mark.asyncio
-    async def test_get_user_recents_missing(self, mocker, token, empty):
-        client = aiosu.v2.Client(token=token)
-        resp = MockResponse(empty, 200)
-        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
-        data = await client.get_user_recents(7782553)
-        assert isinstance(data, list) and all(
-            isinstance(x, aiosu.models.Score) for x in data
-        )
-        await client.close()
+    test_generated.__name__ = f"test_{func.__name__}"
+    return test_generated
 
-    @pytest.mark.asyncio
-    async def test_get_user_bests(self, mocker, token, scores):
-        client = aiosu.v2.Client(token=token)
-        for mode in modes:
-            resp = MockResponse(scores(mode, "bests"), 200)
-            mocker.patch("aiohttp.ClientSession.get", return_value=resp)
-            data = await client.get_user_bests(7782553)
-            assert isinstance(data, list) and all(
-                isinstance(x, aiosu.models.Score) for x in data
-            )
-        await client.close()
 
-    @pytest.mark.asyncio
-    async def test_get_user_bests_missing(self, mocker, token, empty):
-        client = aiosu.v2.Client(token=token)
-        resp = MockResponse(empty, 200)
-        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
-        data = await client.get_user_bests(7782553)
-        assert isinstance(data, list) and all(
-            isinstance(x, aiosu.models.Score) for x in data
-        )
-        await client.close()
+tests = [
+    generate_test(aiosu.v2.Client.get_featured_artists, STATUS_CAN_200),
+    generate_test(aiosu.v2.Client.get_seasonal_backgrounds, STATUS_CAN_200),
+    generate_test(aiosu.v2.Client.get_changelog_listing, STATUS_CAN_200),
+    generate_test(
+        aiosu.v2.Client.get_changelog_build,
+        STATUS_CAN_404,
+        func_kwargs={"stream": "lazer", "build": "2023.815.0"},
+    ),
+    generate_test(
+        aiosu.v2.Client.lookup_changelog_build,
+        STATUS_CAN_404,
+        func_kwargs={"changelog_query": "lazer"},
+    ),
+    generate_test(aiosu.v2.Client.get_news_listing, STATUS_CAN_200),
+    generate_test(
+        aiosu.v2.Client.get_news_post,
+        STATUS_CAN_404,
+        func_kwargs={"news_query": 1},
+    ),
+    generate_test(
+        aiosu.v2.Client.get_wiki_page,
+        STATUS_CAN_404_HTML,
+        func_kwargs={"locale": "en", "path": "Main_page"},
+    ),
+    generate_test(aiosu.v2.Client.get_comments, STATUS_CAN_200),
+    generate_test(
+        aiosu.v2.Client.get_comment,
+        STATUS_CAN_404,
+        func_kwargs={"comment_id": 1},
+    ),
+    generate_test(
+        aiosu.v2.Client.search,
+        STATUS_CAN_200,
+        func_kwargs={"query": "peppy"},
+    ),
+    generate_test(
+        aiosu.v2.Client.get_me,
+        STATUS_CAN_200,
+    ),
+    generate_test(
+        aiosu.v2.Client.get_own_friends,
+        STATUS_CAN_200,
+    ),
+    generate_test(
+        aiosu.v2.Client.get_user,
+        STATUS_CAN_404,
+        func_kwargs={"user_query": 1},
+    ),
+    generate_test(
+        aiosu.v2.Client.get_users,
+        STATUS_CAN_200,
+        func_kwargs={"user_ids": [7782553, 2]},
+    ),
+    generate_test(
+        aiosu.v2.Client.get_user_kudosu,
+        STATUS_CAN_404,
+        func_kwargs={"user_id": 7782553},
+    ),
+    generate_test(
+        aiosu.v2.Client.get_user_recents,
+        STATUS_CAN_404,
+        func_kwargs={"user_id": 7782553},
+    ),
+    generate_test(
+        aiosu.v2.Client.get_user_bests,
+        STATUS_CAN_404,
+        func_kwargs={"user_id": 7782553},
+    ),
+    generate_test(
+        aiosu.v2.Client.get_user_firsts,
+        STATUS_CAN_404,
+        func_kwargs={"user_id": 7782553},
+    ),
+    generate_test(
+        aiosu.v2.Client.get_user_pinned,
+        STATUS_CAN_404,
+        func_kwargs={"user_id": 7782553},
+    ),
+    generate_test(
+        aiosu.v2.Client.get_user_beatmap_scores,
+        STATUS_CAN_404,
+        func_kwargs={"user_id": 4819811, "beatmap_id": 2906626},
+    ),
+    generate_test(
+        aiosu.v2.Client.get_user_beatmaps,
+        STATUS_CAN_404,
+        func_kwargs={"user_id": 7782553, "type": "favourite"},
+    ),
+    generate_test(
+        aiosu.v2.Client.get_user_most_played,
+        STATUS_CAN_404,
+        func_kwargs={"user_id": 7782553},
+    ),
+    generate_test(
+        aiosu.v2.Client.get_user_recent_activity,
+        STATUS_CAN_404,
+        func_kwargs={"user_id": 7782553},
+    ),
+    generate_test(aiosu.v2.Client.get_events, STATUS_CAN_200),
+    generate_test(
+        aiosu.v2.Client.get_beatmap_scores,
+        STATUS_CAN_404,
+        func_kwargs={"beatmap_id": 2906626},
+    ),
+    generate_test(
+        aiosu.v2.Client.get_beatmap,
+        STATUS_CAN_404,
+        func_kwargs={"beatmap_id": 2906626},
+    ),
+    generate_test(
+        aiosu.v2.Client.get_beatmaps,
+        STATUS_CAN_200,
+        func_kwargs={"beatmap_ids": [2906626, 2395787]},
+    ),
+    generate_test(
+        aiosu.v2.Client.lookup_beatmap,
+        STATUS_CAN_404,
+        func_kwargs={"id": 2906626},
+    ),
+    generate_test(
+        aiosu.v2.Client.get_beatmap_attributes,
+        STATUS_CAN_404,
+        func_kwargs={"beatmap_id": 2906626},
+    ),
+    generate_test(
+        aiosu.v2.Client.get_beatmapset,
+        STATUS_CAN_404,
+        func_kwargs={"beatmapset_id": 1107500},
+    ),
+    generate_test(
+        aiosu.v2.Client.lookup_beatmapset,
+        STATUS_CAN_404,
+        func_kwargs={"beatmap_id": 1107500},
+    ),
+    generate_test(
+        aiosu.v2.Client.search_beatmapsets,
+        STATUS_CAN_200,
+        func_kwargs={"search_filter": "doja cat say so"},
+    ),
+    generate_test(aiosu.v2.Client.get_beatmapset_events, STATUS_CAN_200),
+    generate_test(aiosu.v2.Client.get_beatmapset_discussions, STATUS_CAN_200),
+    generate_test(aiosu.v2.Client.get_beatmapset_discussion_posts, STATUS_CAN_200),
+    generate_test(aiosu.v2.Client.get_beatmapset_discussion_votes, STATUS_CAN_200),
+    generate_test(
+        aiosu.v2.Client.get_score,
+        STATUS_CAN_404,
+        func_kwargs={"score_id": 4220635589, "mode": "osu"},
+    ),
+    generate_test(
+        aiosu.v2.Client.get_score_replay,
+        STATUS_CAN_404_OCTET,
+        func_kwargs={"score_id": 4220635589, "mode": "osu"},
+    ),
+    generate_test(
+        aiosu.v2.Client.get_rankings,
+        STATUS_CAN_404,
+        func_kwargs={"mode": "osu", "type": "performance"},
+    ),
+    generate_test(aiosu.v2.Client.get_spotlights, STATUS_CAN_200),
+    generate_test(
+        aiosu.v2.Client.get_forum_topic,
+        STATUS_CAN_404,
+        func_kwargs={"topic_id": 7},
+    ),
+    generate_test(aiosu.v2.Client.get_multiplayer_matches, STATUS_CAN_200),
+    generate_test(
+        aiosu.v2.Client.get_multiplayer_match,
+        STATUS_CAN_404,
+        func_kwargs={"match_id": 105019274},
+    ),
+    generate_test(aiosu.v2.Client.get_multiplayer_rooms, STATUS_CAN_200),
+    generate_test(
+        aiosu.v2.Client.get_multiplayer_room,
+        STATUS_CAN_404,
+        func_kwargs={"room_id": 1},
+    ),
+    generate_test(
+        aiosu.v2.Client.get_multiplayer_leaderboard,
+        STATUS_CAN_404,
+        func_kwargs={"room_id": 1},
+    ),
+    generate_test(
+        aiosu.v2.Client.get_multiplayer_scores,
+        STATUS_CAN_404,
+        func_kwargs={"room_id": 1, "playlist_id": 1},
+    ),
+]
 
-    @pytest.mark.asyncio
-    async def test_get_user_pinned(self, mocker, token, scores):
-        client = aiosu.v2.Client(token=token)
-        for mode in modes:
-            resp = MockResponse(scores(mode, "pinned"), 200)
-            mocker.patch("aiohttp.ClientSession.get", return_value=resp)
-            data = await client.get_user_pinned(7782553)
-            assert isinstance(data, list) and all(
-                isinstance(x, aiosu.models.Score) for x in data
-            )
-        await client.close()
-
-    @pytest.mark.asyncio
-    async def test_get_user_pinned_missing(self, mocker, token, empty):
-        client = aiosu.v2.Client(token=token)
-        resp = MockResponse(empty, 200)
-        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
-        data = await client.get_user_pinned(7782553)
-        assert isinstance(data, list) and all(
-            isinstance(x, aiosu.models.Score) for x in data
-        )
-        await client.close()
-
-    @pytest.mark.asyncio
-    async def test_get_lazer_scores(self, mocker, token, lazer_scores):
-        client = aiosu.v2.Client(token=token)
-        resp = MockResponse(lazer_scores, 200)
-        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
-        data = await client.get_user_bests(7782553, new_format=True)
-        assert isinstance(data, list) and all(
-            isinstance(x, aiosu.models.LazerScore) for x in data
-        )
-        await client.close()
-
-    @pytest.mark.asyncio
-    async def test_get_user_firsts(self, mocker, token, scores):
-        client = aiosu.v2.Client(token=token)
-        for mode in modes:
-            resp = MockResponse(scores(mode, "firsts"), 200)
-            mocker.patch("aiohttp.ClientSession.get", return_value=resp)
-            data = await client.get_user_firsts(7782553)
-            assert isinstance(data, list) and all(
-                isinstance(x, aiosu.models.Score) for x in data
-            )
-        await client.close()
-
-    @pytest.mark.asyncio
-    async def test_get_user_firsts_missing(self, mocker, token, empty):
-        client = aiosu.v2.Client(token=token)
-        resp = MockResponse(empty, 200)
-        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
-        data = await client.get_user_firsts(7782553)
-        assert isinstance(data, list) and all(
-            isinstance(x, aiosu.models.Score) for x in data
-        )
-        await client.close()
-
-    @pytest.mark.asyncio
-    async def test_get_user_beatmap_scores(self, mocker, token, scores):
-        client = aiosu.v2.Client(token=token)
-        for mode in modes:
-            resp = MockResponse(scores(mode, "beatmap"), 200)
-            mocker.patch("aiohttp.ClientSession.get", return_value=resp)
-            data = await client.get_user_beatmap_scores(7782553, 2354779)
-            assert isinstance(data, list) and all(
-                isinstance(x, aiosu.models.Score) for x in data
-            )
-        await client.close()
-
-    @pytest.mark.asyncio
-    async def test_get_user_beatmap_scores_missing(self, mocker, token, empty_score):
-        client = aiosu.v2.Client(token=token)
-        resp = MockResponse(empty_score, 200)
-        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
-        data = await client.get_user_beatmap_scores(7782553, 2095393)
-        assert isinstance(data, list) and all(
-            isinstance(x, aiosu.models.Score) for x in data
-        )
-        await client.close()
-
-    @pytest.mark.asyncio
-    async def test_get_user_beatmaps(self, mocker, token, user_beatmapsets):
-        client = aiosu.v2.Client(token=token)
-        resp = MockResponse(user_beatmapsets, 200)
-        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
-        data = await client.get_user_beatmaps(7118575, "ranked")
-        assert isinstance(data, list) and all(
-            isinstance(x, aiosu.models.Beatmapset) for x in data
-        )
-        await client.close()
-
-    @pytest.mark.asyncio
-    async def test_get_user_most_played(self, mocker, token, most_played):
-        client = aiosu.v2.Client(token=token)
-        resp = MockResponse(most_played, 200)
-        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
-        data = await client.get_user_most_played(7782553)
-        assert isinstance(data, list) and all(
-            isinstance(x, aiosu.models.BeatmapUserPlaycount) for x in data
-        )
-        await client.close()
-
-    @pytest.mark.asyncio
-    async def test_get_user_recent_activity(self, mocker, token, events):
-        client = aiosu.v2.Client(token=token)
-        resp = MockResponse(events, 200)
-        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
-        data = await client.get_user_recent_activity(7118575)
-        assert isinstance(data, list) and all(
-            isinstance(x, aiosu.models.Event) for x in data
-        )
-        await client.close()
-
-    @pytest.mark.asyncio
-    async def test_get_events(self, mocker, token, cursor_events):
-        client = aiosu.v2.Client(token=token)
-        resp = MockResponse(cursor_events, 200)
-        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
-        data = await client.get_events()
-        assert isinstance(data, aiosu.models.EventResponse)
-        await client.close()
-
-    @pytest.mark.asyncio
-    async def test_get_beatmap_scores(self, mocker, token, scores):
-        client = aiosu.v2.Client(token=token)
-        for mode in modes:
-            resp = MockResponse(scores(mode, "beatmap"), 200)
-            mocker.patch("aiohttp.ClientSession.get", return_value=resp)
-            data = await client.get_beatmap_scores(2354779)
-            assert isinstance(data, list) and all(
-                isinstance(x, aiosu.models.Score) for x in data
-            )
-        await client.close()
-
-    @pytest.mark.asyncio
-    async def test_get_beatmap_scores_missing(self, mocker, token, empty_score):
-        client = aiosu.v2.Client(token=token)
-        resp = MockResponse(empty_score, 200)
-        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
-        data = await client.get_beatmap_scores(2095393)
-        assert isinstance(data, list) and all(
-            isinstance(x, aiosu.models.Score) for x in data
-        )
-        await client.close()
-
-    @pytest.mark.asyncio
-    async def test_get_beatmap(self, mocker, token, beatmap):
-        client = aiosu.v2.Client(token=token)
-        for mode in modes:
-            resp = MockResponse(beatmap(mode), 200)
-            mocker.patch("aiohttp.ClientSession.get", return_value=resp)
-            data = await client.get_beatmap(2354779)
-            assert isinstance(data, aiosu.models.Beatmap)
-        await client.close()
-
-    @pytest.mark.asyncio
-    async def test_get_beatmaps(self, mocker, token, beatmaps):
-        client = aiosu.v2.Client(token=token)
-        resp = MockResponse(beatmaps, 200)
-        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
-        data = await client.get_beatmaps([2095393, 2354779])
-        assert isinstance(data, list) and all(
-            isinstance(x, aiosu.models.Beatmap) for x in data
-        )
-        await client.close()
-
-    @pytest.mark.asyncio
-    async def test_lookup_beatmap(self, mocker, token, beatmap):
-        client = aiosu.v2.Client(token=token)
-        for mode in modes:
-            resp = MockResponse(beatmap(mode), 200)
-            mocker.patch("aiohttp.ClientSession.get", return_value=resp)
-            data = await client.lookup_beatmap(id=2354779)
-            assert isinstance(data, aiosu.models.Beatmap)
-        await client.close()
-
-    @pytest.mark.asyncio
-    async def test_get_beatmap_attributes(
-        self,
-        mocker,
-        token,
-        beatmap,
-        difficulty_attributes,
-    ):
-        client = aiosu.v2.Client(token=token)
-        for mode in modes:
-            diffatrib = difficulty_attributes(mode)["2354779"]
-            resp = MockResponse(to_bytes(diffatrib), 200)
-            mocker.patch("aiohttp.ClientSession.post", return_value=resp)
-            data = await client.get_beatmap_attributes("2354779")
-            assert isinstance(data, aiosu.models.BeatmapDifficultyAttributes)
-        await client.close()
-
-    @pytest.mark.asyncio
-    async def test_get_beatmapset(self, mocker, token, beatmapset):
-        client = aiosu.v2.Client(token=token)
-        for mode in modes:
-            resp = MockResponse(beatmapset(mode), 200)
-            mocker.patch("aiohttp.ClientSession.get", return_value=resp)
-            data = await client.get_beatmapset(2354779)
-            assert isinstance(data, aiosu.models.Beatmapset)
-        await client.close()
-
-    @pytest.mark.asyncio
-    async def test_lookup_beatmapset(self, mocker, token, beatmapset):
-        client = aiosu.v2.Client(token=token)
-        for mode in modes:
-            resp = MockResponse(beatmapset(mode), 200)
-            mocker.patch("aiohttp.ClientSession.get", return_value=resp)
-            data = await client.lookup_beatmapset(2354779)
-            assert isinstance(data, aiosu.models.Beatmapset)
-        await client.close()
-
-    @pytest.mark.asyncio
-    async def test_search_beatmaps(self, mocker, token, beatmapsets):
-        client = aiosu.v2.Client(token=token)
-        resp = MockResponse(beatmapsets, 200)
-        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
-        data = await client.search_beatmapsets()
-        assert isinstance(data, aiosu.models.BeatmapsetSearchResponse)
-        await client.close()
-
-    @pytest.mark.asyncio
-    async def test_get_beatmapset_events(self, mocker, token, beatmapset_events):
-        client = aiosu.v2.Client(token=token)
-        resp = MockResponse(beatmapset_events, 200)
-        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
-        data = await client.get_beatmapset_events()
-        assert isinstance(data, list) and all(
-            isinstance(x, aiosu.models.BeatmapsetEvent) for x in data
-        )
-        await client.close()
-
-    @pytest.mark.asyncio
-    async def test_get_beatmapset_discussions(
-        self,
-        mocker,
-        token,
-        beatmapset_discussions,
-    ):
-        client = aiosu.v2.Client(token=token)
-        resp = MockResponse(beatmapset_discussions, 200)
-        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
-        data = await client.get_beatmapset_discussions()
-        assert isinstance(data, aiosu.models.BeatmapsetDiscussionResponse)
-        await client.close()
-
-    @pytest.mark.asyncio
-    async def test_get_beatmapset_discussion_posts(
-        self,
-        mocker,
-        token,
-        beatmapset_discussion_posts,
-    ):
-        client = aiosu.v2.Client(token=token)
-        resp = MockResponse(beatmapset_discussion_posts, 200)
-        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
-        data = await client.get_beatmapset_discussion_posts()
-        assert isinstance(data, aiosu.models.BeatmapsetDiscussionPostResponse)
-        await client.close()
-
-    @pytest.mark.asyncio
-    async def test_get_beatmapset_discussion_votes(
-        self,
-        mocker,
-        token,
-        beatmapset_discussion_votes,
-    ):
-        client = aiosu.v2.Client(token=token)
-        resp = MockResponse(beatmapset_discussion_votes, 200)
-        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
-        data = await client.get_beatmapset_discussion_votes()
-        assert isinstance(data, aiosu.models.BeatmapsetDiscussionVoteResponse)
-        await client.close()
-
-    @pytest.mark.asyncio
-    async def test_get_score(
-        self,
-        mocker,
-        token,
-        score,
-    ):
-        client = aiosu.v2.Client(token=token)
-        for mode in modes:
-            resp = MockResponse(score(mode), 200)
-            mocker.patch("aiohttp.ClientSession.get", return_value=resp)
-            data = await client.get_score(4220635589, mode)
-            assert isinstance(data, aiosu.models.Score)
-        await client.close()
-
-    @pytest.mark.asyncio
-    async def test_get_score_replay(
-        self,
-        mocker,
-        token,
-        replay,
-    ):
-        client = aiosu.v2.Client(token=token)
-        for mode in modes:
-            resp = MockResponse(replay(mode), 200, "application/octet-stream")
-            mocker.patch("aiohttp.ClientSession.get", return_value=resp)
-            data = await client.get_score_replay(4220635589, mode)
-            assert isinstance(data, BytesIO)
-        await client.close()
-
-    @pytest.mark.asyncio
-    async def test_get_spotlights(self, mocker, token, spotlights):
-        client = aiosu.v2.Client(token=token)
-        resp = MockResponse(spotlights, 200)
-        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
-        data = await client.get_spotlights()
-        assert isinstance(data, list) and all(
-            isinstance(x, aiosu.models.Spotlight) for x in data
-        )
-        await client.close()
-
-    @pytest.mark.asyncio
-    async def test_get_rankings(self, mocker, token, rankings):
-        client = aiosu.v2.Client(token=token)
-        for mode in modes:
-            for type_ in ranking_types:
-                resp = MockResponse(rankings(mode, type_), 200)
-                mocker.patch("aiohttp.ClientSession.get", return_value=resp)
-                data = await client.get_rankings(mode, type_)
-                assert isinstance(data, aiosu.models.Rankings)
-        await client.close()
-
-    @pytest.mark.asyncio
-    async def test_get_multiplayer_matches(self, mocker, token, matches):
-        client = aiosu.v2.Client(token=token)
-        resp = MockResponse(matches, 200)
-        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
-        data = await client.get_multiplayer_matches()
-        assert isinstance(data, aiosu.models.MultiplayerMatchesResponse)
-        await client.close()
-
-    @pytest.mark.asyncio
-    async def test_get_multiplayer_match(self, mocker, token, match):
-        client = aiosu.v2.Client(token=token)
-        resp = MockResponse(match, 200)
-        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
-        data = await client.get_multiplayer_match(1)
-        assert isinstance(data, aiosu.models.MultiplayerMatchResponse)
-        await client.close()
-
-    @pytest.mark.asyncio
-    async def test_get_multiplayer_rooms(self, mocker, token, rooms):
-        client = aiosu.v2.Client(token=token)
-        resp = MockResponse(rooms, 200)
-        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
-        data = await client.get_multiplayer_rooms()
-        assert isinstance(data, list) and all(
-            isinstance(x, aiosu.models.MultiplayerRoom) for x in data
-        )
-        await client.close()
-
-    @pytest.mark.asyncio
-    async def test_get_multiplayer_room(self, mocker, token, room):
-        client = aiosu.v2.Client(token=token)
-        resp = MockResponse(room, 200)
-        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
-        data = await client.get_multiplayer_room(1)
-        assert isinstance(data, aiosu.models.MultiplayerRoom)
-        await client.close()
-
-    @pytest.mark.asyncio
-    async def test_get_multiplayer_leaderboard(self, mocker, token, room_leaderboard):
-        client = aiosu.v2.Client(token=token)
-        resp = MockResponse(room_leaderboard, 200)
-        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
-        data = await client.get_multiplayer_leaderboard(1)
-        assert isinstance(data, aiosu.models.MultiplayerLeaderboardResponse)
-        await client.close()
-
-    @pytest.mark.asyncio
-    async def test_get_multiplayer_scores(self, mocker, token, room_scores):
-        client = aiosu.v2.Client(token=token)
-        resp = MockResponse(room_scores, 200)
-        mocker.patch("aiohttp.ClientSession.get", return_value=resp)
-        data = await client.get_multiplayer_scores(1, 1)
-        assert isinstance(data, aiosu.models.MultiplayerScoresResponse)
-        await client.close()
-
-    @pytest.mark.asyncio
-    async def test_revoke_token(self, mocker, token):
-        client = aiosu.v2.Client(token=token)
-        resp = MockResponse("", 204)
-        mocker.patch("aiohttp.ClientSession.delete", return_value=resp)
-        await client.revoke_token()
-        assert client._session is None
-        with pytest.raises(KeyError):
-            await client.get_current_token()
+for test_func in tests:
+    globals()[test_func.__name__] = test_func

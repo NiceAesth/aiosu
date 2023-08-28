@@ -12,6 +12,7 @@ from functools import partial
 from typing import Optional
 
 import aiohttp
+import orjson
 from dotenv import load_dotenv
 
 import aiosu
@@ -21,7 +22,7 @@ API_MODES = ["osu", "taiko", "fruits", "mania"]
 BASE_URL = "https://osu.ppy.sh"
 BASE_URL_LAZER = "https://lazer.ppy.sh"
 BASE_URL_DEV = "https://dev.ppy.sh"
-DATA_DIR = "./data"
+DATA_DIR = "../data"
 
 logger = logging.getLogger("aiosu")
 
@@ -384,7 +385,7 @@ class TestGeneratorV2(TestGeneratorBase):
         self._register_route(
             "GET",
             f"{BASE_URL}/api/v2/users/7562902/recent_activity",
-            f"{DATA_DIR}/v2/get_user_recent_activity.json",
+            f"{DATA_DIR}/v2/get_user_recent_activity_200.json",
         )
         self._register_route(
             "GET",
@@ -501,12 +502,12 @@ class TestGeneratorV2(TestGeneratorBase):
         self._register_route(
             "GET",
             f"{BASE_URL}/api/v2/scores/osu/4220635589",
-            f"{DATA_DIR}/v2/get_scores_200.json",
+            f"{DATA_DIR}/v2/get_score_200.json",
         )
         self._register_route(
             "GET",
             f"{BASE_URL}/api/v2/scores/osu/0",
-            f"{DATA_DIR}/v2/get_scores_404.json",
+            f"{DATA_DIR}/v2/get_score_404.json",
             expect_status=404,
         )
         self._register_route(
@@ -540,6 +541,12 @@ class TestGeneratorV2(TestGeneratorBase):
             "GET",
             f"{BASE_URL}/api/v2/forums/topics/7",
             f"{DATA_DIR}/v2/get_forum_topic_200.json",
+        )
+        self._register_route(
+            "GET",
+            f"{BASE_URL}/api/v2/forums/topics/0",
+            f"{DATA_DIR}/v2/get_forum_topic_404.json",
+            expect_status=404,
         )
         """
         self._register_route(
@@ -641,7 +648,7 @@ class TestGeneratorV2(TestGeneratorBase):
         self._register_route(
             "GET",
             f"{BASE_URL}/api/v2/rooms",
-            f"{DATA_DIR}/v2/get_mutliplayer_rooms_200.json",
+            f"{DATA_DIR}/v2/get_multiplayer_rooms_200.json",
         )
         self._register_route(
             "GET",
@@ -676,6 +683,13 @@ class TestGeneratorV2(TestGeneratorBase):
             f"{DATA_DIR}/v2/get_multiplayer_scores_404.json",
             expect_status=404,
         )
+        for mode in API_MODES:
+            self._register_route(
+                "GET",
+                f"{BASE_URL}/api/v2/users/3792472/scores/best",
+                f"{DATA_DIR}/v2/score_{mode}.json",
+                params={"mode": mode, "limit": 1},
+            )
 
     async def run(self) -> None:
         await self.client._prepare_token()
@@ -683,6 +697,20 @@ class TestGeneratorV2(TestGeneratorBase):
             headers=await self.client._get_headers(),
         )
         await super().run()
+
+        for mode in API_MODES:
+            with open(f"{DATA_DIR}/v2/score_{mode}.json") as f:
+                data = f.read()
+                data_json = orjson.loads(data)
+                for score in data_json:
+                    await self._save_data(
+                        "POST",
+                        f"{BASE_URL}/api/v2/beatmaps/{score['beatmap']['id']}/attributes",
+                        f"{DATA_DIR}/v2/difficulty_attributes_{mode}.json",
+                        200,
+                        params={"mode": score["mode"]},
+                    )
+
         await self.client.close()
 
 
