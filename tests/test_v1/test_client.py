@@ -10,16 +10,11 @@ import aiosu
 STATUS_CAN_200 = {
     200: "application/json",
 }
+STATUS_CAN_200_TEXT = {
+    200: "text/plain",
+}
 STATUS_CAN_404 = {
     200: "application/json",
-    404: "application/json",
-}
-STATUS_CAN_404_HTML = {
-    200: "application/json",
-    404: "text/html",
-}
-STATUS_CAN_404_OCTET = {
-    200: "application/octet-stream",
     404: "application/json",
 }
 
@@ -62,7 +57,7 @@ def generate_test(
     async def test_generated(status_code, content_type, mocker):
         async with aiosu.v1.Client(token="") as client:
             file_extension = "json"
-            if content_type == "application/octet-stream":
+            if content_type == "text/plain":
                 file_extension = "osu"
             data = get_data(func.__name__, status_code, file_extension)
             resp = mock_request(status_code, content_type, data)
@@ -89,6 +84,11 @@ tests = [
     generate_test(
         aiosu.v1.Client.get_beatmap_scores,
         STATUS_CAN_200,
+        func_kwargs={"beatmap_id": 2906626},
+    ),
+    generate_test(
+        aiosu.v1.Client.get_beatmap_osu,
+        STATUS_CAN_200_TEXT,
         func_kwargs={"beatmap_id": 2906626},
     ),
     generate_test(
