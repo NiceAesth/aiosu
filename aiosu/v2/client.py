@@ -694,7 +694,7 @@ class Client(Eventable):
             See below
 
         :Keyword Arguments:
-            * *mode* (``aiosu.models.search.SearchModes``) --
+            * *mode* (``aiosu.models.search.SearchMode``) --
                 Optional, gamemode to search for, defaults to ``all``
             * *page* (``int``) --
                 Optional, page to get, ignored if mode is ``all``
