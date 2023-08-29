@@ -118,6 +118,8 @@ class UserRankHistoryElement(BaseModel):
         :return: Average rank gain for a user
         :rtype: float
         """
+        if len(self.data) < 2:
+            return next(iter(self.data), 0)
         return (self.data[1] - self.data[-1]) / len(self.data)
 
 
