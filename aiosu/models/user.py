@@ -118,9 +118,9 @@ class UserRankHistoryElement(BaseModel):
         :return: Average rank gain for a user
         :rtype: float
         """
-        if len(self.data) < 2:
-            return next(iter(self.data), 0)
-        return (self.data[1] - self.data[-1]) / len(self.data)
+        if not self.data:
+            return 0.0
+        return (self.data[0] - self.data[-1]) / len(self.data)
 
 
 class UserRankHighest(BaseModel):
@@ -238,7 +238,7 @@ class UserStats(BaseModel):
         :rtype: float
         """
         if not self.play_time or not self.pp:
-            return 0
+            return 0.0
         return self.pp / self.play_time * 3600
 
     @classmethod
