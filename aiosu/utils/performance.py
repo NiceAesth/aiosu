@@ -504,7 +504,7 @@ class TaikoPerformanceCalculator(AbstractPerformanceCalculator):
         accuracy: float,
     ) -> float:
         if self.difficulty_attributes.great_hit_window <= 0:  # type: ignore
-            return 0
+            return 0.0
 
         accuracy_value = (
             math.pow(60.0 / self.difficulty_attributes.great_hit_window, 1.1)  # type: ignore
