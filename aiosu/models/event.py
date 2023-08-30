@@ -65,7 +65,7 @@ class Event(BaseModel):
     created_at: datetime
     id: int
     type: EventType
-    r"""Information on types: https://github.com/ppy/osu-web/blob/master/resources/assets/lib/interfaces/event-json.ts"""
+    r"""Information on types: https://github.com/ppy/osu-web/blob/master/resources/js/interfaces/event-json.ts"""
     parse_error: Optional[bool] = None
     achievement: Optional[Achievement] = None
     user: Optional[EventUser] = None

@@ -4,6 +4,7 @@ This module contains models for Score objects.
 from __future__ import annotations
 
 from datetime import datetime
+from functools import cached_property
 from typing import Optional
 from typing import TYPE_CHECKING
 
@@ -162,7 +163,7 @@ class Score(BaseModel):
     """Only present on API v1"""
 
     @computed_field  # type: ignore
-    @property
+    @cached_property
     def completion(self) -> Optional[float]:
         """Beatmap completion.
 
@@ -178,7 +179,6 @@ class Score(BaseModel):
 
         return calculate_score_completion(self.mode, self.statistics, self.beatmap)
 
-    @computed_field  # type: ignore
     @property
     def score_url(self) -> Optional[str]:
         r"""Link to the score.
@@ -194,7 +194,6 @@ class Score(BaseModel):
             else f"https://osu.ppy.sh/scores/{self.id}"
         )
 
-    @computed_field  # type: ignore
     @property
     def replay_url(self) -> Optional[str]:
         r"""Link to the replay.

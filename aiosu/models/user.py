@@ -6,6 +6,7 @@ from __future__ import annotations
 from datetime import datetime
 from enum import Enum
 from enum import unique
+from functools import cached_property
 from typing import Any
 from typing import Literal
 from typing import Optional
@@ -69,12 +70,10 @@ class UserQueryType(Enum):
     ID = "id"
     USERNAME = "username"
 
-    @computed_field  # type: ignore
     @property
     def old_api_name(self) -> str:
         return OLD_QUERY_TYPES[self.name]
 
-    @computed_field  # type: ignore
     @property
     def new_api_name(self) -> str:
         return self.value
@@ -111,7 +110,7 @@ class UserRankHistoryElement(BaseModel):
     data: list[int]
 
     @computed_field  # type: ignore
-    @property
+    @cached_property
     def average_gain(self) -> float:
         r"""Average rank gain.
 
@@ -230,7 +229,7 @@ class UserStats(BaseModel):
     variants: Optional[list[UserStatsVariant]] = None
 
     @computed_field  # type: ignore
-    @property
+    @cached_property
     def pp_per_playtime(self) -> float:
         r"""PP per playtime.
 
@@ -329,7 +328,6 @@ class User(BaseModel):
     rank_history: Optional[UserRankHistoryElement] = None
     rank_highest: Optional[UserRankHighest] = None
 
-    @computed_field  # type: ignore
     @property
     def url(self) -> str:
         return f"https://osu.ppy.sh/users/{self.id}"

@@ -6,6 +6,7 @@ from __future__ import annotations
 from datetime import datetime
 from enum import Enum
 from enum import unique
+from functools import cached_property
 from typing import Any
 from typing import Literal
 from typing import Optional
@@ -284,12 +285,7 @@ class Beatmap(BaseModel):
         return values
 
     @computed_field  # type: ignore
-    @property
-    def discussion_url(self) -> str:
-        return f"https://osu.ppy.sh/beatmapsets/{self.beatmapset_id}/discussion/{self.id}/general"
-
-    @computed_field  # type: ignore
-    @property
+    @cached_property
     def count_objects(self) -> Optional[int]:
         """Total count of the objects.
 
@@ -303,6 +299,10 @@ class Beatmap(BaseModel):
         ):
             return None
         return self.count_spinners + self.count_circles + self.count_sliders
+
+    @property
+    def discussion_url(self) -> str:
+        return f"https://osu.ppy.sh/beatmapsets/{self.beatmapset_id}/discussion/{self.id}/general"
 
     @classmethod
     def _from_api_v1(cls, data: Any) -> Beatmap:
@@ -377,12 +377,10 @@ class Beatmapset(BaseModel):
     beatmaps: Optional[list[Beatmap]] = None
     converts: Optional[list[Beatmap]] = None
 
-    @computed_field  # type: ignore
     @property
     def url(self) -> str:
         return f"https://osu.ppy.sh/beatmapsets/{self.id}"
 
-    @computed_field  # type: ignore
     @property
     def discussion_url(self) -> str:
         return f"https://osu.ppy.sh/beatmapsets/{self.id}/discussion"
