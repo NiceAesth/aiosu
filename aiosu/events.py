@@ -8,7 +8,6 @@ import dataclasses
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from typing import Type
     from typing import Callable
     from .models import OAuthToken
 
@@ -28,7 +27,7 @@ class Eventable(abc.ABC):
     def __init__(self) -> None:
         self._listeners: dict[str, list[Callable]] = {}
 
-    def _register_event(self, event: Type[BaseEvent]) -> None:
+    def _register_event(self, event: type[BaseEvent]) -> None:
         r"""Registers an event
 
         :param event: Event type to register
@@ -36,7 +35,7 @@ class Eventable(abc.ABC):
         """
         self._listeners[event._name] = []
 
-    def _register_listener(self, func: Callable, event: Type[BaseEvent]) -> None:
+    def _register_listener(self, func: Callable, event: type[BaseEvent]) -> None:
         r"""Registers an event listener
 
         :param func: Function to call when event is emitted
