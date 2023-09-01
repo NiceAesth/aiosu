@@ -7,7 +7,6 @@ from collections import UserList
 from enum import IntEnum
 from enum import unique
 from functools import reduce
-from typing import Type
 from typing import TYPE_CHECKING
 
 from pydantic import GetCoreSchemaHandler
@@ -209,7 +208,7 @@ class Mods(UserList):
     @classmethod
     def __get_pydantic_core_schema__(
         cls,
-        source_type: Type[Any],
+        source_type: type[Any],
         handler: GetCoreSchemaHandler,
     ) -> CoreSchema:
         return core_schema.no_info_before_validator_function(

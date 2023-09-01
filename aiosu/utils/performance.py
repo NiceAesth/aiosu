@@ -20,7 +20,6 @@ from .accuracy import OsuAccuracyCalculator
 from .accuracy import TaikoAccuracyCalculator
 
 if TYPE_CHECKING:
-    from typing import Type
     from ..models.score import Score
     from ..models.beatmap import BeatmapDifficultyAttributes
     from ..models.performance import PerformanceAttributes
@@ -54,7 +53,7 @@ class AbstractPerformanceCalculator(abc.ABC):
         ...
 
 
-def get_calculator(mode: Gamemode) -> Type[AbstractPerformanceCalculator]:
+def get_calculator(mode: Gamemode) -> type[AbstractPerformanceCalculator]:
     r"""Returns the performance calculator for the given gamemode.
 
     :param mode: The gamemode to get the calculator for

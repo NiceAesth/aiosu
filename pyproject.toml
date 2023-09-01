@@ -8,8 +8,10 @@ no_implicit_optional = true
 check_untyped_defs = true
 warn_unused_ignores = true
 show_error_codes = true
-[tools.pytest.ini_options]
+
+[tool.pytest.ini_options]
 testpaths = ["tests"]
+
 [tool.poetry]
 name = "aiosu"
 version = "2.1.0"
@@ -23,7 +25,7 @@ keywords = ["osu!", "osu", "api"]
 classifiers = [
     "Intended Audience :: Developers",
     "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
-    "Typing :: Typed"
+    "Typing :: Typed",
 ]
 include = ["py.typed"]
 
@@ -34,13 +36,13 @@ aiolimiter = "^1.0.0"
 emojiflags = "^0.1.1"
 orjson = "^3.8.3"
 pydantic = "^2.0.3"
-pytest = {version="^7.2.0", optional = true}
-pytest-asyncio = {version="^0.21.0", optional = true}
-pytest-mock = {version="^3.10.0", optional = true}
-toml = {version="^0.10.2", optional = true}
-sphinx = {version="^7.0.0", optional = true}
-furo = {version="^2023.5.20", optional = true}
-types-toml = {version = "^0.10.8.1", optional = true}
+pytest = { version = "^7.2.0", optional = true }
+pytest-asyncio = { version = "^0.21.0", optional = true }
+pytest-mock = { version = "^3.10.0", optional = true }
+toml = { version = "^0.10.2", optional = true }
+sphinx = { version = "^7.0.0", optional = true }
+furo = { version = "^2023.5.20", optional = true }
+types-toml = { version = "^0.10.8.1", optional = true }
 pyjwt = "^2.6.0"
 
 [tool.poetry.group.dev.dependencies]
@@ -53,7 +55,7 @@ types-toml = "^0.10.8.1"
 sphinx = "^7.0.0"
 furo = "^2023.5.20"
 pytest-cov = "^4.0.0"
-black = {version = "^23.0.0", allow-prereleases = true}
+black = { version = "^23.0.0", allow-prereleases = true }
 pre-commit = "^3.2.2"
 python-dotenv = "^1.0.0"
 

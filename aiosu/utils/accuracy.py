@@ -10,7 +10,6 @@ from ..models.gamemode import Gamemode
 from ..models.mods import Mod
 
 if TYPE_CHECKING:
-    from typing import Type
     from typing import Callable
     from ..models.score import Score
 
@@ -24,7 +23,7 @@ __all__ = [
 cast_int: Callable[..., int] = lambda x: int(x or 0)
 
 
-def get_calculator(mode: Gamemode) -> Type[AbstractAccuracyCalculator]:
+def get_calculator(mode: Gamemode) -> type[AbstractAccuracyCalculator]:
     r"""Returns the accuracy calculator for the given gamemode.
 
     :param mode: The gamemode to get the calculator for

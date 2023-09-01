@@ -6,6 +6,7 @@ from __future__ import annotations
 from datetime import datetime
 from enum import Enum
 from enum import unique
+from functools import cached_property
 from typing import Any
 from typing import Literal
 from typing import Optional
@@ -111,7 +112,7 @@ class UserRankHistoryElement(BaseModel):
     data: list[int]
 
     @computed_field  # type: ignore
-    @property
+    @cached_property
     def average_gain(self) -> float:
         r"""Average rank gain.
 
@@ -230,7 +231,7 @@ class UserStats(BaseModel):
     variants: Optional[list[UserStatsVariant]] = None
 
     @computed_field  # type: ignore
-    @property
+    @cached_property
     def pp_per_playtime(self) -> float:
         r"""PP per playtime.
 

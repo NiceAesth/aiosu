@@ -31,7 +31,6 @@ if TYPE_CHECKING:
     from types import TracebackType
     from typing import Any
     from typing import Optional
-    from typing import Type
     from typing import Union
 
 
@@ -91,7 +90,7 @@ class Client:
 
     async def __aexit__(
         self,
-        exc_type: Optional[Type[BaseException]],
+        exc_type: Optional[type[BaseException]],
         exc: Optional[BaseException],
         traceback: Optional[TracebackType],
     ) -> None:
