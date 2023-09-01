@@ -6,6 +6,7 @@ from __future__ import annotations
 from datetime import datetime
 from enum import Enum
 from enum import unique
+from functools import cached_property
 from typing import Any
 from typing import Literal
 from typing import Optional
@@ -271,25 +272,12 @@ class Beatmap(BaseModel):
     beatmapset: Optional[Beatmapset] = None
     failtimes: Optional[BeatmapFailtimes] = None
 
-    @model_validator(mode="before")
-    @classmethod
-    def _set_url(cls, values: dict[str, Any]) -> dict[str, Any]:
-        if values.get("url") is None:
-            id = values["id"]
-            beatmapset_id = values["beatmapset_id"]
-            mode = Gamemode(values["mode"])
-            values[
-                "url"
-            ] = f"https://osu.ppy.sh/beatmapsets/{beatmapset_id}#{mode}/{id}"
-        return values
-
-    @computed_field  # type: ignore
     @property
     def discussion_url(self) -> str:
         return f"https://osu.ppy.sh/beatmapsets/{self.beatmapset_id}/discussion/{self.id}/general"
 
     @computed_field  # type: ignore
-    @property
+    @cached_property
     def count_objects(self) -> Optional[int]:
         """Total count of the objects.
 
@@ -303,6 +291,18 @@ class Beatmap(BaseModel):
         ):
             return None
         return self.count_spinners + self.count_circles + self.count_sliders
+
+    @model_validator(mode="before")
+    @classmethod
+    def _set_url(cls, values: dict[str, Any]) -> dict[str, Any]:
+        if values.get("url") is None:
+            id = values["id"]
+            beatmapset_id = values["beatmapset_id"]
+            mode = Gamemode(values["mode"])
+            values[
+                "url"
+            ] = f"https://osu.ppy.sh/beatmapsets/{beatmapset_id}#{mode}/{id}"
+        return values
 
     @classmethod
     def _from_api_v1(cls, data: Any) -> Beatmap:

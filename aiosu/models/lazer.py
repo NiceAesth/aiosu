@@ -4,6 +4,7 @@ This module contains models for lazer specific data.
 from __future__ import annotations
 
 from datetime import datetime
+from functools import cached_property
 from typing import Any
 from typing import Optional
 
@@ -85,32 +86,26 @@ class LazerScoreStatistics(BaseModel):
     perfect: int = 0
     legacy_combo_increase: int = 0
 
-    @computed_field  # type: ignore
     @property
     def count_300(self) -> int:
         return self.great
 
-    @computed_field  # type: ignore
     @property
     def count_100(self) -> int:
         return self.ok
 
-    @computed_field  # type: ignore
     @property
     def count_50(self) -> int:
         return self.meh
 
-    @computed_field  # type: ignore
     @property
     def count_miss(self) -> int:
         return self.miss
 
-    @computed_field  # type: ignore
     @property
     def count_geki(self) -> int:
         return self.perfect
 
-    @computed_field  # type: ignore
     @property
     def count_katu(self) -> int:
         return self.good
@@ -151,43 +146,18 @@ class LazerScore(BaseModel):
     pp: Optional[float] = None
     weight: Optional[ScoreWeight] = None
 
-    @computed_field  # type: ignore
-    @property
-    def mods_str(self) -> str:
-        return "".join(str(mod) for mod in self.mods)
-
-    @computed_field  # type: ignore
     @property
     def created_at(self) -> datetime:
         return self.ended_at
 
-    @computed_field  # type: ignore
-    @property
-    def completion(self) -> Optional[float]:
-        """Beatmap completion.
-
-        :return: Beatmap completion of a score (%). 100% for passes. None if no beatmap.
-        :rtype: Optional[float]
-        """
-        if not self.beatmap:
-            return None
-
-        if self.passed:
-            return 100.0
-
-        return calculate_score_completion(self.statistics, self.beatmap)
-
-    @computed_field  # type: ignore
-    @property
-    def mode(self) -> Gamemode:
-        return Gamemode(self.ruleset_id)
-
-    @computed_field  # type: ignore
     @property
     def score(self) -> int:
         return self.total_score
 
-    @computed_field  # type: ignore
+    @property
+    def has_replay(self) -> bool:
+        return self.replay
+
     @property
     def score_url(self) -> Optional[str]:
         r"""Link to the score.
@@ -203,7 +173,6 @@ class LazerScore(BaseModel):
             else f"https://osu.ppy.sh/scores/{self.id}"
         )
 
-    @computed_field  # type: ignore
     @property
     def replay_url(self) -> Optional[str]:
         r"""Link to the replay.
@@ -218,6 +187,32 @@ class LazerScore(BaseModel):
             if self.best_id
             else f"https://osu.ppy.sh/scores/{self.id}/download"
         )
+
+    @computed_field  # type: ignore
+    @cached_property
+    def completion(self) -> Optional[float]:
+        """Beatmap completion.
+
+        :return: Beatmap completion of a score (%). 100% for passes. None if no beatmap.
+        :rtype: Optional[float]
+        """
+        if not self.beatmap:
+            return None
+
+        if self.passed:
+            return 100.0
+
+        return calculate_score_completion(self.statistics, self.beatmap)
+
+    @computed_field  # type: ignore
+    @cached_property
+    def mode(self) -> Gamemode:
+        return Gamemode(self.ruleset_id)
+
+    @computed_field  # type: ignore
+    @cached_property
+    def mods_str(self) -> str:
+        return "".join(str(mod) for mod in self.mods)
 
     @model_validator(mode="before")
     @classmethod

@@ -3,10 +3,11 @@ This module contains models for miscellaneous objects.
 """
 from __future__ import annotations
 
+from collections.abc import Coroutine
 from datetime import datetime
+from functools import cached_property
 from functools import partial
 from typing import Any
-from typing import Coroutine
 from typing import Literal
 from typing import Optional
 
@@ -75,7 +76,7 @@ class Country(BaseModel):
     name: str
 
     @computed_field  # type: ignore
-    @property
+    @cached_property
     def flag_emoji(self) -> str:
         r"""Emoji for the flag.
 

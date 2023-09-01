@@ -4,6 +4,7 @@ This module contains models for Score objects.
 from __future__ import annotations
 
 from datetime import datetime
+from functools import cached_property
 from typing import Optional
 from typing import TYPE_CHECKING
 
@@ -161,24 +162,6 @@ class Score(BaseModel):
     beatmap_id: Optional[int] = None
     """Only present on API v1"""
 
-    @computed_field  # type: ignore
-    @property
-    def completion(self) -> Optional[float]:
-        """Beatmap completion.
-
-        :raises ValueError: If mode is unknown
-        :return: Beatmap completion of a score (%). 100% for passes. None if no beatmap.
-        :rtype: Optional[float]
-        """
-        if not self.beatmap:
-            return None
-
-        if self.passed:
-            return 100.0
-
-        return calculate_score_completion(self.mode, self.statistics, self.beatmap)
-
-    @computed_field  # type: ignore
     @property
     def score_url(self) -> Optional[str]:
         r"""Link to the score.
@@ -194,7 +177,6 @@ class Score(BaseModel):
             else f"https://osu.ppy.sh/scores/{self.id}"
         )
 
-    @computed_field  # type: ignore
     @property
     def replay_url(self) -> Optional[str]:
         r"""Link to the replay.
@@ -209,6 +191,23 @@ class Score(BaseModel):
             if self.best_id
             else f"https://osu.ppy.sh/scores/{self.id}/download"
         )
+
+    @computed_field  # type: ignore
+    @cached_property
+    def completion(self) -> Optional[float]:
+        """Beatmap completion.
+
+        :raises ValueError: If mode is unknown
+        :return: Beatmap completion of a score (%). 100% for passes. None if no beatmap.
+        :rtype: Optional[float]
+        """
+        if not self.beatmap:
+            return None
+
+        if self.passed:
+            return 100.0
+
+        return calculate_score_completion(self.mode, self.statistics, self.beatmap)
 
     @model_validator(mode="before")
     @classmethod
