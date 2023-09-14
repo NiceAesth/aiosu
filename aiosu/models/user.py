@@ -146,6 +146,7 @@ class UserBadge(BaseModel):
     awarded_at: datetime
     description: str
     image_url: str
+    image_2x_url: str = Field(alias="image@2x_url")
     url: str
 
 
