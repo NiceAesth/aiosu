@@ -1376,6 +1376,8 @@ class Client(Eventable):
                 Optional, page number
             * *user_id* (``int``) --
                 Optional, user ID
+            * *beatmapset_id* (``int``) --
+                Optional, beatmapset ID
             * *min_date* (``datetime.datetime``) --
                 Optional, minimum date
             * *max_date* (``datetime.datetime``) --
@@ -1391,6 +1393,7 @@ class Client(Eventable):
         params: dict[str, Any] = {}
         add_param(params, kwargs, key="limit")
         add_param(params, kwargs, key="page")
+        add_param(params, kwargs, key="beatmapset_id")
         add_param(params, kwargs, key="user_id", param_name="user")
         add_param(params, kwargs, key="min_date")
         add_param(params, kwargs, key="max_date")
