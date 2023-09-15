@@ -534,6 +534,11 @@ class TestGeneratorV2(TestGeneratorBase):
         )
         self._register_route(
             "GET",
+            f"{BASE_URL}/api/v2/rankings/kudosu",
+            f"{DATA_DIR}/v2/get_rankings_kudosu_200.json",
+        )
+        self._register_route(
+            "GET",
             f"{BASE_URL}/api/v2/spotlights",
             f"{DATA_DIR}/v2/get_spotlights_200.json",
         )

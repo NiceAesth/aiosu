@@ -56,7 +56,7 @@ MultiplayerEventType = Literal[
     "other",
 ]
 MultiplayerRoomMode = Literal["owned", "participated", "ended"]
-MultiplayerRoomCategory = Literal["normal", "spotlight", "featured_artists"]
+MultiplayerRoomCategory = Literal["normal", "spotlight", "featured_artist"]
 MultiplayerRoomTypeGroup = Literal["playlists", "realtime"]
 MultiplayerQueueMode = Literal["host_only", "all_players", "all_players_round_robin"]
 
