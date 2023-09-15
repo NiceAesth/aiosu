@@ -225,6 +225,7 @@ tests = [
         STATUS_CAN_404,
         func_kwargs={"mode": "osu", "type": "performance"},
     ),
+    generate_test(aiosu.v2.Client.get_rankings_kudosu, STATUS_CAN_200),
     generate_test(aiosu.v2.Client.get_spotlights, STATUS_CAN_200),
     generate_test(
         aiosu.v2.Client.get_forum_topic,

@@ -1663,6 +1663,32 @@ class Client(Eventable):
     @prepare_token
     @check_token
     @requires_scope(Scopes.PUBLIC)
+    async def get_rankings_kudosu(self, **kwargs: Any) -> Rankings:
+        r"""Get kudosu rankings.
+
+        :param \**kwargs:
+            See below
+
+        :Keyword Arguments:
+            * *page_id* (``int``) --
+                Optional, page ID
+
+        :raises APIException: Contains status code and error message
+        :return: Rankings
+        :rtype: aiosu.models.rankings.Rankings
+        """
+        url = f"{self.base_url}/api/v2/rankings/kudosu"
+        params: dict[str, Any] = {}
+        add_param(params, kwargs, key="page_id", param_name="page")
+        json = await self._request("GET", url, params=params)
+        resp = Rankings.model_validate(json)
+        kwargs["page_id"] = min(params.get("page_id", 1) + 1, 20)
+        resp.next = partial(self.get_rankings_kudosu, **kwargs)
+        return resp
+
+    @prepare_token
+    @check_token
+    @requires_scope(Scopes.PUBLIC)
     async def get_spotlights(self) -> list[Spotlight]:
         r"""Gets the current spotlights.
 
