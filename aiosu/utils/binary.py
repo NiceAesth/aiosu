@@ -141,7 +141,7 @@ def unpack_timestamp(file: BinaryIO) -> datetime:
     :return: The unpacked timestamp.
     :rtype: datetime
     """
-    seconds = unpack_long(file) / 10000000 - 62135596800
+    seconds = unpack_long(file) // 10000000 - 62135596800
     return datetime.fromtimestamp(seconds, tz=timezone.utc)
 
 

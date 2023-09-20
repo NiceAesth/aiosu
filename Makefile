@@ -33,6 +33,9 @@ test:
 	poetry run pytest -s
 	poetry run mypy
 
+profile:
+	poetry run pytest --durations=3
+
 serve-docs:
 	@cd docs;\
 	make html;\
