@@ -37,3 +37,33 @@ def test_frozen_model():
 
     with pytest.raises(pydantic.ValidationError):
         model.simple = "Test"
+
+
+def test_mods():
+    hd_mods = aiosu.models.Mods("HD")
+    dt_mods = aiosu.models.Mods("DT")
+    special_mods = aiosu.models.Mods("NCPF")
+    combined_mods = aiosu.models.Mods("DTNCSDPF")
+    hd_mod = aiosu.models.Mod("HD")
+    dt_mod = aiosu.models.Mod("DT")
+
+    assert int(hd_mods) == 8
+    assert int(dt_mods) == 64
+    assert int(special_mods) == int(combined_mods) == 16992
+
+    assert hd_mods | dt_mods == 72
+    assert hd_mods | dt_mod == 72
+    assert hd_mod | dt_mod == 72
+
+    assert hd_mods & dt_mods == 0
+    assert hd_mods & dt_mod == 0
+    assert hd_mod & dt_mod == 0
+
+    assert hd_mods & hd_mod == 8
+
+    assert str(hd_mods) == "HD"
+    assert str(hd_mod) == "HD"
+    assert str(combined_mods) == str(special_mods) == "NCPF"
+
+    with pytest.raises(TypeError):
+        hd_mods & "DT"
