@@ -7,7 +7,6 @@ from collections.abc import Coroutine
 from datetime import datetime
 from functools import cached_property
 from functools import partial
-from typing import Any
 from typing import Literal
 from typing import Optional
 
@@ -53,10 +52,13 @@ class TimestampedCount(BaseModel):
 
     @field_validator("start_date", mode="before")
     @classmethod
-    def _date_validate(cls, v: Any) -> Any:
+    def _date_validate(cls, v: object) -> datetime:
         if isinstance(v, str):
             return datetime.strptime(v, "%Y-%m-%d")
-        return v
+        if isinstance(v, datetime):
+            return v
+
+        raise ValueError(f"{v} is not a valid value.")
 
 
 class Achievement(BaseModel):
@@ -131,7 +133,7 @@ class CursorModel(BaseModel):
     """
 
     cursor_string: Optional[str] = None
-    next: Optional[partial[Coroutine[Any, Any, CursorModel]]] = Field(
+    next: Optional[partial[Coroutine[object, object, CursorModel]]] = Field(
         default=None,
         exclude=True,
     )

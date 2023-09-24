@@ -6,7 +6,6 @@ from __future__ import annotations
 from datetime import datetime
 from datetime import timedelta
 from functools import cached_property
-from typing import TYPE_CHECKING
 
 import jwt
 from pydantic import computed_field
@@ -15,8 +14,6 @@ from pydantic import model_validator
 from .base import FrozenModel
 from .scopes import Scopes
 
-if TYPE_CHECKING:
-    from typing import Any
 
 __all__ = ("OAuthToken",)
 
@@ -55,9 +52,10 @@ class OAuthToken(FrozenModel):
 
     @model_validator(mode="before")
     @classmethod
-    def _set_expires_on(cls, values: dict[str, Any]) -> dict[str, Any]:
-        if isinstance(values.get("expires_in"), int):
+    def _set_expires_on(cls, values: dict[str, object]) -> dict[str, object]:
+        expires_in = values.get("expires_in")
+        if isinstance(expires_in, int):
             values["expires_on"] = datetime.utcnow() + timedelta(
-                seconds=values["expires_in"],
+                seconds=expires_in,
             )
         return values

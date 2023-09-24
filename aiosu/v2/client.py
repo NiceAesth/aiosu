@@ -6,10 +6,10 @@ You can read more about it here: https://osu.ppy.sh/docs/index.html
 from __future__ import annotations
 
 import functools
+from collections.abc import Awaitable
 from datetime import datetime
 from functools import partial
 from io import BytesIO
-from typing import Any
 from typing import Callable
 from typing import cast
 from typing import Literal
@@ -81,16 +81,17 @@ from .repository import SimpleTokenRepository
 
 if TYPE_CHECKING:
     from types import TracebackType
+    from typing import Any
     from typing import Optional
     from typing import Union
 
 __all__ = ("Client",)
 
-F = TypeVar("F", bound=Callable[..., Any])
+F = TypeVar("F", bound=Callable[..., Awaitable[object]])
 ClientRequestType = Literal["GET", "POST", "DELETE", "PUT", "PATCH"]
 
 
-def to_lower_str(value: Any) -> str:
+def to_lower_str(value: object) -> str:
     """Converts a value to a lowercase string."""
     return str(value).lower()
 
@@ -106,7 +107,7 @@ def prepare_token(func: F) -> F:
     """
 
     @functools.wraps(func)
-    async def _prepare_token(self: Client, *args: Any, **kwargs: Any) -> Any:
+    async def _prepare_token(self: Client, *args: Any, **kwargs: Any) -> object:
         await self._prepare_token()
 
         return await func(self, *args, **kwargs)
@@ -121,7 +122,7 @@ def check_token(func: F) -> F:
     """
 
     @functools.wraps(func)
-    async def _check_token(self: Client, *args: Any, **kwargs: Any) -> Any:
+    async def _check_token(self: Client, *args: Any, **kwargs: Any) -> object:
         token = await self.get_current_token()
         if datetime.utcnow().timestamp() > token.expires_on.timestamp():
             await self._refresh()
@@ -143,7 +144,7 @@ def requires_scope(
         func: F,
     ) -> F:
         @functools.wraps(func)
-        async def _wrap(self: Client, *args: Any, **kwargs: Any) -> Any:
+        async def _wrap(self: Client, *args: Any, **kwargs: Any) -> object:
             token = await self.get_current_token()
             if any_scope:
                 if not (required_scopes & token.scopes):
@@ -250,7 +251,7 @@ class Client(Eventable):
         self._register_listener(func, ClientUpdateEvent)
 
         @functools.wraps(func)
-        async def _on_client_update(*args: Any, **kwargs: Any) -> Any:
+        async def _on_client_update(*args: Any, **kwargs: Any) -> object:
             return await func(*args, **kwargs)
 
         return cast(F, _on_client_update)
@@ -420,7 +421,7 @@ class Client(Eventable):
         :rtype: aiosu.models.artist.ArtistResponse
         """
         url = f"{self.base_url}/beatmaps/artists/tracks"
-        params: dict[str, Any] = {}
+        params: dict[str, object] = {}
         add_param(params, kwargs, key="limit")
         add_param(params, kwargs, key="album")
         add_param(params, kwargs, key="artist")
@@ -476,7 +477,7 @@ class Client(Eventable):
         :rtype: aiosu.models.changelog.ChangelogListing
         """
         url = f"{self.base_url}/api/v2/changelog"
-        params: dict[str, Any] = {
+        params: dict[str, object] = {
             "message_formats": kwargs.pop("message_formats", ["html", "markdown"]),
         }
         add_param(params, kwargs, key="from")
@@ -529,7 +530,7 @@ class Client(Eventable):
         :rtype: aiosu.models.changelog.Build
         """
         url = f"{self.base_url}/api/v2/changelog/{changelog_query}"
-        params: dict[str, Any] = {
+        params: dict[str, object] = {
             "message_formats": kwargs.pop("message_formats", ["html", "markdown"]),
         }
         if "is_id" in kwargs or isinstance(changelog_query, int):
@@ -559,7 +560,7 @@ class Client(Eventable):
         url = f"{self.base_url}/api/v2/news"
         if not 1 <= (limit := kwargs.pop("limit", 12)) <= 21:
             raise ValueError("Invalid limit specified. Limit must be between 1 and 21")
-        params: dict[str, Any] = {
+        params: dict[str, object] = {
             "limit": limit,
         }
         add_param(params, kwargs, key="year")
@@ -593,7 +594,7 @@ class Client(Eventable):
         :rtype: aiosu.models.news.NewsPost
         """
         url = f"{self.base_url}/api/v2/news/{news_query}"
-        params: dict[str, Any] = {
+        params: dict[str, object] = {
             "message_formats": kwargs.pop("message_formats", ["html", "markdown"]),
         }
         if "is_id" in kwargs or isinstance(news_query, int):
@@ -635,7 +636,7 @@ class Client(Eventable):
         :rtype: aiosu.models.comment.CommentBundle
         """
         url = f"{self.base_url}/api/v2/comments/{comment_id}"
-        params: dict[str, Any] = {}
+        params: dict[str, object] = {}
         add_param(params, kwargs, key="cursor_string")
         json = await self._request("GET", url, params=params)
         resp = CommentBundle.model_validate(json)
@@ -668,7 +669,7 @@ class Client(Eventable):
         :rtype: aiosu.models.comment.CommentBundle
         """
         url = f"{self.base_url}/api/v2/comments"
-        params: dict[str, Any] = {}
+        params: dict[str, object] = {}
         add_param(params, kwargs, key="commentable_type")
         add_param(params, kwargs, key="commentable_id")
         add_param(params, kwargs, key="parent_id")
@@ -703,7 +704,7 @@ class Client(Eventable):
         :rtype: aiosu.models.search.SearchResponse
         """
         url = f"{self.base_url}/api/v2/search"
-        params: dict[str, Any] = {
+        params: dict[str, object] = {
             "query": query,
             "mode": kwargs.pop("mode", "all"),
         }
@@ -772,7 +773,7 @@ class Client(Eventable):
         :rtype: aiosu.models.user.User
         """
         url = f"{self.base_url}/api/v2/users/{user_query}"
-        params: dict[str, Any] = {}
+        params: dict[str, object] = {}
         if "mode" in kwargs:
             mode = Gamemode(kwargs.pop("mode"))
             url += f"/{mode}"
@@ -799,7 +800,7 @@ class Client(Eventable):
         :rtype: list[aiosu.models.user.User]
         """
         url = f"{self.base_url}/api/v2/users"
-        params: dict[str, Any] = {
+        params: dict[str, object] = {
             "ids": user_ids,
         }
         json = await self._request("GET", url, params=params)
@@ -827,7 +828,7 @@ class Client(Eventable):
         :rtype: list[aiosu.models.kudosu.KudosuHistory]
         """
         url = f"{self.base_url}/api/v2/users/{user_id}/kudosu"
-        params: dict[str, Any] = {}
+        params: dict[str, object] = {}
         add_param(params, kwargs, key="limit")
         add_param(params, kwargs, key="offset")
         json = await self._request("GET", url, params=params)
@@ -876,7 +877,7 @@ class Client(Eventable):
                 f'"{request_type}" is not a valid request_type. Valid options are: "recent", "best", "firsts"',
             )
         url = f"{self.base_url}/api/v2/users/{user_id}/scores/{request_type}"
-        params: dict[str, Any] = {
+        params: dict[str, object] = {
             "include_fails": int(kwargs.pop("include_fails", False)),
             "limit": limit,
             "offset": kwargs.pop("offset", 0),
@@ -1032,7 +1033,7 @@ class Client(Eventable):
         :rtype: list[aiosu.models.score.Score]
         """
         url = f"{self.base_url}/api/v2/beatmaps/{beatmap_id}/scores/users/{user_id}/all"
-        params: dict[str, Any] = {}
+        params: dict[str, object] = {}
         add_param(params, kwargs, key="mode", converter=lambda x: str(Gamemode(x)))
         json = await self._request("GET", url, params=params)
         return from_list(Score.model_validate, json.get("scores", []))
@@ -1066,7 +1067,7 @@ class Client(Eventable):
         :rtype: list[aiosu.models.beatmap.Beatmap]
         """
         url = f"{self.base_url}/api/v2/users/{user_id}/beatmapsets/{type}"
-        params: dict[str, Any] = {}
+        params: dict[str, object] = {}
         add_param(params, kwargs, key="limit")
         add_param(params, kwargs, key="offset")
         json = await self._request("GET", url, params=params)
@@ -1098,7 +1099,7 @@ class Client(Eventable):
         :rtype: list[aiosu.models.beatmap.BeatmapUserPlaycount]
         """
         url = f"{self.base_url}/api/v2/users/{user_id}/beatmapsets/most_played"
-        params: dict[str, Any] = {}
+        params: dict[str, object] = {}
         add_param(params, kwargs, key="limit")
         add_param(params, kwargs, key="offset")
         json = await self._request("GET", url, params=params)
@@ -1130,7 +1131,7 @@ class Client(Eventable):
         :rtype: list[aiosu.models.event.Event]
         """
         url = f"{self.base_url}/api/v2/users/{user_id}/recent_activity"
-        params: dict[str, Any] = {}
+        params: dict[str, object] = {}
         add_param(params, kwargs, key="limit")
         add_param(params, kwargs, key="offset")
         json = await self._request("GET", url, params=params)
@@ -1174,7 +1175,7 @@ class Client(Eventable):
         :rtype: list[aiosu.models.score.Score]
         """
         url = f"{self.base_url}/api/v2/beatmaps/{beatmap_id}/scores"
-        params: dict[str, Any] = {}
+        params: dict[str, object] = {}
         add_param(params, kwargs, key="mode", converter=lambda x: str(Gamemode(x)))
         add_param(
             params,
@@ -1215,7 +1216,7 @@ class Client(Eventable):
         :rtype: list[aiosu.models.beatmap.Beatmap]
         """
         url = f"{self.base_url}/api/v2/beatmaps"
-        params: dict[str, Any] = {
+        params: dict[str, object] = {
             "ids": beatmap_ids,
         }
         json = await self._request("GET", url, params=params)
@@ -1244,7 +1245,7 @@ class Client(Eventable):
         :rtype: aiosu.models.beatmap.Beatmap
         """
         url = f"{self.base_url}/api/v2/beatmaps/lookup"
-        params: dict[str, Any] = {}
+        params: dict[str, object] = {}
         add_param(params, kwargs, key="checksum")
         add_param(params, kwargs, key="filename")
         add_param(params, kwargs, key="id")
@@ -1279,7 +1280,7 @@ class Client(Eventable):
         :rtype: aiosu.models.beatmap.BeatmapDifficultyAttributes
         """
         url = f"{self.base_url}/api/v2/beatmaps/{beatmap_id}/attributes"
-        data: dict[str, Any] = {}
+        data: dict[str, object] = {}
         add_param(
             data,
             kwargs,
@@ -1321,7 +1322,7 @@ class Client(Eventable):
         :rtype: aiosu.models.beatmap.Beatmapset
         """
         url = f"{self.base_url}/api/v2/beatmapsets/lookup"
-        params: dict[str, Any] = {
+        params: dict[str, object] = {
             "beatmap_id": beatmap_id,
         }
         json = await self._request("GET", url, params=params)
@@ -1351,7 +1352,7 @@ class Client(Eventable):
         :rtype: list[aiosu.models.beatmap.BeatmapsetSearchResponse]
         """
         url = f"{self.base_url}/api/v2/beatmapsets/search/{search_filter}"
-        params: dict[str, Any] = {}
+        params: dict[str, object] = {}
         add_param(params, kwargs, key="cursor_string")
         json = await self._request("GET", url)
         resp = BeatmapsetSearchResponse.model_validate(json)
@@ -1390,7 +1391,7 @@ class Client(Eventable):
         :rtype: list[aiosu.models.event.Event]
         """
         url = f"{self.base_url}/api/v2/beatmapsets/events"
-        params: dict[str, Any] = {}
+        params: dict[str, object] = {}
         add_param(params, kwargs, key="limit")
         add_param(params, kwargs, key="page")
         add_param(params, kwargs, key="beatmapset_id")
@@ -1442,7 +1443,7 @@ class Client(Eventable):
         :rtype: aiosu.models.beatmap.BeatmapsetDiscussionResponse
         """
         url = f"{self.base_url}/api/v2/beatmapsets/discussions"
-        params: dict[str, Any] = {}
+        params: dict[str, object] = {}
         add_param(params, kwargs, key="beatmap_id")
         add_param(params, kwargs, key="beatmapset_id")
         add_param(params, kwargs, key="beatmapset_status")
@@ -1496,7 +1497,7 @@ class Client(Eventable):
         :rtype: aiosu.models.beatmap.BeatmapsetDiscussionPostResponse
         """
         url = f"{self.base_url}/api/v2/beatmapsets/discussions/posts"
-        params: dict[str, Any] = {}
+        params: dict[str, object] = {}
         add_param(params, kwargs, key="beatmapset_discussion_id")
         add_param(params, kwargs, key="limit")
         add_param(params, kwargs, key="page")
@@ -1549,7 +1550,7 @@ class Client(Eventable):
         :rtype: aiosu.models.beatmap.BeatmapsetDiscussionVoteResponse
         """
         url = f"{self.base_url}/api/v2/beatmapsets/discussions/votes"
-        params: dict[str, Any] = {}
+        params: dict[str, object] = {}
         add_param(params, kwargs, key="beatmapset_discussion_id")
         add_param(params, kwargs, key="limit")
         add_param(params, kwargs, key="page")
@@ -1647,7 +1648,7 @@ class Client(Eventable):
         :rtype: aiosu.models.rankings.Rankings
         """
         url = f"{self.base_url}/api/v2/rankings/{mode}/{type}"
-        params: dict[str, Any] = {}
+        params: dict[str, object] = {}
         add_param(params, kwargs, key="country")
         add_param(params, kwargs, key="filter")
         add_param(params, kwargs, key="spotlight")
@@ -1678,7 +1679,7 @@ class Client(Eventable):
         :rtype: aiosu.models.rankings.Rankings
         """
         url = f"{self.base_url}/api/v2/rankings/kudosu"
-        params: dict[str, Any] = {}
+        params: dict[str, int] = {}
         add_param(params, kwargs, key="page_id", param_name="page")
         json = await self._request("GET", url, params=params)
         resp = Rankings.model_validate(json)
@@ -1730,7 +1731,7 @@ class Client(Eventable):
         if not 1 <= (limit := kwargs.pop("limit", 20)) <= 50:
             raise ValueError("Invalid limit specified. Limit must be between 1 and 50")
         url = f"{self.base_url}/api/v2/forums/topics/{topic_id}"
-        params: dict[str, Any] = {
+        params: dict[str, object] = {
             "limit": limit,
         }
         add_param(params, kwargs, key="sort")
@@ -1787,14 +1788,14 @@ class Client(Eventable):
         :rtype: aiosu.models.forum.ForumCreateTopicResponse
         """
         url = f"{self.base_url}/api/v2/forums/topics"
-        data: dict[str, Any] = {
+        data: dict[str, object] = {
             "forum_id": forum_id,
             "title": title,
             "body": content,
         }
         add_param(data, kwargs, key="with_poll")
         if data.get("with_poll"):
-            forum_topic_poll: dict[str, Any] = {
+            forum_topic_poll: dict[str, object] = {
                 "title": kwargs["poll_title"],
                 "length_days": kwargs.pop("poll_length_days", 0),
                 "vote_change": kwargs.pop("poll_vote_change", False),
@@ -1898,7 +1899,7 @@ class Client(Eventable):
         :rtype: list[aiosu.models.chat.ChatUserSilence]
         """
         url = f"{self.base_url}/api/v2/chat/ack"
-        data: dict[str, Any] = {}
+        data: dict[str, object] = {}
         add_param(data, kwargs, key="since")
         add_param(data, kwargs, key="silence_id_since", param_name="history_since")
         json = await self._request("POST", url, json=data)
@@ -1934,7 +1935,7 @@ class Client(Eventable):
         if not 1 <= (limit := kwargs.get("limit", 50)) <= 50:
             raise ValueError("limit must be between 1 and 50")
         url = f"{self.base_url}/api/v2/chat/updates"
-        params: dict[str, Any] = {
+        params: dict[str, object] = {
             "since": since,
             "limit:": limit,
         }
@@ -2008,7 +2009,7 @@ class Client(Eventable):
         if not 1 <= (limit := kwargs.get("limit", 50)) <= 50:
             raise ValueError("limit must be between 1 and 50")
         url = f"{self.base_url}/api/v2/chat/channels/{channel_id}/messages"
-        params: dict[str, Any] = {
+        params: dict[str, object] = {
             "limit:": limit,
         }
         add_param(params, kwargs, key="since")
@@ -2050,7 +2051,7 @@ class Client(Eventable):
         :rtype: aiosu.models.chat.ChatChannel
         """
         url = f"{self.base_url}/api/v2/chat/channels"
-        data: dict[str, Any] = {
+        data: dict[str, object] = {
             "type": type,
         }
         add_param(data, kwargs, key="message")
@@ -2144,7 +2145,7 @@ class Client(Eventable):
         :rtype: aiosu.models.chat.ChatMessage
         """
         url = f"{self.base_url}/api/v2/chat/channels/{channel_id}/messages"
-        data: dict[str, Any] = {
+        data: dict[str, object] = {
             "message": message,
             "is_action": is_action,
         }
@@ -2182,7 +2183,7 @@ class Client(Eventable):
         :rtype: aiosu.models.chat.ChatMessageCreateResponse
         """
         url = f"{self.base_url}/api/v2/chat/new"
-        data: dict[str, Any] = {
+        data: dict[str, object] = {
             "target_id": user_id,
             "message": message,
             "is_action": is_action,
@@ -2219,7 +2220,7 @@ class Client(Eventable):
         if not 1 <= (limit := kwargs.pop("limit", 1)) <= 50:
             raise ValueError("Limit must be between 1 and 50")
         url = f"{self.base_url}/api/v2/matches"
-        params: dict[str, Any] = {
+        params: dict[str, object] = {
             "limit": limit,
         }
         add_param(params, kwargs, key="sort")
@@ -2261,7 +2262,7 @@ class Client(Eventable):
         if not 1 <= (limit := kwargs.pop("limit", 1)) <= 100:
             raise ValueError("Limit must be between 1 and 100")
         url = f"{self.base_url}/api/v2/matches/{match_id}"
-        params: dict[str, Any] = {
+        params: dict[str, object] = {
             "limit": limit,
         }
         add_param(params, kwargs, key="before")
@@ -2302,7 +2303,7 @@ class Client(Eventable):
         if "mode" in kwargs:
             mode: MultiplayerRoomMode = kwargs.pop("mode")
             url += f"/{mode}"
-        params: dict[str, Any] = {
+        params: dict[str, object] = {
             "limit": limit,
         }
         add_param(params, kwargs, key="sort")
@@ -2356,7 +2357,7 @@ class Client(Eventable):
         if not 1 <= (limit := kwargs.pop("limit", 50)) <= 50:
             raise ValueError("Limit must be between 1 and 50")
         url = f"{self.base_url}/api/v2/rooms/{room_id}/leaderboard"
-        params: dict[str, Any] = {
+        params: dict[str, object] = {
             "limit": limit,
         }
         json = await self._request("GET", url, params=params)
@@ -2396,7 +2397,7 @@ class Client(Eventable):
         if not 1 <= (limit := kwargs.pop("limit", 1)) <= 100:
             raise ValueError("Limit must be between 1 and 100")
         url = f"{self.base_url}/api/v2/rooms/{room_id}/playlist/{playlist_id}/scores"
-        params: dict[str, Any] = {
+        params: dict[str, object] = {
             "limit": limit,
         }
         add_param(params, kwargs, key="sort")

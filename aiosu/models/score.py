@@ -16,6 +16,7 @@ from ..utils.accuracy import ManiaAccuracyCalculator
 from ..utils.accuracy import OsuAccuracyCalculator
 from ..utils.accuracy import TaikoAccuracyCalculator
 from .base import BaseModel
+from .base import cast_int
 from .beatmap import Beatmap
 from .beatmap import Beatmapset
 from .common import CurrentUserAttributes
@@ -24,7 +25,7 @@ from .mods import Mods
 from .user import User
 
 if TYPE_CHECKING:
-    from typing import Any
+    from collections.abc import Mapping
     from .. import v1
 
 __all__ = (
@@ -113,7 +114,7 @@ class ScoreStatistics(BaseModel):
 
     @model_validator(mode="before")
     @classmethod
-    def _convert_none_to_zero(cls, values: dict[str, Any]) -> dict[str, Any]:
+    def _convert_none_to_zero(cls, values: dict[str, object]) -> dict[str, object]:
         # Lazer API returns null for some statistics
         for key in values:
             if values[key] is None:
@@ -121,7 +122,7 @@ class ScoreStatistics(BaseModel):
         return values
 
     @classmethod
-    def _from_api_v1(cls, data: Any) -> ScoreStatistics:
+    def _from_api_v1(cls, data: Mapping[str, object]) -> ScoreStatistics:
         return cls.model_validate(
             {
                 "count_50": data["count50"],
@@ -211,7 +212,7 @@ class Score(BaseModel):
 
     @model_validator(mode="before")
     @classmethod
-    def _fail_rank(cls, values: dict[str, Any]) -> dict[str, Any]:
+    def _fail_rank(cls, values: dict[str, object]) -> dict[str, object]:
         if not values["passed"]:
             values["rank"] = "F"
         return values
@@ -235,7 +236,7 @@ class Score(BaseModel):
     @classmethod
     def _from_api_v1(
         cls,
-        data: Any,
+        data: Mapping[str, object],
         mode: Gamemode,
     ) -> Score:
         statistics = ScoreStatistics._from_api_v1(data)
@@ -244,7 +245,7 @@ class Score(BaseModel):
                 "id": data["score_id"],
                 "user_id": data["user_id"],
                 "accuracy": 0.0,
-                "mods": int(data["enabled_mods"]),
+                "mods": cast_int(data["enabled_mods"]),
                 "score": data["score"],
                 "pp": data.get("pp", 0.0),
                 "max_combo": data["maxcombo"],

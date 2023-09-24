@@ -3,6 +3,9 @@ This module contains base models for objects.
 """
 from __future__ import annotations
 
+from typing import SupportsFloat
+from typing import SupportsInt
+
 import pydantic
 from pydantic import ConfigDict
 
@@ -35,3 +38,21 @@ class FrozenModel(BaseModel):
         populate_by_name=True,
         frozen=True,
     )
+
+
+def cast_int(v: object) -> int:
+    if v is None:
+        return 0
+    if isinstance(v, (SupportsInt, str)):
+        return int(v)
+
+    raise ValueError(f"{v} is not a valid value.")
+
+
+def cast_float(v: object) -> float:
+    if v is None:
+        return 0.0
+    if isinstance(v, (SupportsFloat, str)):
+        return float(v)
+
+    raise ValueError(f"{v} is not a valid value.")

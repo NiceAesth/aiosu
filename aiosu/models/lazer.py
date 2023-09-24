@@ -5,7 +5,6 @@ from __future__ import annotations
 
 from datetime import datetime
 from functools import cached_property
-from typing import Any
 from typing import Optional
 
 from pydantic import computed_field
@@ -63,7 +62,7 @@ class LazerMod(BaseModel):
     """Temporary model for lazer mods."""
 
     acronym: str
-    settings: dict[str, Any] = Field(default_factory=dict)
+    settings: dict[str, object] = Field(default_factory=dict)
 
     def __str__(self) -> str:
         return self.acronym
@@ -216,7 +215,7 @@ class LazerScore(BaseModel):
 
     @model_validator(mode="before")
     @classmethod
-    def _fail_rank(cls, values: dict[str, Any]) -> dict[str, Any]:
+    def _fail_rank(cls, values: dict[str, object]) -> dict[str, object]:
         if not values["passed"]:
             values["rank"] = "F"
         return values

@@ -15,7 +15,6 @@ from pydantic_core import CoreSchema
 
 
 if TYPE_CHECKING:
-    from typing import Any
     from typing import Union
 
 __all__ = (
@@ -139,7 +138,7 @@ class Mod(IntEnum):
         raise ValueError(f"Mod {__o!r} does not exist.")
 
     @classmethod
-    def _missing_(cls, query: object) -> Any:
+    def _missing_(cls, query: object) -> Mod:
         return cls.from_type(query)
 
 
@@ -207,7 +206,7 @@ class Mods(UserList):
     @classmethod
     def __get_pydantic_core_schema__(
         cls,
-        source_type: type[Any],
+        source_type: type[object],
         handler: GetCoreSchemaHandler,
     ) -> CoreSchema:
         return core_schema.no_info_before_validator_function(

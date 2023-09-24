@@ -10,7 +10,6 @@ from datetime import timezone
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from typing import Any
     from typing import BinaryIO
 
 _lzma_format = lzma.FORMAT_ALONE
@@ -195,7 +194,7 @@ def unpack_replay_data(file: BinaryIO) -> str:
     return data.decode("ascii")
 
 
-def pack(file: BinaryIO, fmt: str, value: Any) -> None:
+def pack(file: BinaryIO, fmt: str, value: object) -> None:
     r"""Pack a value into a file.
 
     :param file: The file to pack into.
@@ -203,7 +202,7 @@ def pack(file: BinaryIO, fmt: str, value: Any) -> None:
     :param fmt: The format to pack with.
     :type fmt: str
     :param value: The value to pack.
-    :type value: Any
+    :type value: object
     """
     file.write(struct.pack(fmt, value))
 

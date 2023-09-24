@@ -3,8 +3,8 @@ This module contains models for multiplayer.
 """
 from __future__ import annotations
 
+from collections.abc import Mapping
 from datetime import datetime
-from typing import Any
 from typing import Literal
 from typing import Optional
 
@@ -105,8 +105,8 @@ class MultiplayerEvent(BaseModel):
 
     @model_validator(mode="before")
     @classmethod
-    def _set_type(cls, values: dict[str, Any]) -> dict[str, Any]:
-        if "detail" in values:
+    def _set_type(cls, values: dict[str, object]) -> dict[str, object]:
+        if "detail" in values and isinstance(values["detail"], Mapping):
             values["type"] = values["detail"]["type"]
         return values
 
