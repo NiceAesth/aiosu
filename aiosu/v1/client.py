@@ -30,6 +30,7 @@ from ..models.legacy import ReplayCompact
 if TYPE_CHECKING:
     from types import TracebackType
     from typing import Any
+    from collections.abc import MutableMapping
     from typing import Optional
     from typing import Union
 
@@ -44,7 +45,11 @@ def get_content_type(content_type: str) -> str:
     return content_type.split(";")[0]
 
 
-def _beatmap_score_conv(data: Any, mode: Gamemode, beatmap_id: int) -> Score:
+def _beatmap_score_conv(
+    data: MutableMapping[str, object],
+    mode: Gamemode,
+    beatmap_id: int,
+) -> Score:
     data["beatmap_id"] = beatmap_id
     return Score._from_api_v1(data, mode)
 

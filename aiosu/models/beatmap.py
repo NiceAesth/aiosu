@@ -3,11 +3,11 @@ This module contains models for Beatmap objects.
 """
 from __future__ import annotations
 
+from collections.abc import Mapping
 from datetime import datetime
 from enum import Enum
 from enum import unique
 from functools import cached_property
-from typing import Any
 from typing import Literal
 from typing import Optional
 
@@ -16,6 +16,7 @@ from pydantic import Field
 from pydantic import model_validator
 
 from .base import BaseModel
+from .base import cast_int
 from .common import CurrentUserAttributes
 from .common import CursorModel
 from .gamemode import Gamemode
@@ -133,7 +134,7 @@ class BeatmapRankStatus(Enum):
         return self.name_api
 
     @classmethod
-    def _missing_(cls, query: object) -> Any:
+    def _missing_(cls, query: object) -> BeatmapRankStatus:
         if isinstance(query, int):
             for status in list(BeatmapRankStatus):
                 if status.id == query:
@@ -165,7 +166,7 @@ class BeatmapAvailability(BaseModel):
     download_disabled: Optional[bool] = None
 
     @classmethod
-    def _from_api_v1(cls, data: Any) -> BeatmapAvailability:
+    def _from_api_v1(cls, data: Mapping[str, object]) -> BeatmapAvailability:
         return cls.model_validate({"download_disabled": data["download_unavailable"]})
 
 
@@ -208,8 +209,8 @@ class BeatmapCovers(BaseModel):
         )
 
     @classmethod
-    def _from_api_v1(cls, data: Any) -> BeatmapCovers:
-        return cls.from_beatmapset_id(data["beatmapset_id"])
+    def _from_api_v1(cls, data: Mapping[str, object]) -> BeatmapCovers:
+        return cls.from_beatmapset_id(cast_int(data["beatmapset_id"]))
 
 
 class BeatmapHype(BaseModel):
@@ -294,7 +295,7 @@ class Beatmap(BaseModel):
 
     @model_validator(mode="before")
     @classmethod
-    def _set_url(cls, values: dict[str, Any]) -> dict[str, Any]:
+    def _set_url(cls, values: dict[str, object]) -> dict[str, object]:
         if values.get("url") is None:
             id = values["id"]
             beatmapset_id = values["beatmapset_id"]
@@ -305,14 +306,14 @@ class Beatmap(BaseModel):
         return values
 
     @classmethod
-    def _from_api_v1(cls, data: Any) -> Beatmap:
+    def _from_api_v1(cls, data: Mapping[str, object]) -> Beatmap:
         return cls.model_validate(
             {
                 "beatmapset_id": data["beatmapset_id"],
                 "difficulty_rating": data["difficultyrating"],
                 "id": data["beatmap_id"],
-                "mode": int(data["mode"]),
-                "status": int(data["approved"]),
+                "mode": cast_int(data["mode"]),
+                "status": cast_int(data["approved"]),
                 "total_length": data["total_length"],
                 "hit_length": data["total_length"],
                 "user_id": data["creator_id"],
@@ -388,7 +389,7 @@ class Beatmapset(BaseModel):
         return f"https://osu.ppy.sh/beatmapsets/{self.id}/discussion"
 
     @classmethod
-    def _from_api_v1(cls, data: Any) -> Beatmapset:
+    def _from_api_v1(cls, data: Mapping[str, object]) -> Beatmapset:
         return cls.model_validate(
             {
                 "id": data["beatmapset_id"],
@@ -400,7 +401,7 @@ class Beatmapset(BaseModel):
                 "play_count": data["playcount"],
                 "preview_url": f"//b.ppy.sh/preview/{data['beatmapset_id']}.mp3",
                 "source": data["source"],
-                "status": int(data["approved"]),
+                "status": cast_int(data["approved"]),
                 "title": data["title"],
                 "title_unicode": data["title"],
                 "user_id": data["creator_id"],
@@ -505,8 +506,10 @@ class BeatmapsetDiscussionResponse(CursorModel):
 
     @model_validator(mode="before")
     @classmethod
-    def _set_max_blocks(cls, values: dict[str, Any]) -> dict[str, Any]:
-        values["max_blocks"] = values["reviews_config"]["max_blocks"]
+    def _set_max_blocks(cls, values: dict[str, object]) -> dict[str, object]:
+        if isinstance(values["reviews_config"], Mapping):
+            values["max_blocks"] = values["reviews_config"]["max_blocks"]
+
         return values
 
 

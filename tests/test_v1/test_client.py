@@ -1,9 +1,14 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import pytest
 
 import aiosu
 from ..classes import mock_request
+
+if TYPE_CHECKING:
+    from collections.abc import Mapping
 
 STATUS_CAN_200 = {
     200: "application/json",
@@ -25,8 +30,8 @@ def get_data(func_name: str, status_code: int, extension: str = "json") -> bytes
 
 def generate_test(
     func,
-    status_codes: dict[int, str],
-    func_kwargs: dict = {},
+    status_codes: Mapping[int, str],
+    func_kwargs: Mapping[str, object] = {},
 ):
     @pytest.mark.asyncio
     @pytest.mark.parametrize("status_code, content_type", status_codes.items())

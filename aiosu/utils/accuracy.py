@@ -6,11 +6,11 @@ from __future__ import annotations
 import abc
 from typing import TYPE_CHECKING
 
+from ..models.base import cast_int
 from ..models.gamemode import Gamemode
 from ..models.mods import Mod
 
 if TYPE_CHECKING:
-    from typing import Callable
     from ..models.score import Score
 
 __all__ = [
@@ -19,8 +19,6 @@ __all__ = [
     "ManiaAccuracyCalculator",
     "CatchAccuracyCalculator",
 ]
-
-cast_int: Callable[..., int] = lambda x: int(x or 0)
 
 
 def get_calculator(mode: Gamemode) -> type[AbstractAccuracyCalculator]:

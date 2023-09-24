@@ -4,7 +4,7 @@ This module handles multiple API v2 Client sessions.
 from __future__ import annotations
 
 import functools
-from typing import Any
+from collections.abc import Awaitable
 from typing import Callable
 from typing import cast
 from typing import TYPE_CHECKING
@@ -21,12 +21,13 @@ from .repository import SimpleTokenRepository
 
 if TYPE_CHECKING:
     from types import TracebackType
+    from typing import Any
     from typing import Optional
     from typing import Union
 
 __all__ = ("ClientStorage",)
 
-F = TypeVar("F", bound=Callable[..., Any])
+F = TypeVar("F", bound=Callable[..., Awaitable[object]])
 
 
 class ClientStorage(Eventable):
@@ -91,7 +92,7 @@ class ClientStorage(Eventable):
         self._register_listener(func, ClientAddEvent)
 
         @functools.wraps(func)
-        async def _on_client_add(*args: Any, **kwargs: Any) -> Any:
+        async def _on_client_add(*args: Any, **kwargs: Any) -> object:
             return await func(*args, **kwargs)
 
         return cast(F, _on_client_add)
@@ -107,7 +108,7 @@ class ClientStorage(Eventable):
         self._register_listener(func, ClientUpdateEvent)
 
         @functools.wraps(func)
-        async def _on_client_update(*args: Any, **kwargs: Any) -> Any:
+        async def _on_client_update(*args: Any, **kwargs: Any) -> object:
             return await func(*args, **kwargs)
 
         return cast(F, _on_client_update)

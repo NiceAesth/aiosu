@@ -1,22 +1,21 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
 from datetime import datetime
 from enum import IntEnum
 from enum import unique
 from typing import Optional
-from typing import TYPE_CHECKING
 
 from pydantic import Field
 from pydantic import field_validator
 from pydantic import model_validator
 
 from ..base import BaseModel
+from ..base import cast_int
 from ..gamemode import Gamemode
 from ..mods import Mods
 from ..score import ScoreStatistics
 
-if TYPE_CHECKING:
-    from typing import Any
 
 __all__ = (
     "MatchTeam",
@@ -74,21 +73,19 @@ class MatchScore(BaseModel):
 
     @model_validator(mode="before")
     @classmethod
-    def _set_statistics(cls, values: dict[str, Any]) -> dict[str, Any]:
+    def _set_statistics(cls, values: dict[str, object]) -> dict[str, object]:
         values["statistics"] = ScoreStatistics._from_api_v1(values)
         return values
 
     @field_validator("enabled_mods", mode="before")
     @classmethod
-    def _set_enabled_mods(cls, v: Any) -> int:
-        if v is not None:
-            return int(v)
-        return 0
+    def _set_enabled_mods(cls, v: object) -> int:
+        return cast_int(v)
 
     @field_validator("team", mode="before")
     @classmethod
-    def _set_team(cls, v: Any) -> int:
-        return int(v)
+    def _set_team(cls, v: object) -> int:
+        return cast_int(v)
 
 
 class MatchGame(BaseModel):
@@ -108,25 +105,23 @@ class MatchGame(BaseModel):
 
     @field_validator("mode", mode="before")
     @classmethod
-    def _set_mode(cls, v: Any) -> int:
-        return int(v)
+    def _set_mode(cls, v: object) -> int:
+        return cast_int(v)
 
     @field_validator("mods", mode="before")
     @classmethod
-    def _set_mods(cls, v: Any) -> int:
-        if v is not None:
-            return int(v)
-        return 0
+    def _set_mods(cls, v: object) -> int:
+        return cast_int(v)
 
     @field_validator("scoring_type", mode="before")
     @classmethod
-    def _set_scoring_type(cls, v: Any) -> int:
-        return int(v)
+    def _set_scoring_type(cls, v: object) -> int:
+        return cast_int(v)
 
     @field_validator("team_type", mode="before")
     @classmethod
-    def _set_team_type(cls, v: Any) -> int:
-        return int(v)
+    def _set_team_type(cls, v: object) -> int:
+        return cast_int(v)
 
 
 class Match(BaseModel):
@@ -141,5 +136,9 @@ class Match(BaseModel):
 
     @model_validator(mode="before")
     @classmethod
-    def _format_values(cls, values: dict[str, Any]) -> dict[str, Any]:
-        return {**values["match"], "games": values["games"]}
+    def _format_values(cls, values: dict[str, object]) -> dict[str, object]:
+        match = values["match"]
+        if not isinstance(match, Mapping):
+            raise ValueError(f"Invalid match type: {type(match)}")
+
+        return {**match, "games": values["games"]}

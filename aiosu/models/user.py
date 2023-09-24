@@ -3,26 +3,25 @@ This module contains models for User objects.
 """
 from __future__ import annotations
 
+from collections.abc import Mapping
 from datetime import datetime
 from enum import Enum
 from enum import unique
 from functools import cached_property
-from typing import Any
 from typing import Literal
 from typing import Optional
-from typing import TYPE_CHECKING
 
 from pydantic import computed_field
 from pydantic import Field
 
 from .base import BaseModel
+from .base import cast_float
+from .base import cast_int
 from .common import Country
 from .common import HTMLBody
 from .common import TimestampedCount
 from .gamemode import Gamemode
 
-if TYPE_CHECKING:
-    from typing import Callable
 
 __all__ = (
     "User",
@@ -43,9 +42,6 @@ __all__ = (
     "ManiaStatsVariantsType",
 )
 
-
-cast_int: Callable[..., int] = lambda x: int(x or 0)
-cast_float: Callable[..., float] = lambda x: float(x or 0)
 
 UserAccountHistoryType = Literal[
     "note",
@@ -81,7 +77,7 @@ class UserQueryType(Enum):
         return self.value
 
     @classmethod
-    def _missing_(cls, query: object) -> Any:
+    def _missing_(cls, query: object) -> UserQueryType:
         if isinstance(query, str):
             query = query.lower()
         for q in list(UserQueryType):
@@ -95,7 +91,7 @@ class UserLevel(BaseModel):
     progress: int
 
     @classmethod
-    def _from_api_v1(cls, data: Any) -> UserLevel:
+    def _from_api_v1(cls, data: Mapping[str, object]) -> UserLevel:
         level = cast_float(data["level"])
         current = int(level)
         progress = (level - current) * 100
@@ -172,7 +168,7 @@ class UserGradeCounts(BaseModel):
     """Number of A ranks achieved."""
 
     @classmethod
-    def _from_api_v1(cls, data: Any) -> UserGradeCounts:
+    def _from_api_v1(cls, data: Mapping[str, object]) -> UserGradeCounts:
         return cls.model_validate(
             {
                 "ss": cast_int(data["count_rank_ss"]),
@@ -244,7 +240,7 @@ class UserStats(BaseModel):
         return self.pp / self.play_time * 3600
 
     @classmethod
-    def _from_api_v1(cls, data: Any) -> UserStats:
+    def _from_api_v1(cls, data: Mapping[str, object]) -> UserStats:
         """Some fields can be None, we want to force them to cast to a value."""
         return cls.model_validate(
             {
@@ -337,7 +333,7 @@ class User(BaseModel):
         return f"https://osu.ppy.sh/users/{self.id}"
 
     @classmethod
-    def _from_api_v1(cls, data: Any) -> User:
+    def _from_api_v1(cls, data: Mapping[str, object]) -> User:
         return cls.model_validate(
             {
                 "avatar_url": f"https://s.ppy.sh/a/{data['user_id']}",

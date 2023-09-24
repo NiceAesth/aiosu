@@ -5,10 +5,6 @@ from __future__ import annotations
 
 from enum import Enum
 from enum import unique
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from typing import Any
 
 __all__ = ("Gamemode",)
 
@@ -88,5 +84,5 @@ class Gamemode(Enum):
         raise ValueError(f"Gamemode {__o} does not exist.")
 
     @classmethod
-    def _missing_(cls, query: object) -> Any:
+    def _missing_(cls, query: object) -> Gamemode:
         return cls.from_type(query)
