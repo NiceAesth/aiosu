@@ -128,7 +128,7 @@ class Mod(IntEnum):
 
         if isinstance(__o, cls):
             return __o
-        if isinstance(__o, LazerMod):
+        if isinstance(__o, LazerMod):  # Attempt lossy conversion to stable mods
             try:
                 return cls.from_type(__o.acronym)
             except ValueError:
@@ -149,17 +149,22 @@ class Mods(UserList):
     def __init__(self, mods: Union[list[str], str, int]) -> None:
         super().__init__(self)
         self.data = []
-        if isinstance(mods, int):  # Bitwise representation of mods
-            self.data = [mod for mod in list(Mod) if mod & mods]
-            return
         if isinstance(mods, str):  # string of mods
             mods = [mods[i : i + 2] for i in range(0, len(mods), 2)]
-        if isinstance(mods, list) or isinstance(mods, Mods):  # List of Mod types
+
+        if isinstance(mods, int):  # Bitwise representation of mods
+            self.data = [mod for mod in list(Mod) if mod & mods]
+        elif isinstance(mods, list) or isinstance(mods, Mods):  # List of Mod types
             self.data = [Mod(mod) for mod in mods]  # type: ignore
-            return
-        raise TypeError(
-            f"Mods must be a list of Mod types, a string, or an int. Not {type(mods)}",
-        )
+        else:
+            raise TypeError(
+                f"Mods must be a list of Mod types, a string, or an int. Not {type(mods)}",
+            )
+
+        if Mod.Nightcore in self and Mod.DoubleTime not in self:
+            self.data.append(Mod.DoubleTime)
+        if Mod.Perfect in self and Mod.SuddenDeath not in self:
+            self.data.append(Mod.SuddenDeath)
 
     @property
     def bitwise(self) -> int:
@@ -187,23 +192,17 @@ class Mods(UserList):
     def __int__(self) -> int:
         return self.bitwise
 
-    def __and__(self, __o: Any) -> int:
-        if isinstance(__o, int):
-            return int(self) & __o
-        if isinstance(__o, Mod):
+    def __and__(self, __o: object) -> int:
+        if isinstance(__o, (int, Mod, Mods)):
             return int(self) & int(__o)
-        if isinstance(__o, Mods):
-            return int(self) & int(__o)
-        raise ValueError(f"Object {__o!r} is of invalid type.")
 
-    def __or__(self, __o: Any) -> int:
-        if isinstance(__o, int):
-            return int(self) | __o
-        if isinstance(__o, Mod):
+        return NotImplemented
+
+    def __or__(self, __o: object) -> int:
+        if isinstance(__o, (int, Mod, Mods)):
             return int(self) | int(__o)
-        if isinstance(__o, Mods):
-            return int(self) | int(__o)
-        raise ValueError(f"Object {__o!r} is of invalid type.")
+
+        return NotImplemented
 
     @classmethod
     def __get_pydantic_core_schema__(
