@@ -27,7 +27,6 @@ classifiers = [
     "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
     "Typing :: Typed",
 ]
-include = ["py.typed"]
 
 [tool.poetry.dependencies]
 python = "^3.9"
