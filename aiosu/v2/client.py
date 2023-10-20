@@ -29,6 +29,9 @@ from ..helpers import from_list
 from ..models import ArtistResponse
 from ..models import Beatmap
 from ..models import BeatmapDifficultyAttributes
+from ..models import BeatmapPack
+from ..models import BeatmapPacksResponse
+from ..models import BeatmapPackType
 from ..models import Beatmapset
 from ..models import BeatmapsetDiscussionPostResponse
 from ..models import BeatmapsetDiscussionResponse
@@ -1360,6 +1363,58 @@ class Client(Eventable):
             kwargs["cursor_string"] = resp.cursor_string
             resp.next = partial(self.search_beatmapsets, **kwargs)
         return resp
+
+    @prepare_token
+    @check_token
+    @requires_scope(Scopes.PUBLIC)
+    async def get_beatmap_packs(self, **kwargs: Any) -> BeatmapPacksResponse:
+        r"""Get beatmap packs.
+
+        :param \**kwargs:
+            See below
+
+        :Keyword Arguments:
+            * *type* (``aiosu.models.beatmap.BeatmapPackType``) --
+                Optional, beatmap pack type
+            * *cursor_string* (``str``) --
+                Optional, cursor string to get the next page of results
+
+        :raises APIException: Contains status code and error message
+        :return: Beatmap packs response
+        :rtype: aiosu.models.beatmap.BeatmapPacksResponse
+        """
+        url = f"{self.base_url}/api/v2/beatmaps/packs"
+        params: dict[str, object] = {}
+        add_param(
+            params,
+            kwargs,
+            key="type",
+            converter=lambda x: str(BeatmapPackType[x]),
+        )
+        add_param(params, kwargs, key="cursor_string")
+        json = await self._request("GET", url, params=params)
+        resp = BeatmapPacksResponse.model_validate(json)
+        if resp.cursor_string:
+            kwargs["cursor_string"] = resp.cursor_string
+            resp.next = partial(self.get_beatmap_packs, **kwargs)
+        return resp
+
+    @prepare_token
+    @check_token
+    @requires_scope(Scopes.PUBLIC)
+    async def get_beatmap_pack(self, pack_tag: str) -> BeatmapPack:
+        r"""Get beatmap pack.
+
+        :param pack_tag: The tag of the beatmap pack
+        :type pack_tag: str
+
+        :raises APIException: Contains status code and error message
+        :return: Beatmap pack object
+        :rtype: aiosu.models.beatmap.BeatmapPack
+        """
+        url = f"{self.base_url}/api/v2/beatmaps/packs/{pack_tag}"
+        json = await self._request("GET", url)
+        return BeatmapPack.model_validate(json)
 
     @prepare_token
     @check_token
