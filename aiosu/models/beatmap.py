@@ -49,6 +49,10 @@ __all__ = (
     "BeatmapsetDiscussionVoteResponse",
     "BeatmapsetSearchResponse",
     "UserBeatmapType",
+    "BeatmapPackType",
+    "BeatmapPackUserCompletion",
+    "BeatmapPack",
+    "BeatmapPacksResponse",
 )
 
 BeatmapsetDisscussionType = Literal[
@@ -144,6 +148,44 @@ class BeatmapRankStatus(Enum):
                 if status.name_api == query.lower():
                     return status
         raise ValueError(f"BeatmapRankStatus {query} does not exist.")
+
+
+@unique
+class BeatmapPackType(Enum):
+    STANDARD = ("S", "Standard")
+    FEATURED = ("F", "Featured Artist")
+    TOURNAMENT = ("P", "Tournament")
+    LOVED = ("L", "Project Loved")
+    CHART = ("R", "Spotlights")
+    THEME = ("T", "Theme")
+    ARTIST = ("A", "Artist/Album")
+
+    def __init__(self, tag: str, description: str) -> None:
+        self.tag = tag
+        self.description = description
+
+    @classmethod
+    def from_tag(cls, tag: str) -> BeatmapPackType:
+        beatmap_pack_type = next((x for x in cls if x.tag == tag), None)
+        if beatmap_pack_type is None:
+            raise ValueError(f"BeatmapPackType {tag} does not exist.")
+        return beatmap_pack_type
+
+    def __str__(self) -> str:
+        return self.name.lower()
+
+    @classmethod
+    def _missing_(cls, query: object) -> BeatmapPackType:
+        if isinstance(query, cls):
+            return query
+        if isinstance(query, str):
+            query = query.upper()
+            try:
+                return BeatmapPackType[query]
+            except KeyError:
+                return cls.from_tag(query)
+
+        raise ValueError(f"BeatmapPackType {query} does not exist.")
 
 
 class BeatmapDescription(BaseModel):
@@ -495,6 +537,41 @@ class BeatmapsetEvent(BaseModel):
     beatmapset: Optional[Beatmapset] = None
     discussion: Optional[BeatmapsetDiscussion] = None
     comment: Optional[dict] = None
+
+
+class BeatmapPackUserCompletion(BaseModel):
+    beatmapset_ids: list[int]
+    completed: bool
+
+
+class BeatmapPack(BaseModel):
+    author: str
+    date: datetime
+    name: str
+    no_diff_reduction: bool
+    tag: str
+    url: str
+    ruleset_id: Optional[int] = None
+    beatmapsets: Optional[list[Beatmapset]] = None
+    user_completion_data: Optional[BeatmapPackUserCompletion] = None
+
+    @property
+    def mode(self) -> Optional[Gamemode]:
+        if self.ruleset_id is None:
+            return None
+        return Gamemode(self.ruleset_id)
+
+    @property
+    def pack_type(self) -> BeatmapPackType:
+        return BeatmapPackType.from_tag(self.tag[0])
+
+    @property
+    def id(self) -> int:
+        return int(self.tag[1:])
+
+
+class BeatmapPacksResponse(CursorModel):
+    beatmap_packs: list[BeatmapPack]
 
 
 class BeatmapsetDiscussionResponse(CursorModel):
