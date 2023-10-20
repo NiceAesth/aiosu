@@ -481,6 +481,22 @@ class TestGeneratorV2(TestGeneratorBase):
         )
         self._register_route(
             "GET",
+            f"{BASE_URL}/api/v2/beatmaps/packs",
+            f"{DATA_DIR}/v2/get_beatmap_packs_200.json",
+        )
+        self._register_route(
+            "GET",
+            f"{BASE_URL}/api/v2/beatmaps/packs/L1",
+            f"{DATA_DIR}/v2/get_beatmap_pack_200.json",
+        )
+        self._register_route(
+            "GET",
+            f"{BASE_URL}/api/v2/beatmaps/packs/L0",
+            f"{DATA_DIR}/v2/get_beatmap_pack_404.json",
+            expect_status=404,
+        )
+        self._register_route(
+            "GET",
             f"{BASE_URL}/api/v2/beatmapsets/events",
             f"{DATA_DIR}/v2/get_beatmapset_events_200.json",
         )

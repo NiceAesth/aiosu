@@ -211,6 +211,12 @@ tests = [
         STATUS_CAN_200,
         func_kwargs={"search_filter": "doja cat say so"},
     ),
+    generate_test(aiosu.v2.Client.get_beatmap_packs, STATUS_CAN_200),
+    generate_test(
+        aiosu.v2.Client.get_beatmap_pack,
+        STATUS_CAN_404,
+        func_kwargs={"pack_tag": "L1"},
+    ),
     generate_test(aiosu.v2.Client.get_beatmapset_events, STATUS_CAN_200),
     generate_test(aiosu.v2.Client.get_beatmapset_discussions, STATUS_CAN_200),
     generate_test(aiosu.v2.Client.get_beatmapset_discussion_posts, STATUS_CAN_200),
