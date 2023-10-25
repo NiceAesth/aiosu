@@ -156,15 +156,15 @@ class UserAccountHistory(BaseModel):
 
 
 class UserGradeCounts(BaseModel):
-    ssh: Optional[int] = None
+    ssh: int
     """Number of Silver SS ranks achieved."""
-    ss: Optional[int] = None
+    ss: int
     """Number of SS ranks achieved."""
-    sh: Optional[int] = None
+    sh: int
     """Number of Silver S ranks achieved."""
-    s: Optional[int] = None
+    s: int
     """Number of S ranks achieved."""
-    a: Optional[int] = None
+    a: int
     """Number of A ranks achieved."""
 
     @classmethod
