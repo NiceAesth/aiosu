@@ -17,11 +17,12 @@ if TYPE_CHECKING:
 
 __all__ = (
     "add_param",
+    "append_param",
     "from_list",
 )
 
 
-def from_list(f: Callable[[Any], T], x: list[object]) -> list[T]:
+def from_list(f: Callable[[Any], T], x: list) -> list[T]:
     r"""Applies a function to all elements in a list.
 
     :param f: Function to apply on list elements
@@ -37,9 +38,29 @@ def from_list(f: Callable[[Any], T], x: list[object]) -> list[T]:
     return [f(y) for y in x]
 
 
+def append_param(
+    value: object,
+    l: list,
+    append: bool = True,
+) -> None:
+    r"""Appends a value to a list if it is not None and append is True.
+
+    :param value: Value to append
+    :type value: object
+    :param l: List to append to
+    :type l: list[object]
+    :param append: Whether to append or not, defaults to True
+    :type append: bool, optional, defaults to True
+    """
+    if value is None:
+        return
+    if append:
+        l.append(value)
+
+
 def add_param(
     params: MutableMapping[str, Any],
-    kwargs: Mapping[str, Any],
+    kwargs: Mapping[str, object],
     key: str,
     param_name: Optional[str] = None,
     converter: Optional[Callable[[Any], T]] = None,

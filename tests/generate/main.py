@@ -476,8 +476,9 @@ class TestGeneratorV2(TestGeneratorBase):
         )
         self._register_route(
             "GET",
-            f"{BASE_URL}/api/v2/beatmapsets/search/doja cat say so",
+            f"{BASE_URL}/api/v2/beatmapsets/search",
             f"{DATA_DIR}/v2/search_beatmapsets_200.json",
+            params={"q": "doja cat say so"},
         )
         self._register_route(
             "GET",

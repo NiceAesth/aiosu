@@ -51,9 +51,34 @@ __all__ = (
     "BeatmapsetEventType",
     "BeatmapsetRequestStatus",
     "BeatmapsetSearchResponse",
+    "BeatmapsetSortType",
     "BeatmapsetVoteEvent",
     "UserBeatmapType",
 )
+
+BeatmapsetSortType = Literal[
+    "title_asc",
+    "title_desc",
+    "artist_asc",
+    "artist_desc",
+    "difficulty_asc",
+    "difficulty_desc",
+    "ranked_asc",
+    "ranked_desc",
+    "rating_asc",
+    "rating_desc",
+    "plays_asc",
+    "plays_desc",
+    "favourites_asc",
+    "favourites_desc",
+]
+
+BeatmapsetBundleFilterType = Literal[
+    "any",
+    "currently",
+    "previously",
+    "never",
+]
 
 BeatmapsetDisscussionType = Literal[
     "hype",
