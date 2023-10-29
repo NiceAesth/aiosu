@@ -304,7 +304,7 @@ class User(BaseModel):
     cover: Optional[UserProfileCover] = None
     is_restricted: Optional[bool] = None
     account_history: Optional[list[UserAccountHistory]] = None
-    active_tournament_banner: Optional[UserProfileTournamentBanner] = None
+    active_tournament_banners: Optional[list[UserProfileTournamentBanner]] = None
     badges: Optional[list[UserBadge]] = None
     beatmap_playcounts_count: Optional[int] = None
     favourite_beatmapset_count: Optional[int] = None
