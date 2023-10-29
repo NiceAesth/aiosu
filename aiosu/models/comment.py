@@ -13,10 +13,10 @@ from .common import CursorModel
 from .user import User
 
 __all__ = (
-    "Commentable",
     "Comment",
     "CommentBundle",
     "CommentSortType",
+    "Commentable",
     "CommentableType",
 )
 

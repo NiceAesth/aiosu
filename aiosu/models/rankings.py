@@ -14,8 +14,8 @@ from .user import UserStats
 
 __all__ = (
     "RankingFilter",
-    "RankingVariant",
     "RankingType",
+    "RankingVariant",
     "Rankings",
 )
 

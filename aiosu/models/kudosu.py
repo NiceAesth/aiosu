@@ -12,8 +12,8 @@ from .base import BaseModel
 __all__ = (
     "KudosuAction",
     "KudosuGiver",
-    "KudosuPost",
     "KudosuHistory",
+    "KudosuPost",
 )
 
 KudosuAction = Literal[

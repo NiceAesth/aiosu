@@ -12,9 +12,9 @@ from .user import User
 from .wiki import WikiPage
 
 __all__ = (
-    "SearchResult",
-    "SearchResponse",
     "SearchMode",
+    "SearchResponse",
+    "SearchResult",
 )
 
 SearchMode = Literal["all", "user", "wiki_page"]

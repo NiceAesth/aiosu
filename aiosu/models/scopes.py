@@ -7,9 +7,9 @@ from enum import IntFlag
 from enum import unique
 
 __all__ = (
+    "OWN_CLIENT_SCOPES",
     "Scopes",
     "VALID_CLIENT_SCOPES",
-    "OWN_CLIENT_SCOPES",
 )
 
 

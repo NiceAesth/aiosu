@@ -16,13 +16,13 @@ from .common import CursorModel
 __all__ = (
     "Build",
     "ChangelogEntry",
+    "ChangelogEntryType",
+    "ChangelogListing",
+    "ChangelogMessageFormat",
+    "ChangelogSearch",
     "GithubUser",
     "UpdateStream",
     "Version",
-    "ChangelogListing",
-    "ChangelogSearch",
-    "ChangelogMessageFormat",
-    "ChangelogEntryType",
 )
 
 ChangelogMessageFormat = Literal["markdown", "html"]

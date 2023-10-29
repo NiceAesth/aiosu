@@ -23,9 +23,9 @@ __all__ = (
     "Event",
     "EventBeatmap",
     "EventBeatmapset",
-    "EventUser",
-    "EventType",
     "EventResponse",
+    "EventType",
+    "EventUser",
 )
 
 EventType = Literal[

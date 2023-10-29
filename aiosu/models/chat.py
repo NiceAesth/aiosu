@@ -14,13 +14,13 @@ from .user import User
 
 __all__ = (
     "ChatChannel",
-    "ChatMessage",
-    "ChatMessageCreateResponse",
+    "ChatChannelResponse",
     "ChatChannelType",
     "ChatIncludeType",
+    "ChatMessage",
+    "ChatMessageCreateResponse",
     "ChatUpdateResponse",
     "ChatUserSilence",
-    "ChatChannelResponse",
 )
 
 ChatChannelType = Literal[

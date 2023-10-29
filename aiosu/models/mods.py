@@ -18,10 +18,10 @@ if TYPE_CHECKING:
     from typing import Union
 
 __all__ = (
+    "FreemodAllowed",
+    "KeyMod",
     "Mod",
     "Mods",
-    "KeyMod",
-    "FreemodAllowed",
     "ScoreIncreaseMods",
     "SpeedChangingMods",
 )

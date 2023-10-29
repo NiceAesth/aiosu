@@ -22,9 +22,9 @@ from .user import User
 
 __all__ = (
     "LazerMod",
-    "LazerScoreStatistics",
     "LazerReplayData",
     "LazerScore",
+    "LazerScoreStatistics",
 )
 
 
