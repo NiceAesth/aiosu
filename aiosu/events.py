@@ -12,10 +12,10 @@ if TYPE_CHECKING:
     from .models import OAuthToken
 
 __all__ = (
-    "Eventable",
     "BaseEvent",
     "ClientAddEvent",
     "ClientUpdateEvent",
+    "Eventable",
 )
 
 

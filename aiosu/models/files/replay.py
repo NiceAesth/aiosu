@@ -18,10 +18,10 @@ from ..mods import Mods
 from ..score import ScoreStatistics
 
 __all__ = (
+    "ReplayEvent",
     "ReplayFile",
     "ReplayKey",
     "ReplayLifebarEvent",
-    "ReplayEvent",
 )
 
 

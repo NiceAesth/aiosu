@@ -13,9 +13,9 @@ from .base import BaseModel
 from .common import CursorModel
 
 __all__ = (
-    "ArtistTrack",
     "ArtistResponse",
     "ArtistSortType",
+    "ArtistTrack",
 )
 
 ArtistSortType = Literal[

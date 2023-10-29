@@ -24,8 +24,10 @@ from .gamemode import Gamemode
 
 
 __all__ = (
+    "ManiaStatsVariantsType",
     "User",
     "UserAccountHistory",
+    "UserAccountHistoryType",
     "UserBadge",
     "UserGradeCounts",
     "UserGroup",
@@ -34,12 +36,10 @@ __all__ = (
     "UserProfileCover",
     "UserProfileTournamentBanner",
     "UserQueryType",
-    "UserRankHistoryElement",
-    "UserStatsVariant",
-    "UserStats",
-    "UserAccountHistoryType",
     "UserRankHighest",
-    "ManiaStatsVariantsType",
+    "UserRankHistoryElement",
+    "UserStats",
+    "UserStatsVariant",
 )
 
 

@@ -33,8 +33,8 @@ from .binary import unpack_timestamp
 __all__ = (
     "parse_file",
     "parse_path",
-    "write_replay",
     "write_path",
+    "write_replay",
 )
 
 

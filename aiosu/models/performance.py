@@ -8,11 +8,11 @@ import abc
 from .base import BaseModel
 
 __all__ = (
-    "PerformanceAttributes",
-    "OsuPerformanceAttributes",
-    "TaikoPerformanceAttributes",
-    "ManiaPerformanceAttributes",
     "CatchPerformanceAttributes",
+    "ManiaPerformanceAttributes",
+    "OsuPerformanceAttributes",
+    "PerformanceAttributes",
+    "TaikoPerformanceAttributes",
 )
 
 

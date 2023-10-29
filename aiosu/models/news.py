@@ -12,9 +12,9 @@ from .common import CursorModel
 
 
 __all__ = (
-    "NewsPost",
     "Navigation",
     "NewsListing",
+    "NewsPost",
     "NewsSearch",
     "NewsSortType",
 )

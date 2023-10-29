@@ -26,10 +26,10 @@ if TYPE_CHECKING:
 
 
 __all__ = [
+    "CatchPerformanceCalculator",
+    "ManiaPerformanceCalculator",
     "OsuPerformanceCalculator",
     "TaikoPerformanceCalculator",
-    "ManiaPerformanceCalculator",
-    "CatchPerformanceCalculator",
 ]
 
 OSU_BASE_MULTIPLIER = 1.14

@@ -18,12 +18,12 @@ from ..score import ScoreStatistics
 
 
 __all__ = (
-    "MatchTeam",
-    "MatchScoringType",
-    "MatchTeamType",
-    "MatchScore",
-    "MatchGame",
     "Match",
+    "MatchGame",
+    "MatchScore",
+    "MatchScoringType",
+    "MatchTeam",
+    "MatchTeamType",
 )
 
 

@@ -14,10 +14,10 @@ if TYPE_CHECKING:
     from ..models.score import Score
 
 __all__ = [
+    "CatchAccuracyCalculator",
+    "ManiaAccuracyCalculator",
     "OsuAccuracyCalculator",
     "TaikoAccuracyCalculator",
-    "ManiaAccuracyCalculator",
-    "CatchAccuracyCalculator",
 ]
 
 

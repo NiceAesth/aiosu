@@ -20,8 +20,8 @@ __all__ = (
     "events",
     "exceptions",
     "helpers",
-    "utils",
     "models",
+    "utils",
     "v1",
     "v2",
 )
