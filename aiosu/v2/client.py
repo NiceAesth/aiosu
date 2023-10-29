@@ -25,6 +25,7 @@ from ..events import ClientUpdateEvent
 from ..events import Eventable
 from ..exceptions import APIException
 from ..helpers import add_param
+from ..helpers import append_param
 from ..helpers import from_list
 from ..models import ArtistResponse
 from ..models import Beatmap
@@ -1336,7 +1337,6 @@ class Client(Eventable):
     @requires_scope(Scopes.PUBLIC)
     async def search_beatmapsets(
         self,
-        search_filter: Optional[str] = "",
         **kwargs: Any,
     ) -> BeatmapsetSearchResponse:
         r"""Search beatmapset by filter.
@@ -1347,6 +1347,36 @@ class Client(Eventable):
             See below
 
         :Keyword Arguments:
+            * *query* (``str``) --
+                Optional, search query
+            * *mode* (``aiosu.models.gamemode.Gamemode``) --
+                Optional, gamemode to search for
+            * *category* (``aiosu.models.beatmap.BeatmapsetCategory``) --
+                Optional, beatmapset category
+            * *show_explicit* (``bool``) --
+                Optional, whether to show explicit content, defaults to ``False``
+            * *genre* (``aiosu.models.beatmap.BeatmapsetGenre``) --
+                Optional, beatmapset genre
+            * *language* (``aiosu.models.beatmap.BeatmapsetLanguage``) --
+                Optional, beatmapset language
+            * *bundled* (``aiosu.models.beatmap.BeatmapsetBundleFilterType``) --
+                Optional, filter by bundled status. Currently not implemented
+            * *sort* (``aiosu.models.beatmap.BeatmapsetSortType``) --
+                Optional, sort order
+            * *only_video* (``bool``) --
+                Optional, whether to only show beatmapsets with video, defaults to ``False``
+            * *only_storyboard* (``bool``) --
+                Optional, whether to only show beatmapsets with storyboard, defaults to ``False``
+            * *recommended_difficulty* (``bool``) --
+                Optional, whether to only show beatmapsets with recommended difficulty, defaults to ``False``
+            * *only_followed* (``bool``) --
+                Optional, whether to only show beatmapsets from followed mappers, defaults to ``False``
+            * *only_spotlights* (``bool``) --
+                Optional, whether to only show beatmapsets were featured in spotlights, defaults to ``False``
+            * *only_featured_artists* (``bool``) --
+                Optional, whether to only show beatmapsets were featured artists, defaults to ``False``
+            * *include_converts* (``bool``) --
+                Optional, whether to include converted beatmapsets, defaults to ``False``
             * *cursor_string* (``str``) --
                 Optional, cursor string to get the next page of results
 
@@ -1354,9 +1384,50 @@ class Client(Eventable):
         :return: Beatmapset search response
         :rtype: list[aiosu.models.beatmap.BeatmapsetSearchResponse]
         """
-        url = f"{self.base_url}/api/v2/beatmapsets/search/{search_filter}"
+        url = f"{self.base_url}/api/v2/beatmapsets/search"
         params: dict[str, object] = {}
-        add_param(params, kwargs, key="cursor_string")
+        extras: list[str] = []
+        general: list[str] = []
+
+        append_param("video", extras, kwargs.pop("only_video", False))
+        append_param("storyboard", extras, kwargs.pop("only_storyboard", False))
+
+        append_param(
+            "recommended",
+            general,
+            kwargs.pop("recommended_difficulty", False),
+        )
+        append_param("follows", general, kwargs.pop("only_followed", False))
+        append_param("spotlights", general, kwargs.pop("only_spotlights", False))
+        append_param(
+            "featured_artists",
+            general,
+            kwargs.pop("only_featured_artists", False),
+        )
+        append_param("converts", general, kwargs.pop("include_converts", False))
+
+        extras_str = ".".join(extras)
+        general_str = ".".join(general)
+        if extras_str:
+            params["e"] = extras_str
+        if general_str:
+            params["c"] = general_str
+
+        add_param(params, kwargs, key="query", param_name="q")
+        add_param(
+            params,
+            kwargs,
+            key="mode",
+            param_name="m",
+            converter=lambda x: str(Gamemode(x)),
+        )
+        add_param(params, kwargs, key="category", param_name="s")
+        add_param(params, kwargs, key="show_explicit", param_name="nsfw")
+        add_param(params, kwargs, key="genre", param_name="g")
+        add_param(params, kwargs, key="language", param_name="l")
+        add_param(params, kwargs, key="bundled")
+        add_param(params, kwargs, key="sort")
+        add_param(params, kwargs, key="cursor_string", param_name="cursor")
         json = await self._request("GET", url)
         resp = BeatmapsetSearchResponse.model_validate(json)
         if resp.cursor_string:
