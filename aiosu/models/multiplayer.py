@@ -7,6 +7,7 @@ from collections.abc import Mapping
 from datetime import datetime
 from typing import Literal
 from typing import Optional
+from typing import Union
 
 from pydantic import Field
 from pydantic import model_validator
@@ -17,11 +18,13 @@ from .common import CursorModel
 from .gamemode import Gamemode
 from .lazer import LazerMod
 from .lazer import LazerScoreStatistics
+from .mods import Mods
 from .user import User
 
 __all__ = (
     "MultiplayerEvent",
     "MultiplayerEventType",
+    "MultiplayerGame",
     "MultiplayerLeaderboardItem",
     "MultiplayerLeaderboardResponse",
     "MultiplayerMatch",
@@ -37,8 +40,12 @@ __all__ = (
     "MultiplayerScoreSortType",
     "MultiplayerScoresAround",
     "MultiplayerScoresResponse",
+    "MultiplayerScoringType",
+    "MultiplayerTeamType",
 )
 
+MultiplayerScoringType = Literal["score", "accuracy", "combo", "scorev2"]
+MultiplayerTeamType = Literal["head-to-head", "tag-coop", "team-vs", "tag-team-vs"]
 MultiplayerScoreSortType = Literal["score_asc", "score_desc"]
 MultiplayerEventType = Literal[
     "match-created",
@@ -67,20 +74,20 @@ class MultiplayerScoresAround(BaseModel):
 
 
 class MultiplayerScore(BaseModel):
-    id: int
     user_id: int
-    room_id: int
-    playlist_item_id: int
-    beatmap_id: int
     rank: str
-    total_score: int
     accuracy: float
     max_combo: int
-    mods: list[LazerMod]
+    mods: list[Union[Mods, LazerMod]]
     passed: bool
-    user: User
     statistics: LazerScoreStatistics
+    id: Optional[int] = None
+    room_id: Optional[int] = None
+    user: Optional[User] = None
+    beatmap_id: Optional[int] = None
+    playlist_item_id: Optional[int] = None
     position: Optional[int] = None
+    total_score: Optional[int] = None
     scores_around: Optional[MultiplayerScoresAround] = None
 
 
@@ -97,11 +104,25 @@ class MultiplayerMatch(BaseModel):
     end_time: Optional[datetime] = None
 
 
+class MultiplayerGame(BaseModel):
+    id: int
+    start_time: datetime
+    mode: Gamemode
+    scoring_type: MultiplayerScoringType
+    team_type: MultiplayerTeamType
+    mods: list[Union[Mods, LazerMod]]
+    beatmap_id: int
+    scores: list[MultiplayerScore]
+    beatmap: Optional[Beatmap] = None
+    end_time: Optional[datetime] = None
+
+
 class MultiplayerEvent(BaseModel):
     id: int
     timestamp: datetime
     type: MultiplayerEventType
     user_id: Optional[int] = None
+    game: Optional[MultiplayerGame] = None
 
     @model_validator(mode="before")
     @classmethod
@@ -179,6 +200,3 @@ class MultiplayerRoomsResponse(CursorModel):
     """Currently unused. Relevant for api-version >= 99999999"""
 
     rooms: list[MultiplayerRoom]
-
-
-MultiplayerScoresAround.model_rebuild()

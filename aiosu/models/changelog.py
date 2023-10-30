@@ -92,7 +92,3 @@ class ChangelogListing(CursorModel):
     builds: list[Build]
     search: ChangelogSearch
     streams: list[UpdateStream]
-
-
-Version.model_rebuild()
-UpdateStream.model_rebuild()

@@ -56,6 +56,3 @@ class NewsListing(CursorModel):
     news_posts: list[NewsPost]
     search: NewsSearch
     news_sidebar: NewsSidebar
-
-
-Navigation.model_rebuild()
