@@ -265,9 +265,23 @@ class UserStats(BaseModel):
         )
 
 
+class UserStatsRulesets(BaseModel):
+    osu: Optional[UserStats] = None
+    taiko: Optional[UserStats] = None
+    fruits: Optional[UserStats] = None
+    mania: Optional[UserStats] = None
+
+
 class UserAchievmement(BaseModel):
     achieved_at: datetime
     achievement_id: int
+
+
+class UserRelation(BaseModel):
+    target_id: int
+    relation_type: str
+    mutual: bool
+    target: Optional[User] = None
 
 
 class User(BaseModel):
@@ -308,24 +322,29 @@ class User(BaseModel):
     badges: Optional[list[UserBadge]] = None
     beatmap_playcounts_count: Optional[int] = None
     favourite_beatmapset_count: Optional[int] = None
+    follow_user_mapping: Optional[list[int]] = None
     follower_count: Optional[int] = None
+    friends: Optional[list[UserRelation]] = None
     graveyard_beatmapset_count: Optional[int] = None
     groups: Optional[list[UserGroup]] = None
     loved_beatmapset_count: Optional[int] = None
+    mapping_follower_count: Optional[int] = None
     monthly_playcounts: Optional[list[TimestampedCount]] = None
     page: Optional[HTMLBody] = None
     pending_beatmapset_count: Optional[int] = None
     previous_usernames: Optional[list[str]] = None
+    rank_highest: Optional[UserRankHighest] = None
+    rank_history: Optional[UserRankHistoryElement] = None
     ranked_beatmapset_count: Optional[int] = None
     replays_watched_counts: Optional[list[TimestampedCount]] = None
     scores_best_count: Optional[int] = None
     scores_first_count: Optional[int] = None
     scores_recent_count: Optional[int] = None
     statistics: Optional[UserStats] = None
+    statistics_rulesets: Optional[UserStatsRulesets] = None
     support_level: Optional[int] = None
+    unread_pm_count: Optional[int] = None
     user_achievements: Optional[list[UserAchievmement]] = None
-    rank_history: Optional[UserRankHistoryElement] = None
-    rank_highest: Optional[UserRankHighest] = None
 
     @computed_field  # type: ignore
     @property
@@ -347,3 +366,4 @@ class User(BaseModel):
 
 
 UserStats.model_rebuild()
+UserRelation.model_rebuild()

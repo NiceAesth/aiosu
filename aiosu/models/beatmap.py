@@ -435,12 +435,16 @@ class Beatmapset(BaseModel):
     tags: Optional[str] = None
     pack_tags: Optional[list[str]] = None
     track_id: Optional[int] = None
+    user: Optional[User] = None
     related_users: Optional[list[User]] = None
     current_user_attributes: Optional[CurrentUserAttributes] = None
     description: Optional[BeatmapDescription] = None
     genre: Optional[BeatmapGenre] = None
     language: Optional[BeatmapLanguage] = None
     ratings: Optional[list[int]] = None
+    recent_favourites: Optional[list[User]] = None
+    discussions: Optional[list[BeatmapsetDiscussion]] = None
+    events: Optional[list[BeatmapsetEvent]] = None
     has_favourited: Optional[bool] = None
     beatmaps: Optional[list[Beatmap]] = None
     converts: Optional[list[Beatmap]] = None
