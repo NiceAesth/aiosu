@@ -199,6 +199,3 @@ class MultiplayerRoomsResponse(CursorModel):
     """Currently unused. Relevant for api-version >= 99999999"""
 
     rooms: list[MultiplayerRoom]
-
-
-MultiplayerScoresAround.model_rebuild()

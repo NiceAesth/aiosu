@@ -365,7 +365,3 @@ class User(BaseModel):
                 "statistics": UserStats._from_api_v1(data),
             },
         )
-
-
-UserStats.model_rebuild()
-UserRelation.model_rebuild()

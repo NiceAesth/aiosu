@@ -629,6 +629,3 @@ class BeatmapsetDiscussionVoteResponse(CursorModel):
     votes: list[BeatmapsetVoteEvent]
     discussions: list[BeatmapsetDiscussion]
     users: list[User]
-
-
-Beatmap.model_rebuild()
