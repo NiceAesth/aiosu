@@ -38,7 +38,9 @@ __all__ = (
     "UserQueryType",
     "UserRankHighest",
     "UserRankHistoryElement",
+    "UserRelation",
     "UserStats",
+    "UserStatsRulesets",
     "UserStatsVariant",
 )
 
