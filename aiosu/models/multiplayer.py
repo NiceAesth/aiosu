@@ -7,6 +7,7 @@ from collections.abc import Mapping
 from datetime import datetime
 from typing import Literal
 from typing import Optional
+from typing import Union
 
 from pydantic import Field
 from pydantic import model_validator
@@ -77,7 +78,7 @@ class MultiplayerScore(BaseModel):
     rank: str
     accuracy: float
     max_combo: int
-    mods: list[Mods | LazerMod]
+    mods: list[Union[Mods, LazerMod]]
     passed: bool
     statistics: LazerScoreStatistics
     id: Optional[int] = None
@@ -109,7 +110,7 @@ class MultiplayerGame(BaseModel):
     mode: Gamemode
     scoring_type: MultiplayerScoringType
     team_type: MultiplayerTeamType
-    mods: list[Mods | LazerMod]
+    mods: list[Union[Mods, LazerMod]]
     beatmap_id: int
     scores: list[MultiplayerScore]
     beatmap: Optional[Beatmap] = None
