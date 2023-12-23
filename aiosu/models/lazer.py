@@ -114,6 +114,8 @@ class LazerReplayData(BaseModel):
     mods: list[LazerMod]
     statistics: LazerScoreStatistics
     maximum_statistics: LazerScoreStatistics
+    online_id: Optional[int] = None
+    client_version: Optional[str] = None
 
 
 class LazerScore(BaseModel):
