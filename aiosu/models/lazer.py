@@ -69,7 +69,11 @@ class LazerMod(BaseModel):
 
 
 class LazerScoreStatistics(BaseModel):
-    """Relevant information: https://github.com/ppy/osu/blob/master/osu.Game/Rulesets/Scoring/HitResult.cs https://github.com/ppy/osu-web/blob/master/resources/js/interfaces/solo-score-json.ts"""
+    """Relevant information:
+
+    https://github.com/ppy/osu/blob/master/osu.Game/Rulesets/Scoring/HitResult.cs
+    https://github.com/ppy/osu-web/blob/master/resources/js/interfaces/solo-score-json.ts
+    """
 
     miss: int = 0
     meh: int = 0
