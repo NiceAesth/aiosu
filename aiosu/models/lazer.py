@@ -69,20 +69,24 @@ class LazerMod(BaseModel):
 
 
 class LazerScoreStatistics(BaseModel):
-    ok: int = 0
-    meh: int = 0
+    """Relevant information: https://github.com/ppy/osu/blob/master/osu.Game/Rulesets/Scoring/HitResult.cs https://github.com/ppy/osu-web/blob/master/resources/js/interfaces/solo-score-json.ts"""
+
     miss: int = 0
-    great: int = 0
-    ignore_hit: int = 0
-    ignore_miss: int = 0
-    large_bonus: int = 0
-    large_tick_hit: int = 0
-    large_tick_miss: int = 0
-    small_bonus: int = 0
-    small_tick_hit: int = 0
-    small_tick_miss: int = 0
+    meh: int = 0
+    ok: int = 0
     good: int = 0
+    great: int = 0
     perfect: int = 0
+    small_tick_miss: int = 0
+    small_tick_hit: int = 0
+    large_tick_miss: int = 0
+    large_tick_hit: int = 0
+    small_bonus: int = 0
+    large_bonus: int = 0
+    ignore_miss: int = 0
+    ignore_hit: int = 0
+    combo_break: int = 0
+    slider_tail_hit: int = 0
     legacy_combo_increase: int = 0
 
     @property

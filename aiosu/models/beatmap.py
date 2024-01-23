@@ -626,7 +626,7 @@ class BeatmapsetEventComment(BaseModel):
 class BeatmapsetEvent(BaseModel):
     id: int
     type: BeatmapsetEventType
-    r"""Information on types: https://github.com/ppy/osu-web/blob/master/resources/assets/lib/interfaces/beatmapset-event-json.ts"""
+    r"""Information on types: https://github.com/ppy/osu-web/blob/master/resources/js/interfaces/beatmapset-event-json.ts"""
     created_at: datetime
     user_id: int
     beatmapset: Optional[Beatmapset] = None
