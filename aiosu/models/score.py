@@ -105,10 +105,10 @@ class ScoreWeight(BaseModel):
 
 
 class ScoreStatistics(BaseModel):
+    count_miss: int
     count_50: int
     count_100: int
     count_300: int
-    count_miss: int
     count_geki: int
     count_katu: int
 
