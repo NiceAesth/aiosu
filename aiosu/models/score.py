@@ -210,13 +210,6 @@ class Score(BaseModel):
 
         return calculate_score_completion(self.mode, self.statistics, self.beatmap)
 
-    @model_validator(mode="before")
-    @classmethod
-    def _fail_rank(cls, values: dict[str, object]) -> dict[str, object]:
-        if not values["passed"]:
-            values["rank"] = "F"
-        return values
-
     async def request_beatmap(self, client: v1.Client) -> None:
         r"""For v1 Scores: requests the beatmap from the API and sets it.
 

@@ -33,8 +33,8 @@ __all__ = (
     "MultiplayerQueueMode",
     "MultiplayerRoom",
     "MultiplayerRoomCategory",
+    "MultiplayerRoomGroupType",
     "MultiplayerRoomMode",
-    "MultiplayerRoomTypeGroup",
     "MultiplayerRoomsResponse",
     "MultiplayerScore",
     "MultiplayerScoreSortType",
@@ -64,7 +64,7 @@ MultiplayerEventType = Literal[
 ]
 MultiplayerRoomMode = Literal["owned", "participated", "ended"]
 MultiplayerRoomCategory = Literal["normal", "spotlight", "featured_artist"]
-MultiplayerRoomTypeGroup = Literal["playlists", "realtime"]
+MultiplayerRoomGroupType = Literal["playlists", "realtime"]
 MultiplayerQueueMode = Literal["host_only", "all_players", "all_players_round_robin"]
 
 
@@ -163,7 +163,7 @@ class MultiplayerRoom(BaseModel):
     id: int
     name: str
     category: MultiplayerRoomCategory
-    type: MultiplayerRoomTypeGroup
+    type: MultiplayerRoomGroupType
     user_id: int
     channel_id: int
     active: bool

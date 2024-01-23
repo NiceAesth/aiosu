@@ -212,10 +212,3 @@ class LazerScore(BaseModel):
     @cached_property
     def mods_str(self) -> str:
         return "".join(str(mod) for mod in self.mods)
-
-    @model_validator(mode="before")
-    @classmethod
-    def _fail_rank(cls, values: dict[str, object]) -> dict[str, object]:
-        if not values["passed"]:
-            values["rank"] = "F"
-        return values

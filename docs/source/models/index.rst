@@ -49,11 +49,23 @@ Beatmap
     :undoc-members:
     :inherited-members: BaseModel
 
+.. autodata:: aiosu.models.beatmap.BeatmapsetCategory
+
 .. autodata:: aiosu.models.beatmap.BeatmapsetDisscussionType
 
 .. autodata:: aiosu.models.beatmap.BeatmapsetEventType
 
 .. autodata:: aiosu.models.beatmap.BeatmapsetRequestStatus
+
+.. autodata:: aiosu.models.beatmap.BeatmapsetBundleFilterType
+
+.. autodata:: aiosu.models.beatmap.BeatmapsetSortType
+
+.. autodata:: aiosu.models.beatmap.BeatmapsetGenre
+
+.. autodata:: aiosu.models.beatmap.BeatmapsetLanguage
+
+.. autodata:: aiosu.models.beatmap.BeatmapsetDiscussionVoteScoreType
 
 .. autodata:: aiosu.models.beatmap.UserBeatmapType
 
@@ -136,7 +148,7 @@ Multiplayer
 
 .. autodata:: aiosu.models.multiplayer.MultiplayerRoomCategory
 
-.. autodata:: aiosu.models.multiplayer.MultiplayerRoomTypeGroup
+.. autodata:: aiosu.models.multiplayer.MultiplayerRoomGroupType
 
 .. autodata:: aiosu.models.multiplayer.MultiplayerQueueMode
 
