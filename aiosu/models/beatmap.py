@@ -40,15 +40,20 @@ __all__ = (
     "BeatmapRankStatus",
     "BeatmapUserPlaycount",
     "Beatmapset",
+    "BeatmapsetBundleFilterType",
+    "BeatmapsetCategory",
     "BeatmapsetDiscussion",
     "BeatmapsetDiscussionPost",
     "BeatmapsetDiscussionPostResponse",
     "BeatmapsetDiscussionResponse",
     "BeatmapsetDiscussionVoteResponse",
+    "BeatmapsetDiscussionVoteScoreType",
     "BeatmapsetDisscussionType",
     "BeatmapsetEvent",
     "BeatmapsetEventComment",
     "BeatmapsetEventType",
+    "BeatmapsetGenre",
+    "BeatmapsetLanguage",
     "BeatmapsetRequestStatus",
     "BeatmapsetSearchResponse",
     "BeatmapsetSortType",
@@ -71,6 +76,19 @@ BeatmapsetSortType = Literal[
     "plays_desc",
     "favourites_asc",
     "favourites_desc",
+]
+
+BeatmapsetCategory = Literal[
+    "any",
+    "leaderboard",
+    "ranked",
+    "qualified",
+    "loved",
+    "favourites",
+    "pending",
+    "wip",
+    "graveyard",
+    "mine",
 ]
 
 BeatmapsetBundleFilterType = Literal[
@@ -128,6 +146,11 @@ BeatmapsetRequestStatus = Literal[
     "never_ranked",
 ]
 
+BeatmapsetDiscussionVoteScoreType = Literal[
+    "1",
+    "-1",
+]
+
 UserBeatmapType = Literal["favourite", "graveyard", "loved", "ranked", "pending"]
 
 BEATMAP_RANK_STATUS_NAMES = {
@@ -139,6 +162,49 @@ BEATMAP_RANK_STATUS_NAMES = {
     3: "qualified",
     4: "loved",
 }
+
+
+@unique
+class BeatmapsetGenre(Enum):
+    UNSPECIFIED = 1
+    VIDEO_GAME = 2
+    ANIME = 3
+    ROCK = 4
+    POP = 5
+    OTHER = 6
+    NOVELTY = 7
+    HIP_HOP = 9
+    ELECTRONIC = 10
+    METAL = 11
+    CLASSICAL = 12
+    FOLK = 13
+    JAZZ = 14
+
+    @classmethod
+    def _missing_(cls, _: object) -> BeatmapsetGenre:
+        return BeatmapsetGenre.UNSPECIFIED
+
+
+@unique
+class BeatmapsetLanguage(Enum):
+    UNSPECIFIED = 1
+    ENGLISH = 2
+    JAPANESE = 3
+    CHINESE = 4
+    INSTRUMENTAL = 5
+    KOREAN = 6
+    FRENCH = 7
+    GERMAN = 8
+    SWEDISH = 9
+    SPANISH = 10
+    ITALIAN = 11
+    RUSSIAN = 12
+    POLISH = 13
+    OTHER = 14
+
+    @classmethod
+    def _missing_(cls, _: object) -> BeatmapsetLanguage:
+        return BeatmapsetLanguage.UNSPECIFIED
 
 
 @unique
@@ -560,7 +626,7 @@ class BeatmapsetEventComment(BaseModel):
 class BeatmapsetEvent(BaseModel):
     id: int
     type: BeatmapsetEventType
-    r"""Information on types: https://github.com/ppy/osu-web/blob/master/resources/assets/lib/interfaces/beatmapset-event-json.ts"""
+    r"""Information on types: https://github.com/ppy/osu-web/blob/master/resources/js/interfaces/beatmapset-event-json.ts"""
     created_at: datetime
     user_id: int
     beatmapset: Optional[Beatmapset] = None

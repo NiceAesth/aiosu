@@ -138,20 +138,25 @@ class Client:
         :Keyword Arguments:
             * *mode* (``aiosu.models.gamemode.Gamemode``) --
                 Optional, gamemode to search for, defaults to standard
-            * *qtype* (``str``) --
+            * *qtype* (``aiosu.models.user.UserQueryType``) --
                 Optional, "string" or "id". Type of the user_query
-            * *event_days* (``aiosu.models.gamemode.Gamemode``) --
+            * *event_days* (``int``) --
                 Optional, max number of days since last event, Min: 1, Max: 31, defaults to 1
 
+        :raises ValueError: If event_days is not between 1 and 31
         :raises APIException: Contains status code and error message
         :return: Requested user
         :rtype: list[aiosu.models.user.User]
         """
         url = f"{self.base_url}/api/get_user"
+        if not 1 <= (event_days := kwargs.pop("limit", 1)) <= 31:
+            raise ValueError(
+                "Invalid event_days specified. Limit must be between 1 and 31",
+            )
         params = {
             "k": self.token,
             "u": user_query,
-            "event_days": kwargs.pop("event_days", 1),
+            "event_days": event_days,
             "m": int(Gamemode(kwargs.pop("mode", 0))),
         }
         add_param(
@@ -186,7 +191,7 @@ class Client:
                 Optional, gamemode to search for, defaults to standard
             * *limit* (``int``) --
                 Optional, number of scores to get, defaults to 10
-            * *qtype* (``str``) --
+            * *qtype* (``aiosu.models.user.UserQueryType``) --
                 Optional, "string" or "id". Type of the user_query
 
         :raises ValueError: If request_type is invalid
@@ -234,7 +239,7 @@ class Client:
                 Optional, gamemode to search for, defaults to standard
             * *limit* (``int``) --
                 Optional, number of scores to get, Min: 1, Max: 50, defaults to 50
-            * *qtype* (``str``) --
+            * *qtype* (``aiosu.models.user.UserQueryType``) --
                 Optional, "string" or "id". Type of the user_query
 
         :raises ValueError: If limit is not between 1 and 50
@@ -263,7 +268,7 @@ class Client:
                 Optional, gamemode to search for, defaults to standard
             * *limit* (``int``) --
                 Optional, number of scores to get, Min: 1, Max: 100, defaults to 100
-            * *qtype* (``str``) --
+            * *qtype* (``aiosu.models.user.UserQueryType``) --
                 Optional, "string" or "id". Type of the user_query
 
         :raises ValueError: If limit is not between 1 and 100
@@ -300,7 +305,7 @@ class Client:
                 Optional, The MD5 hash of the beatmap
             * *user_query* (``Union[str, int]``) --
                 Optional, username or ID to search by
-            * *qtype* (``str``) --
+            * *qtype* (``aiosu.models.user.UserQueryType``) --
                 Optional, "string" or "id". Type of the user_query
 
         :raises ValueError: If limit is not between 1 and 500
@@ -356,7 +361,7 @@ class Client:
                 Optional, number of scores to get, Min: 1, Max: 100, defaults to 100
             * *user_query* (``Union[str, int]``) --
                 Optional, username or ID to search by
-            * *qtype* (``str``) --
+            * *qtype* (``aiosu.models.user.UserQueryType``) --
                 Optional, "string" or "id". Type of the user_query
 
         :raises ValueError: If limit is not between 1 and 100
@@ -421,7 +426,7 @@ class Client:
                 Optional, the ID of the beatmap, specified together with user_query
             * *user_query* (``Union[str, int]``) --
                 Optional, username or ID to search by, specified together with beatmap_id
-            * *qtype* (``str``) --
+            * *qtype* (``aiosu.models.user.UserQueryType``) --
                 Optional, "string" or "id". Type of the user_query
 
         :raises ValueError: If neither score_id nor beatmap_id + user_id specified

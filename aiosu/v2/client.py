@@ -170,8 +170,8 @@ class Client(Eventable):
         See below
 
     :Keyword Arguments:
-        * *token_repository* (``aiosu.v2.repository.BaseTokenRepository``) --
-            Optional, defaults to ``aiosu.v2.repository.SimpleTokenRepository()``
+        * *token_repository* (``aiosu.v2.repository.oauthtoken.BaseTokenRepository``) --
+            Optional, defaults to instance of ``aiosu.v2.repository.oauthtoken.SimpleTokenRepository``
         * *session_id* (``int``) --
             Optional, ID of the session to search in the repository, defaults to 0
         * *client_id* (``int``) --
@@ -463,8 +463,8 @@ class Client(Eventable):
             See below
 
         :Keyword Arguments:
-            * *message_formats* (``list[str]``) --
-                Optional, the message formats to return.
+            * *message_formats* (``list[aiosu.models.changelog.ChangelogMessageFormat]``) --
+                Optional, message formats to get, defaults to ``["html", "markdown"]``
             * *from* (``str``) --
                 Optional, the start date to return.
             * *to* (``str``) --
@@ -526,7 +526,7 @@ class Client(Eventable):
         :Keyword Arguments:
             * *is_id* (``bool``) --
                 Optional, whether the query is an ID or not, defaults to ``True`` if the query is an int
-            * *message_formats* (``list[aiosu.models.news.ChangelogMessageFormats]``) --
+            * *message_formats* (``list[aiosu.models.changelog.ChangelogMessageFormat]``) --
                 Optional, message formats to get, defaults to ``["html", "markdown"]``
 
         :raises APIException: Contains status code and error message
@@ -663,7 +663,7 @@ class Client(Eventable):
                 Optional, commentable ID to get comments from
             * *parent_id* (``int``) --
                 Optional, parent ID to get comments from
-            * *sort* (aiosu.models.comment.CommentSortType) --
+            * *sort* (``aiosu.models.comment.CommentSortType``) --
                 Optional, sort order of comments, defaults to ``"new"``
             * *cursor_string* (``str``) --
                 Optional, cursor string to get the next page of comments
@@ -769,7 +769,7 @@ class Client(Eventable):
         :Keyword Arguments:
             * *mode* (``aiosu.models.gamemode.Gamemode``) --
                 Optional, gamemode to search for
-            * *qtype* (``str``) --
+            * *qtype* (``aiosu.models.user.UserQueryType``) --
                 Optional, "string" or "id". Type of the user_query
 
         :raises APIException: Contains status code and error message
@@ -872,7 +872,7 @@ class Client(Eventable):
         :raises ValueError: If type is invalid
         :raises APIException: Contains status code and error message
         :return: List of requested scores
-        :rtype: list[aiosu.models.score.Score] or list[aiosu.models.score.LazerScore]
+        :rtype: list[aiosu.models.score.Score] or list[aiosu.models.lazer.LazerScore]
         """
         if not 1 <= (limit := kwargs.pop("limit", 100)) <= 100:
             raise ValueError("Invalid limit specified. Limit must be between 1 and 100")
@@ -922,7 +922,7 @@ class Client(Eventable):
 
         :raises APIException: Contains status code and error message
         :return: List of requested scores
-        :rtype: list[aiosu.models.score.Score] or list[aiosu.models.score.LazerScore]
+        :rtype: list[aiosu.models.score.Score] or list[aiosu.models.lazer.LazerScore]
         """
         return await self.__get_type_scores(user_id, "recent", **kwargs)
 
@@ -950,7 +950,7 @@ class Client(Eventable):
 
         :raises APIException: Contains status code and error message
         :return: List of requested scores
-        :rtype: list[aiosu.models.score.Score] or list[aiosu.models.score.LazerScore]
+        :rtype: list[aiosu.models.score.Score] or list[aiosu.models.lazer.LazerScore]
         """
         return await self.__get_type_scores(user_id, "best", **kwargs)
 
@@ -978,7 +978,7 @@ class Client(Eventable):
 
         :raises APIException: Contains status code and error message
         :return: List of requested scores
-        :rtype: list[aiosu.models.score.Score] or list[aiosu.models.score.LazerScore]
+        :rtype: list[aiosu.models.score.Score] or list[aiosu.models.lazer.LazerScore]
         """
         return await self.__get_type_scores(user_id, "firsts", **kwargs)
 
@@ -1006,7 +1006,7 @@ class Client(Eventable):
 
         :raises APIException: Contains status code and error message
         :return: List of requested scores
-        :rtype: list[aiosu.models.score.Score] or list[aiosu.models.score.LazerScore]
+        :rtype: list[aiosu.models.score.Score] or list[aiosu.models.lazer.LazerScore]
         """
         return await self.__get_type_scores(user_id, "pinned", **kwargs)
 
@@ -1555,7 +1555,7 @@ class Client(Eventable):
                 Optional, message types
             * *only_unresolved* (``bool``) --
                 Optional, only unresolved discussions
-            * *sort* (``aiosu.models.common.SortTypes``) --
+            * *sort* (``aiosu.models.common.SortType``) --
                 Optional, sort order, defaults to ``id_desc``
             * *user_id* (``int``) --
                 Optional, user ID
@@ -1607,7 +1607,7 @@ class Client(Eventable):
                 Optional, number of results per page
             * *page* (``int``) --
                 Optional, page number
-            * *sort* (``aiosu.models.common.SortTypes``) --
+            * *sort* (``aiosu.models.common.SortType``) --
                 Optional, sort order, defaults to ``id_desc``
             * *types* (``list[str]``) --
                 Optional, post types
@@ -1660,9 +1660,9 @@ class Client(Eventable):
                 Optional, page number
             * *receiver_id* (``int``) --
                 Optional, receiver ID
-            * *score* (``aiosu.models.beatmap.BeatmapsetDiscussionVoteScore``) --
-                Optional, vote score
-            * *sort* (``aiosu.models.common.SortTypes``) --
+            * *score* (``aiosu.models.beatmap.BeatmapsetDiscussionVoteScoreType``) --
+                Optional, "1" for upvote, "-1" for downvote
+            * *sort* (``aiosu.models.common.SortType``) --
                 Optional, sort order, defaults to ``id_desc``
             * *user_id* (``int``) --
                 Optional, user ID
@@ -1841,7 +1841,7 @@ class Client(Eventable):
         :Keyword Arguments:
             * *limit* (``int``) --
                 Optional, the number of posts to return. Min: 1, Max: 50, defaults to 20
-            * *sort* (``aiosu.models.common.SortTypes``) --
+            * *sort* (``aiosu.models.common.SortType``) --
                 Optional, the sort type to use. Defaults to ``id_asc``
             * *start* (``int``) --
                 Optional, the start post ID to use for pagination.
@@ -1963,18 +1963,18 @@ class Client(Eventable):
     @prepare_token
     @check_token
     @requires_scope(Scopes.FORUM_WRITE)
-    async def edit_forum_topic_title(self, topid_id: int, new_title: str) -> ForumTopic:
+    async def edit_forum_topic_title(self, topic_id: int, new_title: str) -> ForumTopic:
         r"""Edits a forum topic's title.
 
-        :param topid_id: The ID of the topic
-        :type topid_id: int
+        :param topic_id: The ID of the topic
+        :type topic_id: int
         :param new_title: The new title of the topic
         :type new_title: str
         :raises APIException: Contains status code and error message
         :return: Forum topic object
         :rtype: aiosu.models.forum.ForumTopic
         """
-        url = f"{self.base_url}/api/v2/forums/topics/{topid_id}/title"
+        url = f"{self.base_url}/api/v2/forums/topics/{topic_id}/title"
         data: dict[str, dict[str, str]] = {
             "forum_topic": {
                 "topic_title": new_title,
@@ -2050,7 +2050,7 @@ class Client(Eventable):
                 Optional, the channel ID to get messages from
             * *silence_id_since* (``int``) --
                 Optional, the last silence ID received
-            * *includes* (``list[aiosu.models.chat.ChatIncludeTypes]``) --
+            * *includes* (``list[aiosu.models.chat.ChatIncludeType]``) --
                 Optional, the additional information to include. Defaults to all.
 
         :raises ValueError: If limit is not between 1 and 50
@@ -2331,7 +2331,7 @@ class Client(Eventable):
             See below
 
         :Keyword Arguments:
-            * *sort* (``aiosu.models.common.SortTypes``) --
+            * *sort* (``aiosu.models.common.SortType``) --
                 Optional, the sort type
             * *limit* (``int``) --
                 Optional, number of scores to get. Min: 1, Max: 50, defaults to 50
@@ -2411,12 +2411,12 @@ class Client(Eventable):
                 Optional, the multiplayer room mode
             * *limit* (``int``) --
                 Optional, number of scores to get. Min: 1, Max: 50, defaults to 50
-            * *sort* (``aiosu.models.common.SortTypes``) --
+            * *sort* (``aiosu.models.common.SortType``) --
                 Optional, the sort type
-            * *category* (``aiosu.models.multiplayer.MultiplayerRoomCategories``) --
+            * *category* (``aiosu.models.multiplayer.MultiplayerRoomCategory``) --
                 Optional, the multiplayer room category
-            * *type* (``aiosu.models.multiplayer.MultiplayerRoomTypeGroups``) --
-                Optional, the multiplayer room type group
+            * *type* (``aiosu.models.multiplayer.MultiplayerRoomGroupType``) --
+                Optional, the multiplayer room group type
 
         :raises ValueError: If limit is not between 1 and 50
         :raises APIException: Contains status code and error message

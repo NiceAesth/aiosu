@@ -37,8 +37,8 @@ class ClientStorage(Eventable):
         See below
 
     :Keyword Arguments:
-        * *token_repository* (``BaseTokenRepository``) --
-            Optional, defaults to ``aiosu.v2.repository.SimpleTokenRepository()``
+        * *token_repository* (``aiosu.v2.repository.oauthtoken.BaseTokenRepository``) --
+            Optional, defaults to instance of ``aiosu.v2.repository.oauthtoken.SimpleTokenRepository``
         * *client_secret* (``str``)
         * *client_id* (``int``)
         * *base_url* (``str``) --
@@ -163,7 +163,7 @@ class ClientStorage(Eventable):
         r"""Adds a client to storage.
 
         :param token: The token object of the client
-        :type token: aiosu.models.OAuthToken
+        :type token: aiosu.models.oauthtoken.OAuthToken
         :param \**kwargs:
             See below
 
