@@ -152,9 +152,15 @@ def requires_scope(
             token = await self.get_current_token()
             if any_scope:
                 if not (required_scopes & token.scopes):
-                    raise APIException(403, "Missing required scopes.")
+                    raise APIException(
+                        403,
+                        f"Missing required scopes. Required: '{required_scopes}', Got: '{token.scopes}'",
+                    )
             elif required_scopes & token.scopes != required_scopes:
-                raise APIException(403, "Missing required scopes.")
+                raise APIException(
+                    403,
+                    f"Missing required scopes. Required: '{required_scopes}', Got: '{token.scopes}'",
+                )
 
             return await func(self, *args, **kwargs)
 
