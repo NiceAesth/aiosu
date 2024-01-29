@@ -58,8 +58,7 @@ class TestGeneratorBase(ABC):
         )
 
     @abstractmethod
-    def _register_routes(self) -> None:
-        ...
+    def _register_routes(self) -> None: ...
 
     def _ensure_dir(self, path: str) -> None:
         if not os.path.exists(path):

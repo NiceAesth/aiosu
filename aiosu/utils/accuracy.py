@@ -45,13 +45,11 @@ def get_calculator(mode: Gamemode) -> type[AbstractAccuracyCalculator]:
 class AbstractAccuracyCalculator(abc.ABC):
     @staticmethod
     @abc.abstractmethod
-    def calculate(score: Score) -> float:
-        ...
+    def calculate(score: Score) -> float: ...
 
     @staticmethod
     @abc.abstractmethod
-    def calculate_weighted(score: Score) -> float:
-        ...
+    def calculate_weighted(score: Score) -> float: ...
 
 
 class OsuAccuracyCalculator(AbstractAccuracyCalculator):

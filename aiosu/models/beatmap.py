@@ -433,9 +433,9 @@ class Beatmap(BaseModel):
             id = values["id"]
             beatmapset_id = values["beatmapset_id"]
             mode = Gamemode(values["mode"])
-            values[
-                "url"
-            ] = f"https://osu.ppy.sh/beatmapsets/{beatmapset_id}#{mode}/{id}"
+            values["url"] = (
+                f"https://osu.ppy.sh/beatmapsets/{beatmapset_id}#{mode}/{id}"
+            )
         return values
 
     @classmethod

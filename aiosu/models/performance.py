@@ -38,5 +38,4 @@ class ManiaPerformanceAttributes(PerformanceAttributes):
     difficulty: float
 
 
-class CatchPerformanceAttributes(PerformanceAttributes):
-    ...
+class CatchPerformanceAttributes(PerformanceAttributes): ...

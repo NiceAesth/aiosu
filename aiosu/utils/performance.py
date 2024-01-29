@@ -37,8 +37,8 @@ TAIKO_BASE_MULTIPLIER = 1.13
 MANIA_BASE_MULTIPLIER = 8.0
 CATCH_BASE_MULTIPLIER = 1.0
 
-clamp: Callable[[float, float, float], float] = (
-    lambda x, l, u: l if x < l else u if x > u else x
+clamp: Callable[[float, float, float], float] = lambda x, l, u: (
+    l if x < l else u if x > u else x
 )
 
 
@@ -49,8 +49,7 @@ class AbstractPerformanceCalculator(abc.ABC):
         self.difficulty_attributes = difficulty_attributes
 
     @abc.abstractmethod
-    def calculate(self, score: Score) -> PerformanceAttributes:
-        ...
+    def calculate(self, score: Score) -> PerformanceAttributes: ...
 
 
 def get_calculator(mode: Gamemode) -> type[AbstractPerformanceCalculator]:
