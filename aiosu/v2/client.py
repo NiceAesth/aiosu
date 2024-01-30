@@ -1173,6 +1173,8 @@ class Client(Eventable):
             See below
 
         :Keyword Arguments:
+            * *legacy_only* (``bool``) --
+                Optional, whether to only get legacy scores, defaults to ``False``
             * *mode* (``aiosu.models.gamemode.Gamemode``) --
                 Optional, gamemode to search for
             * *mods* (``aiosu.models.mods.Mods``) --
@@ -1186,6 +1188,7 @@ class Client(Eventable):
         """
         url = f"{self.base_url}/api/v2/beatmaps/{beatmap_id}/scores"
         params: dict[str, object] = {}
+        add_param(params, kwargs, key="legacy_only", converter=int)
         add_param(params, kwargs, key="mode", converter=lambda x: str(Gamemode(x)))
         add_param(
             params,
