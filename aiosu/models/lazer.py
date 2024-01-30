@@ -140,7 +140,7 @@ class LazerScore(BaseModel):
     statistics: LazerScoreStatistics
     total_score: int
     user_id: int
-    replay: bool
+    has_replay: bool
     type: ScoreType
     current_user_attributes: CurrentUserAttributes
     beatmap: Beatmap
@@ -164,8 +164,9 @@ class LazerScore(BaseModel):
         return self.total_score
 
     @property
-    def has_replay(self) -> bool:
-        return self.replay
+    def replay(self) -> bool:
+        """Legacy shortcut for has_replay."""
+        return self.has_replay
 
     @property
     def score_url(self) -> Optional[str]:
@@ -189,7 +190,7 @@ class LazerScore(BaseModel):
         :return: Link to download the replay on the osu! website
         :rtype: Optional[str]
         """
-        if not self.replay:
+        if not self.has_replay:
             return None
         return (
             f"https://osu.ppy.sh/scores/{self.mode.name_api}/{self.best_id}/download"
