@@ -178,9 +178,9 @@ class LazerScore(BaseModel):
         if (not self.id and not self.best_id) or not self.passed:
             return None
         return (
-            f"https://osu.ppy.sh/scores/{self.mode.name_api}/{self.best_id}"
-            if self.best_id
-            else f"https://osu.ppy.sh/scores/{self.id}"
+            f"https://osu.ppy.sh/scores/{self.id}"
+            if self.type == "solo_score"
+            else f"https://osu.ppy.sh/scores/{self.mode.name_api}/{self.best_id}"
         )
 
     @property
@@ -192,11 +192,10 @@ class LazerScore(BaseModel):
         """
         if not self.has_replay:
             return None
-        return (
-            f"https://osu.ppy.sh/scores/{self.mode.name_api}/{self.best_id}/download"
-            if self.best_id
-            else f"https://osu.ppy.sh/scores/{self.id}/download"
-        )
+        score_url = self.score_url
+        if not score_url:
+            return None
+        return score_url + "/download"
 
     @computed_field  # type: ignore
     @cached_property
