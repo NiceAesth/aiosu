@@ -171,7 +171,7 @@ class Score(BaseModel):
         :return: Link to the score on the osu! website
         :rtype: Optional[str]
         """
-        if (not self.id and not self.best_id) or not self.passed:
+        if not self.id:
             return None
         return (
             f"https://osu.ppy.sh/scores/{self.id}"
