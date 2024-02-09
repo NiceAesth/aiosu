@@ -13,7 +13,7 @@ async def main():
     # regular syntax
     client = aiosu.v1.Client("osu api token")
     user = await client.get_user(7782553)
-    await client.close()
+    await client.aclose()
 
 
 if __name__ == "__main__":

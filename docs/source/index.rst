@@ -36,6 +36,8 @@ If you need assistance, you should look here:
 Breaking changes
 ----------------
 
+**v2.2.0:** The `close()` methods of the clients are now named `aclose()` as per naming conventions for asynchronous methods. The old method is still available with a deprecation warning, but will be removed on 2024-03-01.
+
 **v2.0.3:** The replay model has been moved to `models/files/replay.py` and the `Replay` class has been renamed to `ReplayFile`.
 
 **v2.0.0:** The library now uses *Pydantic v2*. This means that the following changes have occured:

@@ -25,7 +25,7 @@ async def main():
     cs = aiosu.v2.ClientStorage(client_secret="secret", client_id=1000)
     client = await cs.add_client(token=token)
     user = await client.get_me()
-    await cs.close()
+    await cs.aclose()
 
     # client credentials example
     app_client = await cs.app_client

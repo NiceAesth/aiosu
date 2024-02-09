@@ -24,6 +24,7 @@ from aiolimiter import AsyncLimiter
 from ..events import ClientUpdateEvent
 from ..events import Eventable
 from ..exceptions import APIException
+from ..exceptions import RefreshTokenExpiredError
 from ..helpers import add_param
 from ..helpers import append_param
 from ..helpers import from_list
@@ -129,7 +130,13 @@ def check_token(func: F) -> F:
     async def _check_token(self: Client, *args: Any, **kwargs: Any) -> object:
         token = await self.get_current_token()
         if datetime.utcnow().timestamp() > token.expires_on.timestamp():
-            await self._refresh()
+            try:
+                await self._refresh()
+            except APIException:
+                await self._delete_token()
+                raise RefreshTokenExpiredError(
+                    "Refresh token has expired. Please re-authenticate.",
+                )
         return await func(self, *args, **kwargs)
 
     return cast(F, _check_token)
@@ -245,7 +252,7 @@ class Client(Eventable):
         exc: Optional[BaseException],
         traceback: Optional[TracebackType],
     ) -> None:
-        await self.close()
+        await self.aclose()
 
     def on_client_update(
         self,
@@ -710,6 +717,7 @@ class Client(Eventable):
                 Optional, page to get, ignored if mode is ``all``
 
         :raises APIException: Contains status code and error message
+        :raises RefreshTokenExpiredError: If the client refresh token has expired
         :return: Search response object
         :rtype: aiosu.models.search.SearchResponse
         """
@@ -736,6 +744,7 @@ class Client(Eventable):
                 Optional, gamemode to search for
 
         :raises APIException: Contains status code and error message
+        :raises RefreshTokenExpiredError: If the client refresh token has expired
         :return: Requested user
         :rtype: aiosu.models.user.User
         """
@@ -754,6 +763,7 @@ class Client(Eventable):
         r"""Gets the token owner's friend list
 
         :raises APIException: Contains status code and error message
+        :raises RefreshTokenExpiredError: If the client refresh token has expired
         :return: List of friends
         :rtype: list[aiosu.models.user.User]
         """
@@ -779,6 +789,7 @@ class Client(Eventable):
                 Optional, "string" or "id". Type of the user_query
 
         :raises APIException: Contains status code and error message
+        :raises RefreshTokenExpiredError: If the client refresh token has expired
         :return: Requested user
         :rtype: aiosu.models.user.User
         """
@@ -806,6 +817,7 @@ class Client(Eventable):
         :param user_ids: The IDs of the users
         :type user_ids: list[int]
         :raises APIException: Contains status code and error message
+        :raises RefreshTokenExpiredError: If the client refresh token has expired
         :return: List of user data objects
         :rtype: list[aiosu.models.user.User]
         """
@@ -834,6 +846,7 @@ class Client(Eventable):
                 Optional, offset of the first score to get
 
         :raises APIException: Contains status code and error message
+        :raises RefreshTokenExpiredError: If the client refresh token has expired
         :return: List of kudosu history objects
         :rtype: list[aiosu.models.kudosu.KudosuHistory]
         """
@@ -877,6 +890,7 @@ class Client(Eventable):
         :raises ValueError: If limit is not between 1 and 100
         :raises ValueError: If type is invalid
         :raises APIException: Contains status code and error message
+        :raises RefreshTokenExpiredError: If the client refresh token has expired
         :return: List of requested scores
         :rtype: list[aiosu.models.score.Score] or list[aiosu.models.lazer.LazerScore]
         """
@@ -927,6 +941,7 @@ class Client(Eventable):
                 Optional, whether to use the new format, defaults to ``False``
 
         :raises APIException: Contains status code and error message
+        :raises RefreshTokenExpiredError: If the client refresh token has expired
         :return: List of requested scores
         :rtype: list[aiosu.models.score.Score] or list[aiosu.models.lazer.LazerScore]
         """
@@ -955,6 +970,7 @@ class Client(Eventable):
                 Optional, whether to use the new format, defaults to ``False``
 
         :raises APIException: Contains status code and error message
+        :raises RefreshTokenExpiredError: If the client refresh token has expired
         :return: List of requested scores
         :rtype: list[aiosu.models.score.Score] or list[aiosu.models.lazer.LazerScore]
         """
@@ -983,6 +999,7 @@ class Client(Eventable):
                 Optional, whether to use the new format, defaults to ``False``
 
         :raises APIException: Contains status code and error message
+        :raises RefreshTokenExpiredError: If the client refresh token has expired
         :return: List of requested scores
         :rtype: list[aiosu.models.score.Score] or list[aiosu.models.lazer.LazerScore]
         """
@@ -1011,6 +1028,7 @@ class Client(Eventable):
                 Optional, whether to use the new format, defaults to ``False``
 
         :raises APIException: Contains status code and error message
+        :raises RefreshTokenExpiredError: If the client refresh token has expired
         :return: List of requested scores
         :rtype: list[aiosu.models.score.Score] or list[aiosu.models.lazer.LazerScore]
         """
@@ -1039,6 +1057,7 @@ class Client(Eventable):
                 Optional, gamemode to search for
 
         :raises APIException: Contains status code and error message
+        :raises RefreshTokenExpiredError: If the client refresh token has expired
         :return: List of requested scores
         :rtype: list[aiosu.models.score.Score]
         """
@@ -1073,6 +1092,7 @@ class Client(Eventable):
                 Optional, offset of the first beatmap to get
 
         :raises APIException: Contains status code and error message
+        :raises RefreshTokenExpiredError: If the client refresh token has expired
         :return: List of requested beatmaps
         :rtype: list[aiosu.models.beatmap.Beatmap]
         """
@@ -1105,6 +1125,7 @@ class Client(Eventable):
                 Optional, offset of the first beatmap to get
 
         :raises APIException: Contains status code and error message
+        :raises RefreshTokenExpiredError: If the client refresh token has expired
         :return: List of user playcount objects
         :rtype: list[aiosu.models.beatmap.BeatmapUserPlaycount]
         """
@@ -1137,6 +1158,7 @@ class Client(Eventable):
                 Optional, offset of the first event to get
 
         :raises APIException: Contains status code and error message
+        :raises RefreshTokenExpiredError: If the client refresh token has expired
         :return: List of events
         :rtype: list[aiosu.models.event.Event]
         """
@@ -1154,6 +1176,7 @@ class Client(Eventable):
         r"""Get global events.
 
         :raises APIException: Contains status code and error message
+        :raises RefreshTokenExpiredError: If the client refresh token has expired
         :return: Event response object
         :rtype: aiosu.models.event.EventResponse
         """
@@ -1183,6 +1206,7 @@ class Client(Eventable):
                 Optional, beatmap score ranking type
 
         :raises APIException: Contains status code and error message
+        :raises RefreshTokenExpiredError: If the client refresh token has expired
         :return: List of requested scores
         :rtype: list[aiosu.models.score.Score]
         """
@@ -1209,6 +1233,7 @@ class Client(Eventable):
         :param beatmap_id: The ID of the beatmap
         :type beatmap_id: int
         :raises APIException: Contains status code and error message
+        :raises RefreshTokenExpiredError: If the client refresh token has expired
         :return: Beatmap data object
         :rtype: aiosu.models.beatmap.Beatmap
         """
@@ -1225,6 +1250,7 @@ class Client(Eventable):
         :param beatmap_ids: The IDs of the beatmaps
         :type beatmap_ids: list[int]
         :raises APIException: Contains status code and error message
+        :raises RefreshTokenExpiredError: If the client refresh token has expired
         :return: List of beatmap data objects
         :rtype: list[aiosu.models.beatmap.Beatmap]
         """
@@ -1254,6 +1280,7 @@ class Client(Eventable):
 
         :raises ValueError: If no arguments are specified
         :raises APIException: Contains status code and error message
+        :raises RefreshTokenExpiredError: If the client refresh token has expired
         :return: Beatmap data object
         :rtype: aiosu.models.beatmap.Beatmap
         """
@@ -1289,6 +1316,7 @@ class Client(Eventable):
                 Optional, mods to apply to the result
 
         :raises APIException: Contains status code and error message
+        :raises RefreshTokenExpiredError: If the client refresh token has expired
         :return: Difficulty attributes for a beatmap
         :rtype: aiosu.models.beatmap.BeatmapDifficultyAttributes
         """
@@ -1314,6 +1342,7 @@ class Client(Eventable):
         :param beatmapset_id: The ID of the beatmapset
         :type beatmapset_id: int
         :raises APIException: Contains status code and error message
+        :raises RefreshTokenExpiredError: If the client refresh token has expired
         :return: Beatmapset data object
         :rtype: aiosu.models.beatmap.Beatmapset
         """
@@ -1331,6 +1360,7 @@ class Client(Eventable):
         :type beatmap_id: int
 
         :raises APIException: Contains status code and error message
+        :raises RefreshTokenExpiredError: If the client refresh token has expired
         :return: Beatmapset data object
         :rtype: aiosu.models.beatmap.Beatmapset
         """
@@ -1390,6 +1420,7 @@ class Client(Eventable):
                 Optional, cursor string to get the next page of results
 
         :raises APIException: Contains status code and error message
+        :raises RefreshTokenExpiredError: If the client refresh token has expired
         :return: Beatmapset search response
         :rtype: list[aiosu.models.beatmap.BeatmapsetSearchResponse]
         """
@@ -1460,6 +1491,7 @@ class Client(Eventable):
                 Optional, cursor string to get the next page of results
 
         :raises APIException: Contains status code and error message
+        :raises RefreshTokenExpiredError: If the client refresh token has expired
         :return: Beatmap packs response
         :rtype: aiosu.models.beatmap.BeatmapPacksResponse
         """
@@ -1489,6 +1521,7 @@ class Client(Eventable):
         :type pack_tag: str
 
         :raises APIException: Contains status code and error message
+        :raises RefreshTokenExpiredError: If the client refresh token has expired
         :return: Beatmap pack object
         :rtype: aiosu.models.beatmap.BeatmapPack
         """
@@ -1522,6 +1555,7 @@ class Client(Eventable):
                 Optional, event types
 
         :raises APIException: Contains status code and error message
+        :raises RefreshTokenExpiredError: If the client refresh token has expired
         :return: List of beatmapset events
         :rtype: list[aiosu.models.event.Event]
         """
@@ -1574,6 +1608,7 @@ class Client(Eventable):
                 Optional, cursor string
 
         :raises APIException: Contains status code and error message
+        :raises RefreshTokenExpiredError: If the client refresh token has expired
         :return: Beatmapset discussion response
         :rtype: aiosu.models.beatmap.BeatmapsetDiscussionResponse
         """
@@ -1628,6 +1663,7 @@ class Client(Eventable):
                 Optional, cursor string
 
         :raises APIException: Contains status code and error message
+        :raises RefreshTokenExpiredError: If the client refresh token has expired
         :return: Beatmapset discussion post response
         :rtype: aiosu.models.beatmap.BeatmapsetDiscussionPostResponse
         """
@@ -1681,6 +1717,7 @@ class Client(Eventable):
                 Optional, cursor string
 
         :raises APIException: Contains status code and error message
+        :raises RefreshTokenExpiredError: If the client refresh token has expired
         :return: Beatmapset discussion vote response
         :rtype: aiosu.models.beatmap.BeatmapsetDiscussionVoteResponse
         """
@@ -1718,6 +1755,7 @@ class Client(Eventable):
         :type mode: aiosu.models.gamemode.Gamemode
 
         :raises APIException: Contains status code and error message
+        :raises RefreshTokenExpiredError: If the client refresh token has expired
         :return: Score data object
         :rtype: aiosu.models.score.Score
         """
@@ -1742,6 +1780,7 @@ class Client(Eventable):
         :type mode: aiosu.models.gamemode.Gamemode
 
         :raises APIException: Contains status code and error message
+        :raises RefreshTokenExpiredError: If the client refresh token has expired
         :return: Replay file
         :rtype: io.BytesIO
         """
@@ -1779,6 +1818,7 @@ class Client(Eventable):
                 Optional, cursor string
 
         :raises APIException: Contains status code and error message
+        :raises RefreshTokenExpiredError: If the client refresh token has expired
         :return: Rankings
         :rtype: aiosu.models.rankings.Rankings
         """
@@ -1810,6 +1850,7 @@ class Client(Eventable):
                 Optional, page ID
 
         :raises APIException: Contains status code and error message
+        :raises RefreshTokenExpiredError: If the client refresh token has expired
         :return: Rankings
         :rtype: aiosu.models.rankings.Rankings
         """
@@ -1829,6 +1870,7 @@ class Client(Eventable):
         r"""Gets the current spotlights.
 
         :raises APIException: Contains status code and error message
+        :raises RefreshTokenExpiredError: If the client refresh token has expired
         :return: List of spotlights
         :rtype: list[aiosu.models.spotlight.Spotlight]
         """
@@ -1860,6 +1902,7 @@ class Client(Eventable):
                 Optional, the cursor string to use for pagination.
 
         :raises APIException: Contains status code and error message
+        :raises RefreshTokenExpiredError: If the client refresh token has expired
         :return: Forum topic response object
         :rtype: aiosu.models.forum.ForumTopicResponse
         """
@@ -1919,6 +1962,7 @@ class Client(Eventable):
                 Optional, the maximum number of votes a user can make. Defaults to 1
 
         :raises APIException: Contains status code and error message
+        :raises RefreshTokenExpiredError: If the client refresh token has expired
         :return: Forum create topic response object
         :rtype: aiosu.models.forum.ForumCreateTopicResponse
         """
@@ -1959,6 +2003,7 @@ class Client(Eventable):
         :param content: The content of the post
         :type content: str
         :raises APIException: Contains status code and error message
+        :raises RefreshTokenExpiredError: If the client refresh token has expired
         :return: Forum post object
         :rtype: aiosu.models.forum.ForumPost
         """
@@ -1980,6 +2025,7 @@ class Client(Eventable):
         :param new_title: The new title of the topic
         :type new_title: str
         :raises APIException: Contains status code and error message
+        :raises RefreshTokenExpiredError: If the client refresh token has expired
         :return: Forum topic object
         :rtype: aiosu.models.forum.ForumTopic
         """
@@ -2003,6 +2049,7 @@ class Client(Eventable):
         :param new_content: The new content of the post
         :type new_content: str
         :raises APIException: Contains status code and error message
+        :raises RefreshTokenExpiredError: If the client refresh token has expired
         :return: Forum post object
         :rtype: aiosu.models.forum.ForumPost
         """
@@ -2030,6 +2077,7 @@ class Client(Eventable):
                 Optional, the last silence ID received
 
         :raises APIException: Contains status code and error message
+        :raises RefreshTokenExpiredError: If the client refresh token has expired
         :return: List of chat user silence objects
         :rtype: list[aiosu.models.chat.ChatUserSilence]
         """
@@ -2064,6 +2112,7 @@ class Client(Eventable):
 
         :raises ValueError: If limit is not between 1 and 50
         :raises APIException: Contains status code and error message
+        :raises RefreshTokenExpiredError: If the client refresh token has expired
         :return: Chat update response object
         :rtype: aiosu.models.chat.ChatUpdateResponse
         """
@@ -2090,6 +2139,7 @@ class Client(Eventable):
         :param channel_id: The channel ID to get
         :type channel_id: int
         :raises APIException: Contains status code and error message
+        :raises RefreshTokenExpiredError: If the client refresh token has expired
         :return: Chat channel object
         :rtype: aiosu.models.chat.ChatChannelResponse
         """
@@ -2105,6 +2155,7 @@ class Client(Eventable):
         r"""Gets a list of joinable public channels.
 
         :raises APIException: Contains status code and error message
+        :raises RefreshTokenExpiredError: If the client refresh token has expired
         :return: List of chat channel objects
         :rtype: list[aiosu.models.chat.ChatChannel]
         """
@@ -2138,6 +2189,7 @@ class Client(Eventable):
 
         :raises ValueError: If limit is not between 1 and 50
         :raises APIException: Contains status code and error message
+        :raises RefreshTokenExpiredError: If the client refresh token has expired
         :return: List of chat message objects
         :rtype: list[aiosu.models.chat.ChatMessage]
         """
@@ -2182,6 +2234,7 @@ class Client(Eventable):
 
         :raises ValueError: If missing required parameters
         :raises APIException: Contains status code and error message
+        :raises RefreshTokenExpiredError: If the client refresh token has expired
         :return: Chat channel object
         :rtype: aiosu.models.chat.ChatChannel
         """
@@ -2218,6 +2271,7 @@ class Client(Eventable):
         :param user_id: The user ID to join as
         :type user_id: int
         :raises APIException: Contains status code and error message
+        :raises RefreshTokenExpiredError: If the client refresh token has expired
         :return: Chat channel object
         :rtype: aiosu.models.chat.ChatChannel
         """
@@ -2237,6 +2291,7 @@ class Client(Eventable):
         :param user_id: The user ID to leave as
         :type user_id: int
         :raises APIException: Contains status code and error message
+        :raises RefreshTokenExpiredError: If the client refresh token has expired
         """
         url = f"{self.base_url}/api/v2/chat/channels/{channel_id}/users/{user_id}"
         await self._request("DELETE", url)
@@ -2253,6 +2308,7 @@ class Client(Eventable):
         :param message_id: The message ID to mark as read up to
         :type message_id: int
         :raises APIException: Contains status code and error message
+        :raises RefreshTokenExpiredError: If the client refresh token has expired
         """
         url = f"{self.base_url}/api/v2/chat/channels/{channel_id}/mark-as-read/{message_id}"
         await self._request("PUT", url)
@@ -2276,6 +2332,7 @@ class Client(Eventable):
         :param is_action: Whether the message is an action
         :type is_action: bool
         :raises APIException: Contains status code and error message
+        :raises RefreshTokenExpiredError: If the client refresh token has expired
         :return: Chat message object
         :rtype: aiosu.models.chat.ChatMessage
         """
@@ -2314,6 +2371,7 @@ class Client(Eventable):
                 Optional, client-side message identifier to be sent back in response and websocket json
 
         :raises APIException: Contains status code and error message
+        :raises RefreshTokenExpiredError: If the client refresh token has expired
         :return: Chat message create response object
         :rtype: aiosu.models.chat.ChatMessageCreateResponse
         """
@@ -2349,6 +2407,7 @@ class Client(Eventable):
 
         :raises ValueError: If limit is not between 1 and 50
         :raises APIException: Contains status code and error message
+        :raises RefreshTokenExpiredError: If the client refresh token has expired
         :return: Multiplayer matches response object
         :rtype: aiosu.models.multiplayer.MultiplayerMatchesResponse
         """
@@ -2391,6 +2450,7 @@ class Client(Eventable):
 
         :raises ValueError: If limit is not between 1 and 100
         :raises APIException: Contains status code and error message
+        :raises RefreshTokenExpiredError: If the client refresh token has expired
         :return: Multiplayer match response object
         :rtype: aiosu.models.multiplayer.MultiplayerMatchResponse
         """
@@ -2429,6 +2489,7 @@ class Client(Eventable):
 
         :raises ValueError: If limit is not between 1 and 50
         :raises APIException: Contains status code and error message
+        :raises RefreshTokenExpiredError: If the client refresh token has expired
         :return: List of multiplayer rooms
         :rtype: list[aiosu.models.multiplayer.MultiplayerRoom]
         """
@@ -2457,6 +2518,7 @@ class Client(Eventable):
         :type room_id: int
 
         :raises APIException: Contains status code and error message
+        :raises RefreshTokenExpiredError: If the client refresh token has expired
         :return: Multiplayer room object
         :rtype: aiosu.models.multiplayer.MultiplayerRoom
         """
@@ -2486,6 +2548,7 @@ class Client(Eventable):
 
         :raises ValueError: If limit is not between 1 and 50
         :raises APIException: Contains status code and error message
+        :raises RefreshTokenExpiredError: If the client refresh token has expired
         :return: Multiplayer leaderboard response object
         :rtype: aiosu.models.multiplayer.MultiplayerLeaderboardResponse
         """
@@ -2526,6 +2589,7 @@ class Client(Eventable):
 
         :raises ValueError: If limit is not between 1 and 100
         :raises APIException: Contains status code and error message
+        :raises RefreshTokenExpiredError: If the client refresh token has expired
         :return: Multiplayer scores response object
         :rtype: aiosu.models.multiplayer.MultiplayerScoresResponse
         """
@@ -2555,14 +2619,23 @@ class Client(Eventable):
         r"""Revokes the current token and closes the session.
 
         :raises APIException: Contains status code and error message
+        :raises RefreshTokenExpiredError: If the client refresh token has expired
         """
         url = f"{self.base_url}/api/v2/oauth/tokens/current"
         await self._request("DELETE", url)
         await self._delete_token()
-        await self.close()
+        await self.aclose()
 
-    async def close(self) -> None:
+    async def aclose(self) -> None:
         """Closes the client session."""
         if self._session:
             await self._session.close()
             self._session = None
+
+    async def close(self) -> None:
+        """Closes the client session. (Deprecated)"""
+        warn(
+            "close is deprecated, use aclose instead. Will be removed on 2024-03-01",
+            DeprecationWarning,
+        )
+        await self.aclose()

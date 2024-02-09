@@ -25,7 +25,7 @@ async def main():
     # regular syntax
     client = aiosu.v2.Client(client_secret="secret", client_id=1000, token=token)
     user = await client.get_me()
-    await client.close()
+    await client.aclose()
 
     # client credentials example
     app_client = aiosu.v2.Client(

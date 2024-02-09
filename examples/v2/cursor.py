@@ -12,7 +12,7 @@ async def main():
 
     discussions_next = await discussions.next()
 
-    await client.close()
+    await client.aclose()
 
 
 if __name__ == "__main__":

@@ -99,7 +99,7 @@ class Client:
         exc: Optional[BaseException],
         traceback: Optional[TracebackType],
     ) -> None:
-        await self.close()
+        await self.aclose()
 
     async def _request(
         self,
@@ -475,8 +475,16 @@ class Client:
         data = await self._request("GET", url)
         return StringIO(data)
 
-    async def close(self) -> None:
+    async def aclose(self) -> None:
         """Closes the client session."""
         if self._session:
             await self._session.close()
             self._session = None
+
+    async def close(self) -> None:
+        """Closes the client session. (Deprecated)"""
+        warn(
+            "close is deprecated, use aclose instead. Will be removed on 2024-03-01",
+            DeprecationWarning,
+        )
+        await self.aclose()
