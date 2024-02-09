@@ -177,11 +177,12 @@ class LazerScore(BaseModel):
         """
         if not self.id:
             return None
-        return (
-            f"https://osu.ppy.sh/scores/{self.id}"
-            if self.type == "solo_score"
-            else f"https://osu.ppy.sh/scores/{self.mode.name_api}/{self.best_id}"
-        )
+        if self.type == "solo_score":
+            return f"https://osu.ppy.sh/scores/{self.id}"
+
+        if not self.best_id:  # Legacy URL format
+            return None
+        return f"https://osu.ppy.sh/scores/{self.mode.name_api}/{self.best_id}"
 
     @property
     def replay_url(self) -> Optional[str]:
