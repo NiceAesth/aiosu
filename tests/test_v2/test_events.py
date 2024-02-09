@@ -56,7 +56,7 @@ class TestEvents:
         await client_storage.add_client(token=token)
 
         assert decorated.times_called == 1
-        await client_storage.close()
+        await client_storage.aclose()
 
     @pytest.mark.asyncio
     async def test_cs_update_client(self, mocker, token, token_expired, user):
@@ -78,7 +78,7 @@ class TestEvents:
         user = await client.get_me()
 
         assert decorated.times_called == 1
-        await client_storage.close()
+        await client_storage.aclose()
 
     @pytest.mark.asyncio
     async def test_update_client(self, mocker, token, token_expired, user):
@@ -100,4 +100,4 @@ class TestEvents:
         user = await client.get_me()
 
         assert decorated.times_called == 1
-        await client.close()
+        await client.aclose()

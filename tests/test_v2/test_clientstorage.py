@@ -34,7 +34,7 @@ class TestClientStorage:
         client_2 = await client_storage.get_client(id=client_1.session_id)
 
         assert client_1 == client_2
-        await client_storage.close()
+        await client_storage.aclose()
 
     @pytest.mark.asyncio
     async def test_add_client(self, mocker, token, user):
@@ -46,7 +46,7 @@ class TestClientStorage:
         client_2 = await client_storage.get_client(id=client_1.session_id)
 
         assert client_1 == client_2
-        await client_storage.close()
+        await client_storage.aclose()
 
     @pytest.mark.asyncio
     async def test_revoke_client(self, mocker, token, user):
@@ -67,4 +67,4 @@ class TestClientStorage:
         with pytest.raises(aiosu.exceptions.InvalidClientRequestedError):
             await client_storage.get_client(id=client.session_id)
 
-        await client_storage.close()
+        await client_storage.aclose()

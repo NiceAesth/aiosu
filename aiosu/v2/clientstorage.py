@@ -9,6 +9,7 @@ from typing import Callable
 from typing import cast
 from typing import TYPE_CHECKING
 from typing import TypeVar
+from warnings import warn
 
 from . import Client
 from ..events import ClientAddEvent
@@ -79,7 +80,7 @@ class ClientStorage(Eventable):
         exc: Optional[BaseException],
         traceback: Optional[TracebackType],
     ) -> None:
-        await self.close()
+        await self.aclose()
 
     def on_client_add(self, func: F) -> F:
         """
@@ -232,7 +233,12 @@ class ClientStorage(Eventable):
             "No client exists with the given ID.",
         )
 
-    async def close(self) -> None:
+    async def aclose(self) -> None:
         r"""Closes all client sessions."""
         for client in self.clients.values():
-            await client.close()
+            await client.aclose()
+
+    async def close(self) -> None:
+        """Closes the client session. (Deprecated)"""
+        warn("close is deprecated, use aclose instead", DeprecationWarning)
+        await self.aclose()

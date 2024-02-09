@@ -57,7 +57,7 @@ API v1 Example
        # regular syntax
        client = aiosu.v1.Client("osu api token")
        user = await client.get_user(7782553)
-       await client.close()
+       await client.aclose()
 
 
    if __name__ == "__main__":
@@ -95,7 +95,7 @@ API v2 Example
         # regular syntax
         client = aiosu.v2.Client(client_secret="secret", client_id=1000, token=token)
         user = await client.get_me()
-        await client.close()
+        await client.aclose()
 
 
     if __name__ == "__main__":

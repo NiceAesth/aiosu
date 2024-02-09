@@ -3,7 +3,7 @@ This module contains custom exception types.
 """
 from __future__ import annotations
 
-__all__ = ("APIException",)
+__all__ = ("APIException", "InvalidClientRequestedError", "RefreshTokenExpiredError")
 
 
 class APIException(Exception):
@@ -18,6 +18,17 @@ class APIException(Exception):
     def __init__(self, status: int, message: str = "") -> None:
         super().__init__(message)
         self.status = status
+
+
+class RefreshTokenExpiredError(Exception):
+    """Refresh Token Expired Error
+
+    :param message: error message, defaults to ""
+    :type message: str, optional
+    """
+
+    def __init__(self, message: str = "") -> None:
+        super().__init__(message)
 
 
 class InvalidClientRequestedError(Exception):

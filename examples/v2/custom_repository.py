@@ -92,7 +92,7 @@ async def main():
     )
     client = await cs.add_client(token=token)
     user = await client.get_me()
-    await cs.close()
+    await cs.aclose()
 
     # note: you can also use a custom repo on a client by passing repository and session_id. if the repo does not contain the token, it will be added from the token passed to the client.
     # client = aiosu.v2.Client(

@@ -168,7 +168,7 @@ class TestGeneratorV1(TestGeneratorBase):
     async def run(self) -> None:
         self.client._session = aiohttp.ClientSession()
         await super().run()
-        await self.client.close()
+        await self.client.aclose()
 
 
 class TestGeneratorV2(TestGeneratorBase):
@@ -733,7 +733,7 @@ class TestGeneratorV2(TestGeneratorBase):
                         params={"ruleset_id": score["mode_int"]},
                     )
 
-        await self.client.close()
+        await self.client.aclose()
 
 
 async def main() -> None:
