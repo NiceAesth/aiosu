@@ -483,5 +483,8 @@ class Client:
 
     async def close(self) -> None:
         """Closes the client session. (Deprecated)"""
-        warn("close is deprecated, use aclose instead", DeprecationWarning)
+        warn(
+            "close is deprecated, use aclose instead. Will be removed on 2024-03-01",
+            DeprecationWarning,
+        )
         await self.aclose()
