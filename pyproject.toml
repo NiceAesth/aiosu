@@ -59,7 +59,7 @@ types-toml = "^0.10.8.1"
 sphinx = "^7.0.0"
 furo = "^2023.5.20"
 pytest-cov = "^4.0.0"
-black = { version = "^23.0.0", allow-prereleases = true }
+black = { version = "^24.0.0", allow-prereleases = true }
 pre-commit = "^3.2.2"
 python-dotenv = "^1.0.0"
 
