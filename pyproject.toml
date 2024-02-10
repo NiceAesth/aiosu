@@ -45,7 +45,7 @@ pytest-asyncio = { version = "^0.23.5", optional = true }
 pytest-mock = { version = "^3.10.0", optional = true }
 toml = { version = "^0.10.2", optional = true }
 sphinx = { version = "^7.0.0", optional = true }
-furo = { version = "^2023.5.20", optional = true }
+furo = { version = "^2024.0.0", optional = true }
 types-toml = { version = "^0.10.8.1", optional = true }
 pyjwt = "^2.6.0"
 
@@ -57,7 +57,7 @@ mypy = "^1.0"
 toml = "^0.10.2"
 types-toml = "^0.10.8.1"
 sphinx = "^7.0.0"
-furo = "^2023.5.20"
+furo = "^2024.0.0"
 pytest-cov = "^4.0.0"
 black = { version = "^24.0.0", allow-prereleases = true }
 pre-commit = "^3.2.2"
