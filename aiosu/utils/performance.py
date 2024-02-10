@@ -1,12 +1,13 @@
 """
 This module contains performance point calculators for osu! gamemodes.
 """
+
 from __future__ import annotations
 
 import abc
 import math
-from typing import Callable
 from typing import TYPE_CHECKING
+from typing import Callable
 
 from ..models import CatchPerformanceAttributes
 from ..models import Gamemode
@@ -20,9 +21,9 @@ from .accuracy import OsuAccuracyCalculator
 from .accuracy import TaikoAccuracyCalculator
 
 if TYPE_CHECKING:
-    from ..models.score import Score
     from ..models.beatmap import BeatmapDifficultyAttributes
     from ..models.performance import PerformanceAttributes
+    from ..models.score import Score
 
 
 __all__ = [
@@ -37,8 +38,8 @@ TAIKO_BASE_MULTIPLIER = 1.13
 MANIA_BASE_MULTIPLIER = 8.0
 CATCH_BASE_MULTIPLIER = 1.0
 
-clamp: Callable[[float, float, float], float] = (
-    lambda x, l, u: l if x < l else u if x > u else x
+clamp: Callable[[float, float, float], float] = lambda x, l, u: (
+    l if x < l else u if x > u else x
 )
 
 
@@ -49,8 +50,7 @@ class AbstractPerformanceCalculator(abc.ABC):
         self.difficulty_attributes = difficulty_attributes
 
     @abc.abstractmethod
-    def calculate(self, score: Score) -> PerformanceAttributes:
-        ...
+    def calculate(self, score: Score) -> PerformanceAttributes: ...
 
 
 def get_calculator(mode: Gamemode) -> type[AbstractPerformanceCalculator]:

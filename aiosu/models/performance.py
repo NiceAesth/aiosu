@@ -1,6 +1,7 @@
 """
 This module contains models for API v2 difficulty attribute objects.
 """
+
 from __future__ import annotations
 
 import abc
@@ -38,5 +39,4 @@ class ManiaPerformanceAttributes(PerformanceAttributes):
     difficulty: float
 
 
-class CatchPerformanceAttributes(PerformanceAttributes):
-    ...
+class CatchPerformanceAttributes(PerformanceAttributes): ...

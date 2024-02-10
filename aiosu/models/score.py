@@ -1,12 +1,13 @@
 """
 This module contains models for Score objects.
 """
+
 from __future__ import annotations
 
 from datetime import datetime
 from functools import cached_property
-from typing import Optional
 from typing import TYPE_CHECKING
+from typing import Optional
 
 from pydantic import computed_field
 from pydantic import model_validator
@@ -27,6 +28,7 @@ from .user import User
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
+
     from .. import v1
 
 __all__ = (

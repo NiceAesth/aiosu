@@ -1,6 +1,7 @@
 """
 This module contains models for news post objects.
 """
+
 from __future__ import annotations
 
 from datetime import datetime
@@ -9,7 +10,6 @@ from typing import Optional
 
 from .base import BaseModel
 from .common import CursorModel
-
 
 __all__ = (
     "Navigation",

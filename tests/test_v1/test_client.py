@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 import pytest
 
 import aiosu
+
 from ..classes import mock_request
 
 if TYPE_CHECKING:

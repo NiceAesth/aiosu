@@ -1,7 +1,8 @@
 """
 This module contains API models.
 """
-from __future__ import annotations
+
+# isort: dont-add-imports
 
 from .artist import *
 from .backgrounds import *

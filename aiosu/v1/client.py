@@ -3,12 +3,13 @@ This module handles API requests for API v1.
 
 You can read more about it here: https://github.com/ppy/osu-api/wiki
 """
+
 from __future__ import annotations
 
 from io import BytesIO
 from io import StringIO
-from typing import Literal
 from typing import TYPE_CHECKING
+from typing import Literal
 from warnings import warn
 
 import aiohttp
@@ -28,9 +29,9 @@ from ..models.legacy import Match
 from ..models.legacy import ReplayCompact
 
 if TYPE_CHECKING:
+    from collections.abc import MutableMapping
     from types import TracebackType
     from typing import Any
-    from collections.abc import MutableMapping
     from typing import Optional
     from typing import Union
 

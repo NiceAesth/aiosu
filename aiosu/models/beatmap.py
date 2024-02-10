@@ -1,6 +1,7 @@
 """
 This module contains models for Beatmap objects.
 """
+
 from __future__ import annotations
 
 from collections.abc import Mapping
@@ -11,8 +12,8 @@ from functools import cached_property
 from typing import Literal
 from typing import Optional
 
-from pydantic import computed_field
 from pydantic import Field
+from pydantic import computed_field
 from pydantic import model_validator
 
 from .base import BaseModel
@@ -433,9 +434,9 @@ class Beatmap(BaseModel):
             id = values["id"]
             beatmapset_id = values["beatmapset_id"]
             mode = Gamemode(values["mode"])
-            values[
-                "url"
-            ] = f"https://osu.ppy.sh/beatmapsets/{beatmapset_id}#{mode}/{id}"
+            values["url"] = (
+                f"https://osu.ppy.sh/beatmapsets/{beatmapset_id}#{mode}/{id}"
+            )
         return values
 
     @classmethod

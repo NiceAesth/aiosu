@@ -4,6 +4,7 @@ import orjson
 import pytest
 
 import aiosu
+
 from ..classes import MockResponse
 
 

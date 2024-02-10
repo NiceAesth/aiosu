@@ -1,6 +1,7 @@
 """
 This module contains authorization functions.
 """
+
 from __future__ import annotations
 
 import urllib.parse

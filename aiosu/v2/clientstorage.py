@@ -1,22 +1,23 @@
 """
 This module handles multiple API v2 Client sessions.
 """
+
 from __future__ import annotations
 
 import functools
 from collections.abc import Awaitable
-from typing import Callable
-from typing import cast
 from typing import TYPE_CHECKING
+from typing import Callable
 from typing import TypeVar
+from typing import cast
 from warnings import warn
 
-from . import Client
 from ..events import ClientAddEvent
 from ..events import ClientUpdateEvent
 from ..events import Eventable
 from ..exceptions import InvalidClientRequestedError
 from ..models import OAuthToken
+from . import Client
 from .repository import BaseTokenRepository
 from .repository import SimpleTokenRepository
 
