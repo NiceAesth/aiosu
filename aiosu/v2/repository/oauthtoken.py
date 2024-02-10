@@ -1,4 +1,5 @@
 """This module contains a repository for API v2 token objects."""
+
 from __future__ import annotations
 
 from abc import ABC

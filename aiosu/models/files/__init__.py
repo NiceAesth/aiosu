@@ -1,3 +1,7 @@
-from __future__ import annotations
+"""
+This module contains models for binary files.
+"""
+
+# isort: dont-add-imports
 
 from .replay import *

@@ -1,14 +1,15 @@
 """
 This module contains models for lazer specific data.
 """
+
 from __future__ import annotations
 
 from datetime import datetime
 from functools import cached_property
 from typing import Optional
 
-from pydantic import computed_field
 from pydantic import Field
+from pydantic import computed_field
 from pydantic import model_validator
 
 from .base import BaseModel

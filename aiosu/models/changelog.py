@@ -1,6 +1,7 @@
 """
 This module contains models for changelog objects.
 """
+
 from __future__ import annotations
 
 from datetime import datetime
@@ -11,7 +12,6 @@ from pydantic import Field
 
 from .base import BaseModel
 from .common import CursorModel
-
 
 __all__ = (
     "Build",

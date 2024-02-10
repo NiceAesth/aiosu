@@ -1,4 +1,4 @@
-from __future__ import annotations
+# isort: dont-add-imports
 
 from .classes import *
 from .test_v1 import *

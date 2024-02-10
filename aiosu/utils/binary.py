@@ -1,6 +1,7 @@
 """
 This module contains functions for reading and writing binary data.
 """
+
 from __future__ import annotations
 
 import lzma

@@ -1,6 +1,7 @@
 """
 This module contains models for rankings.
 """
+
 from __future__ import annotations
 
 from typing import Literal
@@ -10,7 +11,6 @@ from .beatmap import Beatmapset
 from .common import CursorModel
 from .spotlight import Spotlight
 from .user import UserStats
-
 
 __all__ = (
     "RankingFilter",

@@ -1,6 +1,7 @@
 """
 This module contains models for chat.
 """
+
 from __future__ import annotations
 
 from typing import Literal

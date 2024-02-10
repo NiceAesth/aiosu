@@ -1,12 +1,12 @@
 """
 This module contains a collection of utility functions.
 """
-from __future__ import annotations
 
-...  # disable import sorting
+# isort: dont-add-imports
 
 from . import auth
-from . import accuracy
 from . import binary
 from . import performance
 from . import replay
+
+from . import accuracy  # isort: skip

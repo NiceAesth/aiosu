@@ -1,6 +1,7 @@
 """
 This module contains models for miscellaneous objects.
 """
+
 from __future__ import annotations
 
 from collections.abc import Coroutine
@@ -11,8 +12,8 @@ from typing import Literal
 from typing import Optional
 
 from emojiflags.lookup import lookup as flag_lookup  # type: ignore
-from pydantic import computed_field
 from pydantic import Field
+from pydantic import computed_field
 from pydantic import field_validator
 
 from .base import BaseModel

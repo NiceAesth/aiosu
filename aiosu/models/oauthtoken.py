@@ -1,6 +1,7 @@
 """
 This module contains models for API v2 token objects.
 """
+
 from __future__ import annotations
 
 from datetime import datetime
@@ -13,7 +14,6 @@ from pydantic import model_validator
 
 from .base import FrozenModel
 from .scopes import Scopes
-
 
 __all__ = ("OAuthToken",)
 

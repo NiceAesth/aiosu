@@ -1,6 +1,7 @@
 """
 This module is used to generate test data for aiosu tests from the osu! API.
 """
+
 from __future__ import annotations
 
 import asyncio
@@ -16,7 +17,6 @@ import orjson
 from dotenv import load_dotenv
 
 import aiosu
-
 
 API_MODES = ["osu", "taiko", "fruits", "mania"]
 BASE_URL = "https://osu.ppy.sh"
@@ -58,8 +58,7 @@ class TestGeneratorBase(ABC):
         )
 
     @abstractmethod
-    def _register_routes(self) -> None:
-        ...
+    def _register_routes(self) -> None: ...
 
     def _ensure_dir(self, path: str) -> None:
         if not os.path.exists(path):

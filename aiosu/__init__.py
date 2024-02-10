@@ -1,4 +1,4 @@
-from __future__ import annotations
+# isort: dont-add-imports
 
 from datetime import date
 from importlib import metadata
@@ -12,9 +12,10 @@ from . import events
 from . import exceptions
 from . import helpers
 from . import utils
-from . import models
 from . import v1
 from . import v2
+
+from . import models  # isort: skip
 
 __all__ = (
     "events",

@@ -1,6 +1,7 @@
 """
 This module contains models for User objects.
 """
+
 from __future__ import annotations
 
 from collections.abc import Mapping
@@ -11,8 +12,8 @@ from functools import cached_property
 from typing import Literal
 from typing import Optional
 
-from pydantic import computed_field
 from pydantic import Field
+from pydantic import computed_field
 
 from .base import BaseModel
 from .base import cast_float
@@ -21,7 +22,6 @@ from .common import Country
 from .common import HTMLBody
 from .common import TimestampedCount
 from .gamemode import Gamemode
-
 
 __all__ = (
     "ManiaStatsVariantsType",

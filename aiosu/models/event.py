@@ -1,12 +1,13 @@
 """
 This module contains models for API events.
 """
+
 from __future__ import annotations
 
 from datetime import datetime
+from typing import TYPE_CHECKING
 from typing import Literal
 from typing import Optional
-from typing import TYPE_CHECKING
 
 from pydantic import Field
 

@@ -1,6 +1,7 @@
 """
 This module contains models for API v2 scopes.
 """
+
 from __future__ import annotations
 
 from enum import IntFlag

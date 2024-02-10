@@ -1,4 +1,8 @@
-from __future__ import annotations
+"""
+This module contains models for legacy API responses.
+"""
+
+# isort: dont-add-imports
 
 from .match import *
 from .replay import *

@@ -1,6 +1,7 @@
 """
 This module contains functions to parse replay files.
 """
+
 from __future__ import annotations
 
 from typing import Any
@@ -28,7 +29,6 @@ from .binary import unpack_replay_data
 from .binary import unpack_short
 from .binary import unpack_string
 from .binary import unpack_timestamp
-
 
 __all__ = (
     "parse_file",

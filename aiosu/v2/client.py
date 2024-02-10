@@ -3,6 +3,7 @@ This module handles API requests for API v2 (OAuth).
 
 You can read more about it here: https://osu.ppy.sh/docs/index.html
 """
+
 from __future__ import annotations
 
 import functools
@@ -10,11 +11,11 @@ from collections.abc import Awaitable
 from datetime import datetime
 from functools import partial
 from io import BytesIO
-from typing import Callable
-from typing import cast
-from typing import Literal
 from typing import TYPE_CHECKING
+from typing import Callable
+from typing import Literal
 from typing import TypeVar
+from typing import cast
 from warnings import warn
 
 import aiohttp

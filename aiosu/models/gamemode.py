@@ -1,6 +1,7 @@
 """
 This module contains models for Gamemode objects.
 """
+
 from __future__ import annotations
 
 from enum import Enum
