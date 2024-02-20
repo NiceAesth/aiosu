@@ -11,10 +11,15 @@ from typing import Optional
 from pydantic import Field
 
 from .base import BaseModel
+from .beatmap import Beatmapset
 from .common import CursorModel
 
 __all__ = (
+    "Artist",
+    "ArtistAlbum",
+    "ArtistLabel",
     "ArtistResponse",
+    "ArtistSearch",
     "ArtistSortType",
     "ArtistTrack",
 )
@@ -44,12 +49,45 @@ class ArtistSearch(BaseModel):
     sort: ArtistSortType
 
 
+class ArtistLabel(BaseModel):
+    id: int
+    artists: list[Artist]
+    name: str
+    description: str
+    icon_url: str
+    header_url: str
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+    soundcloud: Optional[str] = None
+    website: Optional[str] = None
+
+
 class Artist(BaseModel):
     id: int
     name: str
+    user_id: Optional[int] = None
+    description: Optional[str] = None
+    visible: Optional[bool] = None
+    header_url: Optional[str] = None
+    cover_url: Optional[str] = None
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+    beatmapsets: Optional[list[Beatmapset]] = None
+    label: Optional[ArtistLabel] = None
+    albums: Optional[list[ArtistAlbum]] = None
+    tracks: Optional[list[ArtistTrack]] = None
+    bandcamp: Optional[str] = None
+    facebook: Optional[str] = None
+    patreon: Optional[str] = None
+    soundcloud: Optional[str] = None
+    spotify: Optional[str] = None
+    twitter: Optional[str] = None
+    website: Optional[str] = None
+    youtube: Optional[str] = None
+    video_url: Optional[str] = None
 
 
-class Album(BaseModel):
+class ArtistAlbum(BaseModel):
     id: int
     artist_id: int
     title: str
@@ -72,7 +110,7 @@ class ArtistTrack(BaseModel):
     artist: Artist
     osz_url: str = Field(alias="osz")
     preview_url: str = Field(alias="preview")
-    album: Optional[Album] = None
+    album: Optional[ArtistAlbum] = None
     album_id: Optional[int] = None
     updated_at: Optional[datetime] = None
     version: Optional[str] = None
