@@ -2660,11 +2660,3 @@ class Client(Eventable):
         if self._session:
             await self._session.close()
             self._session = None
-
-    async def close(self) -> None:
-        """Closes the client session. (Deprecated)"""
-        warn(
-            "close is deprecated, use aclose instead. Will be removed on 2024-03-01",
-            DeprecationWarning,
-        )
-        await self.aclose()
