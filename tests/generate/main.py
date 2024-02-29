@@ -138,7 +138,7 @@ class TestGeneratorV1(TestGeneratorBase):
             "GET",
             f"{BASE_URL}/api/get_user_recent",
             f"{DATA_DIR}/v1/get_user_recents_200.json",
-            params=self._default_params | {"u": "mrekk"},
+            params=self._default_params | {"u": "lifeline"},
         )
         self._register_route(
             "GET",
@@ -306,7 +306,7 @@ class TestGeneratorV2(TestGeneratorBase):
         )
         self._register_route(
             "GET",
-            f"{BASE_URL}/api/v2/users/7562902/scores/recent",
+            f"{BASE_URL}/api/v2/users/11367222/scores/recent",
             f"{DATA_DIR}/v2/get_user_recents_200.json",
         )
         self._register_route(
