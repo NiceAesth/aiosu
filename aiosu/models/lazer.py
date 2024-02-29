@@ -18,6 +18,7 @@ from .beatmap import Beatmapset
 from .common import CurrentUserAttributes
 from .common import ScoreType
 from .gamemode import Gamemode
+from .mods import Mods
 from .score import ScoreWeight
 from .user import User
 
@@ -128,32 +129,41 @@ class LazerReplayData(BaseModel):
 
 
 class LazerScore(BaseModel):
-    id: int
     accuracy: float
     beatmap_id: int
+    ended_at: datetime
+    has_replay: bool = Field(validation_alias="replay")
+    is_perfect_combo: bool
+    legacy_perfect: bool
     max_combo: int
     maximum_statistics: LazerScoreStatistics
     mods: list[LazerMod]
     passed: bool
     rank: str
     ruleset_id: int
-    ended_at: datetime
     statistics: LazerScoreStatistics
-    total_score: int
-    user_id: int
-    has_replay: bool
+    total_score: int = Field(alias="score")
     type: ScoreType
-    current_user_attributes: CurrentUserAttributes
-    beatmap: Beatmap
-    beatmapset: Beatmapset
-    user: User
+    user_id: int
+    beatmap: Optional[Beatmap] = None
+    beatmapset: Optional[Beatmapset] = None
+    best_id: Optional[int] = None
     build_id: Optional[int] = None
+    current_user_attributes: Optional[CurrentUserAttributes] = None
+    id: Optional[int] = None
+    match: Optional[MultiplayerMatch] = None
+    preserved: Optional[bool] = None
+    position: Optional[int] = None
+    ranked: Optional[bool] = None
+    rank_country: Optional[int] = None
+    rank_global: Optional[int] = None
     legacy_score_id: Optional[int] = None
     legacy_total_score: Optional[int] = None
-    started_at: Optional[datetime] = None
-    best_id: Optional[int] = None
-    legacy_perfect: Optional[bool] = None
+    playlist_item_id: Optional[int] = None
     pp: Optional[float] = None
+    room_id: Optional[int] = None
+    started_at: Optional[datetime] = None
+    user: Optional[User] = None
     weight: Optional[ScoreWeight] = None
 
     @property
@@ -231,3 +241,8 @@ class LazerScore(BaseModel):
         if not values["passed"]:
             values["rank"] = "F"
         return values
+
+
+from .multiplayer import MultiplayerMatch
+
+LazerScore.model_rebuild()

@@ -887,6 +887,8 @@ class Client(Eventable):
                 Optional, whether to include failed scores, defaults to ``False``
             * *new_format* (``bool``) --
                 Optional, whether to use the new format, defaults to ``False``
+            * *legacy_only* (``bool``) --
+                Optional, whether to only get legacy scores, defaults to ``False``
 
         :raises ValueError: If limit is not between 1 and 100
         :raises ValueError: If type is invalid
@@ -908,6 +910,7 @@ class Client(Eventable):
             "offset": kwargs.pop("offset", 0),
         }
         add_param(params, kwargs, key="mode", converter=lambda x: str(Gamemode(x)))
+        add_param(params, kwargs, key="legacy_only", converter=int)
         headers = {}
         new_format = kwargs.pop("new_format", False)
         if new_format:
@@ -1056,6 +1059,8 @@ class Client(Eventable):
         :Keyword Arguments:
             * *mode* (``aiosu.models.gamemode.Gamemode``) --
                 Optional, gamemode to search for
+            * *legacy_only* (``bool``) --
+                Optional, whether to only get legacy scores, defaults to ``False``
 
         :raises APIException: Contains status code and error message
         :raises RefreshTokenExpiredError: If the client refresh token has expired
@@ -1065,6 +1070,7 @@ class Client(Eventable):
         url = f"{self.base_url}/api/v2/beatmaps/{beatmap_id}/scores/users/{user_id}/all"
         params: dict[str, object] = {}
         add_param(params, kwargs, key="mode", converter=lambda x: str(Gamemode(x)))
+        add_param(params, kwargs, key="legacy_only", converter=int)
         json = await self._request("GET", url, params=params)
         return from_list(Score.model_validate, json.get("scores", []))
 
@@ -1197,14 +1203,14 @@ class Client(Eventable):
             See below
 
         :Keyword Arguments:
-            * *legacy_only* (``bool``) --
-                Optional, whether to only get legacy scores, defaults to ``False``
             * *mode* (``aiosu.models.gamemode.Gamemode``) --
                 Optional, gamemode to search for
             * *mods* (``aiosu.models.mods.Mods``) --
                 Optional, mods to search for
             * *type* (``aiosu.models.common.BeatmapScoreboardType``) --
                 Optional, beatmap score ranking type
+            * *legacy_only* (``bool``) --
+                Optional, whether to only get legacy scores, defaults to ``False``
 
         :raises APIException: Contains status code and error message
         :raises RefreshTokenExpiredError: If the client refresh token has expired
@@ -1213,7 +1219,6 @@ class Client(Eventable):
         """
         url = f"{self.base_url}/api/v2/beatmaps/{beatmap_id}/scores"
         params: dict[str, object] = {}
-        add_param(params, kwargs, key="legacy_only", converter=int)
         add_param(params, kwargs, key="mode", converter=lambda x: str(Gamemode(x)))
         add_param(
             params,
@@ -1222,6 +1227,7 @@ class Client(Eventable):
             converter=lambda x: [str(y) for y in Mods(x)],
         )
         add_param(params, kwargs, key="type")
+        add_param(params, kwargs, key="legacy_only", converter=int)
         json = await self._request("GET", url, params=params)
         return from_list(Score.model_validate, json.get("scores", []))
 
@@ -1515,11 +1521,17 @@ class Client(Eventable):
     @prepare_token
     @check_token
     @requires_scope(Scopes.PUBLIC)
-    async def get_beatmap_pack(self, pack_tag: str) -> BeatmapPack:
+    async def get_beatmap_pack(self, pack_tag: str, **kwargs: Any) -> BeatmapPack:
         r"""Get beatmap pack.
 
         :param pack_tag: The tag of the beatmap pack
         :type pack_tag: str
+        :param \**kwargs:
+            See below
+
+        :Keyword Arguments:
+            * *legacy_only* (``bool``) --
+                Optional, whether or not to consider lazer scores for completion data, defaults to ``False``
 
         :raises APIException: Contains status code and error message
         :raises RefreshTokenExpiredError: If the client refresh token has expired
@@ -1527,7 +1539,9 @@ class Client(Eventable):
         :rtype: aiosu.models.beatmap.BeatmapPack
         """
         url = f"{self.base_url}/api/v2/beatmaps/packs/{pack_tag}"
-        json = await self._request("GET", url)
+        params: dict[str, object] = {}
+        add_param(params, kwargs, key="legacy_only", converter=int)
+        json = await self._request("GET", url, params=params)
         return BeatmapPack.model_validate(json)
 
     @prepare_token
@@ -1747,13 +1761,20 @@ class Client(Eventable):
         self,
         score_id: int,
         mode: Gamemode,
-    ) -> Score:
+        **kwargs: Any,
+    ) -> Union[Score, LazerScore]:
         r"""Gets data about a score.
 
         :param score_id: The ID of the score
         :type score_id: int
         :param mode: The gamemode to search for
         :type mode: aiosu.models.gamemode.Gamemode
+        :param \**kwargs:
+            See below
+
+        :Keyword Arguments:
+            * *new_format* (``bool``) --
+                Optional, whether to use the new score format, defaults to ``False``
 
         :raises APIException: Contains status code and error message
         :raises RefreshTokenExpiredError: If the client refresh token has expired
@@ -1761,7 +1782,14 @@ class Client(Eventable):
         :rtype: aiosu.models.score.Score
         """
         url = f"{self.base_url}/api/v2/scores/{mode}/{score_id}"
-        json = await self._request("GET", url)
+        headers = {}
+        new_format = kwargs.pop("new_format", False)
+        if new_format:
+            headers = {"x-api-version": "20220705"}
+
+        json = await self._request("GET", url, headers=headers)
+        if new_format:
+            return LazerScore.model_validate(json)
         return Score.model_validate(json)
 
     @prepare_token

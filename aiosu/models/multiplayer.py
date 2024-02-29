@@ -18,8 +18,9 @@ from .beatmap import Beatmap
 from .common import CursorModel
 from .gamemode import Gamemode
 from .lazer import LazerMod
-from .lazer import LazerScoreStatistics
+from .lazer import LazerScore
 from .mods import Mods
+from .score import Score
 from .user import User
 
 __all__ = (
@@ -37,7 +38,6 @@ __all__ = (
     "MultiplayerRoomGroupType",
     "MultiplayerRoomMode",
     "MultiplayerRoomsResponse",
-    "MultiplayerScore",
     "MultiplayerScoreSortType",
     "MultiplayerScoresAround",
     "MultiplayerScoresResponse",
@@ -74,27 +74,9 @@ class MultiplayerScoresAround(BaseModel):
     lower: MultiplayerScoresResponse
 
 
-class MultiplayerScore(BaseModel):
-    user_id: int
-    rank: str
-    accuracy: float
-    max_combo: int
-    mods: list[Union[Mods, LazerMod]]
-    passed: bool
-    statistics: LazerScoreStatistics
-    id: Optional[int] = None
-    room_id: Optional[int] = None
-    user: Optional[User] = None
-    beatmap_id: Optional[int] = None
-    playlist_item_id: Optional[int] = None
-    position: Optional[int] = None
-    total_score: Optional[int] = None
-    scores_around: Optional[MultiplayerScoresAround] = None
-
-
 class MultiplayerScoresResponse(CursorModel):
-    scores: list[MultiplayerScore]
-    user_score: Optional[MultiplayerScore] = None
+    scores: list[LazerScore]
+    user_score: Optional[LazerScore] = None
     total: Optional[int] = None
 
 
@@ -113,7 +95,7 @@ class MultiplayerGame(BaseModel):
     team_type: MultiplayerTeamType
     mods: list[Union[Mods, LazerMod]]
     beatmap_id: int
-    scores: list[MultiplayerScore]
+    scores: list[Score]
     beatmap: Optional[Beatmap] = None
     end_time: Optional[datetime] = None
 

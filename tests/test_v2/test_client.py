@@ -49,6 +49,10 @@ def generate_test(
     status_codes: Mapping[int, str],
     func_kwargs: Mapping = {},
 ):
+    data_name = func.__name__
+    if func_kwargs.get("new_format"):
+        data_name = f"{func.__name__}_lazer"
+
     @pytest.mark.asyncio
     @pytest.mark.parametrize("status_code, content_type", status_codes.items())
     async def test_generated(status_code, content_type, token, mocker):
@@ -56,7 +60,7 @@ def generate_test(
             file_extension = "json"
             if content_type == "application/octet-stream":
                 file_extension = "osr"
-            data = get_data(func.__name__, status_code, file_extension)
+            data = get_data(data_name, status_code, file_extension)
             resp = mock_request(status_code, content_type, data)
             mocker.patch(
                 "aiosu.v2.Client._request",
@@ -68,7 +72,7 @@ def generate_test(
                 with pytest.raises(aiosu.exceptions.APIException):
                     data = await func(client, **func_kwargs)
 
-    test_generated.__name__ = f"test_{func.__name__}"
+    test_generated.__name__ = f"test_{data_name}"
     return test_generated
 
 
@@ -228,6 +232,11 @@ tests = [
         func_kwargs={"score_id": 4220635589, "mode": "osu"},
     ),
     generate_test(
+        aiosu.v2.Client.get_score,
+        STATUS_CAN_404,
+        func_kwargs={"score_id": 4220635589, "mode": "osu", "new_format": True},
+    ),
+    generate_test(
         aiosu.v2.Client.get_score_replay,
         STATUS_CAN_404_OCTET,
         func_kwargs={"score_id": 4220635589, "mode": "osu"},
@@ -264,7 +273,7 @@ tests = [
     generate_test(
         aiosu.v2.Client.get_multiplayer_scores,
         STATUS_CAN_404,
-        func_kwargs={"room_id": 1, "playlist_id": 1},
+        func_kwargs={"room_id": 583093, "playlist_id": 5307446},
     ),
 ]
 
