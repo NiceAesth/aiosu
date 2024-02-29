@@ -43,7 +43,10 @@ async def process_code(
     :rtype: aiosu.models.oauthtoken.OAuthToken
     """
     url = f"{base_url}/oauth/token"
-    headers = {"Content-Type": "application/x-www-form-urlencoded"}
+    headers = {
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Accept": "application/json",
+    }
     data = {
         "client_id": client_id,
         "client_secret": client_secret,
@@ -54,15 +57,12 @@ async def process_code(
 
     async with aiohttp.ClientSession(headers=headers) as temp_session:
         async with temp_session.post(url, data=data) as resp:
-            try:
-                body = await resp.read()
-                json = orjson.loads(body)
-                if resp.status != 200:
-                    raise APIException(resp.status, json.get("error", ""))
-                token = OAuthToken.model_validate(json)
-                return token
-            except aiohttp.client_exceptions.ContentTypeError:
-                raise APIException(403, "Invalid code specified.")
+            body = await resp.read()
+            json = orjson.loads(body)
+            if resp.status != 200:
+                raise APIException(resp.status, json.get("error", ""))
+            token = OAuthToken.model_validate(json)
+            return token
 
 
 def generate_url(
