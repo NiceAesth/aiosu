@@ -141,7 +141,7 @@ class LazerScore(BaseModel):
     rank: str
     ruleset_id: int
     statistics: LazerScoreStatistics
-    total_score: int = Field(alias="score")
+    total_score: int = Field(validation_alias="score")
     type: ScoreType
     user_id: int
     beatmap: Optional[Beatmap] = None
@@ -243,5 +243,3 @@ class LazerScore(BaseModel):
 
 
 from .multiplayer import MultiplayerMatch
-
-LazerScore.model_rebuild()
