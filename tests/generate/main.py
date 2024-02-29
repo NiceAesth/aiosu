@@ -138,7 +138,7 @@ class TestGeneratorV1(TestGeneratorBase):
             "GET",
             f"{BASE_URL}/api/get_user_recent",
             f"{DATA_DIR}/v1/get_user_recents_200.json",
-            params=self._default_params | {"u": "mrekk"},
+            params=self._default_params | {"u": "lifeline"},
         )
         self._register_route(
             "GET",
@@ -306,7 +306,7 @@ class TestGeneratorV2(TestGeneratorBase):
         )
         self._register_route(
             "GET",
-            f"{BASE_URL}/api/v2/users/7562902/scores/recent",
+            f"{BASE_URL}/api/v2/users/11367222/scores/recent",
             f"{DATA_DIR}/v2/get_user_recents_200.json",
         )
         self._register_route(
@@ -522,9 +522,22 @@ class TestGeneratorV2(TestGeneratorBase):
         )
         self._register_route(
             "GET",
+            f"{BASE_URL}/api/v2/scores/osu/4220635589",
+            f"{DATA_DIR}/v2/get_score_lazer_200.json",
+            headers={"x-api-version": "20220705"},
+        )
+        self._register_route(
+            "GET",
             f"{BASE_URL}/api/v2/scores/osu/0",
             f"{DATA_DIR}/v2/get_score_404.json",
             expect_status=404,
+        )
+        self._register_route(
+            "GET",
+            f"{BASE_URL}/api/v2/scores/osu/0",
+            f"{DATA_DIR}/v2/get_score_lazer_404.json",
+            expect_status=404,
+            headers={"x-api-version": "20220705"},
         )
         self._register_route(
             "GET",
@@ -695,7 +708,7 @@ class TestGeneratorV2(TestGeneratorBase):
         )
         self._register_route(
             "GET",
-            f"{BASE_URL}/api/v2/rooms/1/playlist/1/scores",
+            f"{BASE_URL}/api/v2/rooms/583093/playlist/5307446/scores",
             f"{DATA_DIR}/v2/get_multiplayer_scores_200.json",
         )
         self._register_route(

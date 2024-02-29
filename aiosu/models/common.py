@@ -43,6 +43,7 @@ ScoreType = Literal[
     "score_taiko",
     "score_fruits",
     "score_mania",
+    "legacy_match_score",
 ]
 BeatmapScoreboardType = Literal["global", "country", "friend"]
 
