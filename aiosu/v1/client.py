@@ -126,7 +126,10 @@ class Client:
                     return BytesIO(body)
                 if content_type == "text/plain":
                     return body.decode()
-                raise APIException(415, "Unhandled Content Type")
+                raise APIException(
+                    resp.status,
+                    f"Unhandled Content Type '{content_type}'",
+                )
 
     async def get_user(self, user_query: Union[str, int], **kwargs: Any) -> User:
         r"""Gets a user by a query.

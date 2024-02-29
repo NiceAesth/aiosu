@@ -361,7 +361,10 @@ class Client(Eventable):
                     return BytesIO(body)
                 if content_type == "text/plain":
                     return body.decode()
-                raise APIException(415, f"Unhandled Content Type '{content_type}'")
+                raise APIException(
+                    resp.status,
+                    f"Unhandled Content Type '{content_type}'",
+                )
 
     async def _refresh(self) -> None:
         r"""INTERNAL: Refreshes the client's token
@@ -380,28 +383,25 @@ class Client(Eventable):
         async with aiohttp.ClientSession() as temp_session:
             async with self._limiter:
                 async with temp_session.post(url, json=data) as resp:
-                    try:
-                        body = await resp.read()
-                        content_type = get_content_type(
-                            resp.headers.get("content-type", ""),
+                    body = await resp.read()
+                    content_type = get_content_type(
+                        resp.headers.get("content-type", ""),
+                    )
+                    if content_type != "application/json":
+                        raise APIException(
+                            resp.status,
+                            f"Unhandled Content Type '{content_type}'",
                         )
-                        if content_type != "application/json":
-                            raise APIException(
-                                415,
-                                f"Unhandled Content Type '{content_type}'",
-                            )
-                        json = orjson.loads(body)
-                        if resp.status != 200:
-                            raise APIException(resp.status, json.get("error", ""))
-                        if self._session:
-                            await self._session.close()
-                        new_token = OAuthToken.model_validate(json)
-                        await self._update_token(new_token)
-                        self._session = aiohttp.ClientSession(
-                            headers=await self._get_headers(),
-                        )
-                    except aiohttp.client_exceptions.ContentTypeError:
-                        raise APIException(403, "Invalid token specified.")
+                    json = orjson.loads(body)
+                    if resp.status != 200:
+                        raise APIException(resp.status, json.get("error", ""))
+                    if self._session:
+                        await self._session.close()
+                    new_token = OAuthToken.model_validate(json)
+                    await self._update_token(new_token)
+                    self._session = aiohttp.ClientSession(
+                        headers=await self._get_headers(),
+                    )
 
         await self._process_event(
             ClientUpdateEvent(client=self, old_token=old_token, new_token=new_token),
