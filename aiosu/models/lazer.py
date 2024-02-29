@@ -18,7 +18,6 @@ from .beatmap import Beatmapset
 from .common import CurrentUserAttributes
 from .common import ScoreType
 from .gamemode import Gamemode
-from .mods import Mods
 from .score import ScoreWeight
 from .user import User
 
