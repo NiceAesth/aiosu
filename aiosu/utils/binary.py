@@ -9,6 +9,7 @@ import struct
 from datetime import datetime
 from datetime import timezone
 from typing import TYPE_CHECKING
+from typing import Union
 
 if TYPE_CHECKING:
     from typing import BinaryIO
@@ -315,20 +316,20 @@ def pack_uleb128(file: BinaryIO, value: int) -> None:
             break
 
 
-def pack_string(file: BinaryIO, value: str) -> None:
+def pack_string(file: BinaryIO, value: Union[bytes, str]) -> None:
     r"""Pack a string into a file.
 
     :param file: The file to pack into.
     :type file: BinaryIO
     :param value: The value to pack.
-    :type value: str
+    :type value: Union[bytes, str]
     """
     pack_byte(file, 11)
     if not value:
         file.write(b"\x00")
         return
     pack_uleb128(file, len(value))
-    file.write(value.encode("utf-8"))
+    file.write(value.encode("utf-8") if isinstance(value, str) else value)
 
 
 def pack_replay_data(file: BinaryIO, data: str) -> None:
