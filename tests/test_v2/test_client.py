@@ -77,7 +77,7 @@ def generate_test(
 
 
 tests = [
-    generate_test(aiosu.v2.Client.get_featured_artists, STATUS_CAN_200),
+    generate_test(aiosu.v2.Client.get_featured_tracks, STATUS_CAN_200),
     generate_test(aiosu.v2.Client.get_seasonal_backgrounds, STATUS_CAN_200),
     generate_test(aiosu.v2.Client.get_changelog_listing, STATUS_CAN_200),
     generate_test(

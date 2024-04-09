@@ -18,10 +18,10 @@ __all__ = (
     "Artist",
     "ArtistAlbum",
     "ArtistLabel",
-    "ArtistResponse",
     "ArtistSearch",
     "ArtistSortType",
     "ArtistTrack",
+    "ArtistTracksResponse",
 )
 
 ArtistSortType = Literal[
@@ -116,7 +116,7 @@ class ArtistTrack(BaseModel):
     version: Optional[str] = None
 
 
-class ArtistResponse(CursorModel):
+class ArtistTracksResponse(CursorModel):
     """Artist response model."""
 
     artist_tracks: list[ArtistTrack]

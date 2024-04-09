@@ -18,6 +18,7 @@ if TYPE_CHECKING:
 
 __all__ = (
     "add_param",
+    "add_range",
     "append_param",
     "from_list",
 )
@@ -90,3 +91,31 @@ def add_param(
 
     params[param_name or key] = value
     return True
+
+
+def add_range(
+    params: MutableMapping[str, Any],
+    kwargs: Mapping[str, object],
+    key: str,
+    param_name: Optional[str] = None,
+) -> None:
+    r"""Adds a range parameter to a dictionary if it exists in kwargs.
+
+    :param params: Dictionary to add parameter to
+    :type params: Mapping[str, Any]
+    :param kwargs: Dictionary to get parameter from
+    :type kwargs: Mapping[str, Any]
+    :param key: Key to get parameter from
+    :type key: str
+    :param param_name: Name of parameter to add to dictionary, defaults to None
+    :type param_name: Optional[str]
+    """
+    if key not in kwargs:
+        return
+
+    value = kwargs[key]
+    if not isinstance(value, (tuple, list)) or len(value) != 2:
+        raise ValueError("Range parameter must be a tuple of length 2.")
+
+    params[f"{param_name}[gte]"] = value[0]
+    params[f"{param_name}[lte]"] = value[1]

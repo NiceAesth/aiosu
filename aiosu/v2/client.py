@@ -27,9 +27,10 @@ from ..events import Eventable
 from ..exceptions import APIException
 from ..exceptions import RefreshTokenExpiredError
 from ..helpers import add_param
+from ..helpers import add_range
 from ..helpers import append_param
 from ..helpers import from_list
-from ..models import ArtistResponse
+from ..models import ArtistTracksResponse
 from ..models import Beatmap
 from ..models import BeatmapDifficultyAttributes
 from ..models import BeatmapPack
@@ -345,7 +346,6 @@ class Client(Eventable):
             async with self._session.request(request_type, *args, **kwargs) as resp:
                 if resp.status == 204:
                     return
-
                 body = await resp.read()
                 content_type = get_content_type(resp.headers.get("content-type", ""))
                 if resp.status != 200:
@@ -408,24 +408,22 @@ class Client(Eventable):
         )
 
     @prepare_token
-    async def get_featured_artists(self, **kwargs: Any) -> ArtistResponse:
-        r"""Gets the current featured artists.
+    async def get_featured_tracks(self, **kwargs: Any) -> ArtistTracksResponse:
+        r"""Query tracks from featured artists.
 
         :param \**kwargs:
             See below
 
         :Keyword Arguments:
-            * *limit* (``int``) --
-                Optional, the number of featured artists to return.
             * *album* (``str``) --
                 Optional, the album to filter by.
             * *artist* (``str``) --
                 Optional, the artist to filter by.
             * *genre* (``int``) --
                 Optional, the genre ID to filter by.
-            * *length* (``list[int]``) --
+            * *length* (``tuple[int, int]``) --
                 Optional, the length range to filter by.
-            * *bpm* (``list[int]``) --
+            * *bpm* (``tuple[int, int]``) --
                 Optional, The BPM range to filter by.
             * *query* (``str``) --
                 Optional, the search query to filter by.
@@ -435,26 +433,25 @@ class Client(Eventable):
                 Optional, the sort to use.
 
         :raises APIException: Contains status code and error message
-        :return: Featured artist response object
-        :rtype: aiosu.models.artist.ArtistResponse
+        :return: Featured artist tracks response object
+        :rtype: aiosu.models.artist.ArtistTracksResponse
         """
         url = f"{self.base_url}/beatmaps/artists/tracks"
         params: dict[str, object] = {}
-        add_param(params, kwargs, key="limit")
         add_param(params, kwargs, key="album")
         add_param(params, kwargs, key="artist")
         add_param(params, kwargs, key="genre")
-        add_param(params, kwargs, key="length")
-        add_param(params, kwargs, key="bpm")
+        add_range(params, kwargs, key="length")
+        add_range(params, kwargs, key="bpm")
         add_param(params, kwargs, key="query")
         add_param(params, kwargs, key="is_default_sort", converter=to_lower_str)
         add_param(params, kwargs, key="sort")
         add_param(params, kwargs, key="cursor_string")
-        json = await self._request("GET", url)
-        resp = ArtistResponse.model_validate(json)
+        json = await self._request("GET", url, params=params)
+        resp = ArtistTracksResponse.model_validate(json)
         if resp.cursor_string:
             kwargs["cursor_string"] = resp.cursor_string
-            resp.next = partial(self.get_featured_artists, **kwargs)
+            resp.next = partial(self.get_featured_tracks, **kwargs)
         return resp
 
     @prepare_token
@@ -824,7 +821,7 @@ class Client(Eventable):
         """
         url = f"{self.base_url}/api/v2/users"
         params: dict[str, object] = {
-            "ids": user_ids,
+            "ids[]": user_ids,
         }
         json = await self._request("GET", url, params=params)
         return from_list(User.model_validate, json.get("users", []))
@@ -1688,7 +1685,7 @@ class Client(Eventable):
         add_param(params, kwargs, key="limit")
         add_param(params, kwargs, key="page")
         add_param(params, kwargs, key="sort")
-        add_param(params, kwargs, key="types")
+        add_param(params, kwargs, key="types[]")
         add_param(params, kwargs, key="user", param_name="user_id")
         add_param(params, kwargs, key="with_deleted", converter=to_lower_str)
         add_param(params, kwargs, key="cursor_string")
@@ -2254,7 +2251,7 @@ class Client(Eventable):
                 Required if type is ``ANNOUNCE``, the message to send in the PM
             * *target_id* (``int``) --
                 Only used if if type is ``PM``, the ID of the user to send a PM to
-            * *target_ids* (``List[int]``) --
+            * *target_ids* (``list[int]``) --
                 Only used if type is ``ANNOUNCE``, the IDs of the users to send a PM to
             * *channel_name* (``str``) --
                 Only used if type is ``ANNOUNCE``, the name of the channel
