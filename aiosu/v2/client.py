@@ -431,6 +431,8 @@ class Client(Eventable):
                 Optional, whether to sort by the default sort.
             * *sort* (``str``) --
                 Optional, the sort to use.
+            * *exclusive_only* (``bool``) --
+                Optional, whether to only get osu! exclusive tracks.
 
         :raises APIException: Contains status code and error message
         :return: Featured artist tracks response object
@@ -446,6 +448,7 @@ class Client(Eventable):
         add_param(params, kwargs, key="query")
         add_param(params, kwargs, key="is_default_sort", converter=to_lower_str)
         add_param(params, kwargs, key="sort")
+        add_param(params, kwargs, key="exclusive_only", converter=to_lower_str)
         add_param(params, kwargs, key="cursor_string")
         json = await self._request("GET", url, params=params)
         resp = ArtistTracksResponse.model_validate(json)
