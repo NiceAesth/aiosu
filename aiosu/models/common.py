@@ -99,7 +99,7 @@ class HTMLBody(BaseModel):
 class PinAttributes(BaseModel):
     is_pinned: bool
     score_id: int
-    score_type: ScoreType
+    score_type: Optional[ScoreType] = None
 
 
 class CurrentUserAttributes(BaseModel):
