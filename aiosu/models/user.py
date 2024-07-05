@@ -312,6 +312,7 @@ class User(BaseModel):
     playmode: Optional[Gamemode] = None
     playstyle: Optional[list[str]] = None
     post_count: Optional[int] = None
+    profile_hue: Optional[int] = None
     profile_order: Optional[list[str]] = None
     title: Optional[str] = None
     twitter: Optional[str] = None
