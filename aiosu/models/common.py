@@ -4,10 +4,10 @@ This module contains models for miscellaneous objects.
 
 from __future__ import annotations
 
-from collections.abc import Coroutine
+from collections.abc import Awaitable
 from datetime import datetime
 from functools import cached_property
-from functools import partial
+from typing import Callable
 from typing import Literal
 from typing import Optional
 
@@ -135,7 +135,7 @@ class CursorModel(BaseModel):
     """
 
     cursor_string: Optional[str] = None
-    next: Optional[partial[Coroutine[object, object, CursorModel]]] = Field(
+    next: Optional[Callable[[object, object], Awaitable[CursorModel]]] = Field(
         default=None,
         exclude=True,
     )
