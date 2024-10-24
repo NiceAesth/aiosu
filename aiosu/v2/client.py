@@ -1793,8 +1793,8 @@ class Client(Eventable):
 
         :raises APIException: Contains status code and error message
         :raises RefreshTokenExpiredError: If the client refresh token has expired
-        :return: Score data object
-        :rtype: aiosu.models.score.Score
+        :return: LazerScore data object
+        :rtype: aiosu.models.score.LazerScore
         """
         url = f"{self.base_url}/api/v2/scores/{score_id}"
         headers = {"x-api-version": "20220705"}
