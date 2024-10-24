@@ -1761,20 +1761,13 @@ class Client(Eventable):
         self,
         score_id: int,
         mode: Gamemode,
-        **kwargs: Any,
-    ) -> Union[Score, LazerScore]:
+    ) -> Score:
         r"""Gets data about a score.
 
         :param score_id: The ID of the score
         :type score_id: int
         :param mode: The gamemode to search for
         :type mode: aiosu.models.gamemode.Gamemode
-        :param \**kwargs:
-            See below
-
-        :Keyword Arguments:
-            * *new_format* (``bool``) --
-                Optional, whether to use the new score format, defaults to ``False``
 
         :raises APIException: Contains status code and error message
         :raises RefreshTokenExpiredError: If the client refresh token has expired
@@ -1782,15 +1775,32 @@ class Client(Eventable):
         :rtype: aiosu.models.score.Score
         """
         url = f"{self.base_url}/api/v2/scores/{mode}/{score_id}"
-        headers = {}
-        new_format = kwargs.pop("new_format", False)
-        if new_format:
-            headers = {"x-api-version": "20220705"}
+
+        json = await self._request("GET", url)
+        return Score.model_validate(json)
+
+    @prepare_token
+    @check_token
+    @requires_scope(Scopes.PUBLIC)
+    async def get_lazer_score(
+        self,
+        score_id: int,
+    ) -> LazerScore:
+        r"""Gets data about a score.
+
+        :param score_id: The ID of the score
+        :type score_id: int
+
+        :raises APIException: Contains status code and error message
+        :raises RefreshTokenExpiredError: If the client refresh token has expired
+        :return: Score data object
+        :rtype: aiosu.models.score.Score
+        """
+        url = f"{self.base_url}/api/v2/scores/{score_id}"
+        headers = {"x-api-version": "20220705"}
 
         json = await self._request("GET", url, headers=headers)
-        if new_format:
-            return LazerScore.model_validate(json)
-        return Score.model_validate(json)
+        return LazerScore.model_validate(json)
 
     @prepare_token
     @check_token
