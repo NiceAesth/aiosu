@@ -82,6 +82,7 @@ from ..models import Spotlight
 from ..models import User
 from ..models import UserBeatmapType
 from ..models import UserQueryType
+from ..models import UserRelation
 from ..models import WikiPage
 from .repository import BaseTokenRepository
 from .repository import SimpleTokenRepository
@@ -760,17 +761,18 @@ class Client(Eventable):
     @check_token
     @requires_scope(Scopes.FRIENDS_READ)
     @requires_scope(Scopes.IDENTIFY | Scopes.DELEGATE, any_scope=True)
-    async def get_own_friends(self) -> list[User]:
+    async def get_own_friends(self) -> list[UserRelation]:
         r"""Gets the token owner's friend list
 
         :raises APIException: Contains status code and error message
         :raises RefreshTokenExpiredError: If the client refresh token has expired
         :return: List of friends
-        :rtype: list[aiosu.models.user.User]
+        :rtype: list[aiosu.models.user.UserRelation]
         """
         url = f"{self.base_url}/api/v2/friends"
-        json = await self._request("GET", url)
-        return from_list(User.model_validate, json)
+        headers = {"x-api-version": "20241022"}
+        json = await self._request("GET", url, headers=headers)
+        return from_list(UserRelation.model_validate, json)
 
     @prepare_token
     @check_token
