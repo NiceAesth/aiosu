@@ -771,7 +771,7 @@ class Client(Eventable):
         """
         url = f"{self.base_url}/api/v2/friends"
         json = await self._request("GET", url)
-        headers = json.get("headers", {"x-api-version": "20241022"})
+        headers = {"x-api-version": "20241022"}
         return from_list(UserRelation.model_validate, json, headers=headers)
 
     @prepare_token
