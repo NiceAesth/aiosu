@@ -1784,7 +1784,7 @@ class Client(Eventable):
         new_format = kwargs.pop("new_format", False)
         if new_format:
             headers = {"x-api-version": "20220705"}
-                    
+
         json = await self._request("GET", url, headers=headers)
         if new_format:
             return LazerScore.model_validate(json)
