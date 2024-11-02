@@ -770,9 +770,9 @@ class Client(Eventable):
         :rtype: list[aiosu.models.user.UserRelation]
         """
         url = f"{self.base_url}/api/v2/friends"
-        json = await self._request("GET", url)
         headers = {"x-api-version": "20241022"}
-        return from_list(UserRelation.model_validate, json, headers=headers)
+        json = await self._request("GET", url, headers=headers)
+        return from_list(UserRelation.model_validate, json)
 
     @prepare_token
     @check_token
