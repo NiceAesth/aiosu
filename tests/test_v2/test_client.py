@@ -229,12 +229,17 @@ tests = [
     generate_test(
         aiosu.v2.Client.get_score,
         STATUS_CAN_404,
-        func_kwargs={"score_id": 4220635589, "mode": "osu"},
+        func_kwargs={"legacy_score_id": 4220635589, "mode": "osu"},
     ),
     generate_test(
         aiosu.v2.Client.get_score,
         STATUS_CAN_404,
-        func_kwargs={"score_id": 4220635589, "mode": "osu", "new_format": True},
+        func_kwargs={"legacy_score_id": 4220635589, "mode": "osu", "new_format": True},
+    ),
+    generate_test(
+        aiosu.v2.Client.get_score_lazer,
+        STATUS_CAN_404,
+        func_kwargs={"score_id": 1581778626},
     ),
     generate_test(
         aiosu.v2.Client.get_score_replay,

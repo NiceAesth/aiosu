@@ -1761,7 +1761,8 @@ class Client(Eventable):
         self,
         legacy_score_id: int,
         mode: Gamemode,
-    ) -> Score:
+        **kwargs: Any,
+    ) -> Union[Score, LazerScore]:
         r"""Gets data about a score.
 
         :param legacy_score_id: The ID of the score
@@ -1793,7 +1794,7 @@ class Client(Eventable):
     @prepare_token
     @check_token
     @requires_scope(Scopes.PUBLIC)
-    async def get_lazer_score(
+    async def get_score_lazer(
         self,
         score_id: int,
     ) -> LazerScore:
