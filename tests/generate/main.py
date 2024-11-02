@@ -275,6 +275,7 @@ class TestGeneratorV2(TestGeneratorBase):
             "GET",
             f"{BASE_URL}/api/v2/friends",
             f"{DATA_DIR}/v2/get_own_friends_200.json",
+            headers={"x-api-version": "20241022"},
         )
         self._register_route(
             "GET",
