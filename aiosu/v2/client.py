@@ -1856,7 +1856,7 @@ class Client(Eventable):
         :return: Replay file
         :rtype: io.BytesIO
         """
-        url = f"{self.base_url}/api/v2/scores/{mode}/{score_id}/download"
+        url = f"{self.base_url}/api/v2/scores/{score_id}/download"
         return await self._request("GET", url)
 
     @prepare_token

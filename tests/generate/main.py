@@ -553,6 +553,17 @@ class TestGeneratorV2(TestGeneratorBase):
         )
         self._register_route(
             "GET",
+            f"{BASE_URL}/api/v2/scores/1581778626/download",
+            f"{DATA_DIR}/v2/get_score_replay_lazer_200.osr",
+        )
+        self._register_route(
+            "GET",
+            f"{BASE_URL}/api/v2/scores/0/download",
+            f"{DATA_DIR}/v2/get_score_replay_lazer_404.json",
+            expect_status=404,
+        )
+        self._register_route(
+            "GET",
             f"{BASE_URL}/api/v2/rankings/osu/performance",
             f"{DATA_DIR}/v2/get_rankings_200.json",
         )

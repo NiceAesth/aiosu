@@ -244,7 +244,12 @@ tests = [
     generate_test(
         aiosu.v2.Client.get_score_replay,
         STATUS_CAN_404_OCTET,
-        func_kwargs={"score_id": 4220635589, "mode": "osu"},
+        func_kwargs={"legacy_score_id": 4220635589, "mode": "osu"},
+    ),
+    generate_test(
+        aiosu.v2.Client.get_score_replay_lazer,
+        STATUS_CAN_404_OCTET,
+        func_kwargs={"score_id": 1581778626},
     ),
     generate_test(
         aiosu.v2.Client.get_rankings,
