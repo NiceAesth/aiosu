@@ -1819,18 +1819,37 @@ class Client(Eventable):
     @prepare_token
     @check_token
     @requires_scope(Scopes.PUBLIC)
-    @requires_scope(Scopes.IDENTIFY | Scopes.DELEGATE, any_scope=True)
     async def get_score_replay(
         self,
-        score_id: int,
+        legacy_score_id: int,
         mode: Gamemode,
+    ) -> BytesIO:
+        r"""Gets the replay file for a score.
+
+        :param legacy_score_id: The ID of the score
+        :type legacy_score_id: int
+        :param mode: The gamemode to search for
+        :type mode: aiosu.models.gamemode.Gamemode
+
+        :raises APIException: Contains status code and error message
+        :raises RefreshTokenExpiredError: If the client refresh token has expired
+        :return: Replay file
+        :rtype: io.BytesIO
+        """
+        url = f"{self.base_url}/api/v2/scores/{mode}/{legacy_score_id}/download"
+        return await self._request("GET", url)
+
+    @prepare_token
+    @check_token
+    @requires_scope(Scopes.PUBLIC)
+    async def get_score_replay_lazer(
+        self,
+        score_id: int,
     ) -> BytesIO:
         r"""Gets the replay file for a score.
 
         :param score_id: The ID of the score
         :type score_id: int
-        :param mode: The gamemode to search for
-        :type mode: aiosu.models.gamemode.Gamemode
 
         :raises APIException: Contains status code and error message
         :raises RefreshTokenExpiredError: If the client refresh token has expired
