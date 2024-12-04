@@ -107,19 +107,29 @@ class OsuPerformanceCalculator(AbstractPerformanceCalculator):
                 full_combo_threshold = self.difficulty_attributes.max_combo - 0.1 * score.beatmap.count_sliders  # type: ignore
 
                 if score.max_combo < full_combo_threshold:
-                    effective_miss_count = full_combo_threshold / max(1, score.max_combo)
-                
-                effective_miss_count = min(effective_miss_count, score.statistics.count_100 + score.statistics.count_100 + score.statistics.count_miss)
+                    effective_miss_count = full_combo_threshold / max(
+                        1, score.max_combo,
+                    )
+
+                effective_miss_count = min(
+                    effective_miss_count,
+                    score.statistics.count_100
+                    + score.statistics.count_100
+                    + score.statistics.count_miss,
+                )
             else:
                 full_combo_threshold = self.difficulty_attributes.max_combo - (score.beatmap.count_sliders - score.statistics.count_slider_tail_hit)  # type: ignore
 
                 if score.max_combo < full_combo_threshold:
-                    effective_miss_count = full_combo_threshold / max(1, score.max_combo)
+                    effective_miss_count = full_combo_threshold / max(
+                        1, score.max_combo,
+                    )
 
                 effective_miss_count = min(effective_miss_count, score.statistics.count_large_tick_miss + score.statistics.count_miss)  # type: ignore
 
-        effective_miss_count = clamp(effective_miss_count, score.statistics.count_miss, total_hits)
-
+        effective_miss_count = clamp(
+            effective_miss_count, score.statistics.count_miss, total_hits,
+        )
 
         multiplier = OSU_BASE_MULTIPLIER
 
@@ -138,12 +148,11 @@ class OsuPerformanceCalculator(AbstractPerformanceCalculator):
             meh_multiplier = max(0, (1 - pow(adjusted_od, 5)) if self.difficulty_attributes.overall_difficulty > 0 else 1)  # type: ignore
 
             effective_miss_count = min(
-                effective_miss_count + 
-                score.statistics.count_100 * ok_multiplier + 
-                score.statistics.count_50 * meh_multiplier, 
-                total_hits
+                effective_miss_count
+                + score.statistics.count_100 * ok_multiplier
+                + score.statistics.count_50 * meh_multiplier,
+                total_hits,
             )
-
 
         aim_value = self._compute_aim_value(score, effective_miss_count, total_hits)
         speed_value = self._compute_speed_value(score, effective_miss_count, total_hits)
@@ -220,24 +229,34 @@ class OsuPerformanceCalculator(AbstractPerformanceCalculator):
             estimate_improperly_followed_difficult_sliders = 0
 
             if self._is_slider_head_accuracy(score):
-                maximum_possible_dropped_sliders = score.statistics.count_100 + score.statistics.count_50 + score.statistics.count_miss
+                maximum_possible_dropped_sliders = (
+                    score.statistics.count_100
+                    + score.statistics.count_50
+                    + score.statistics.count_miss
+                )
                 estimate_improperly_followed_difficult_sliders = clamp(
-                    min(maximum_possible_dropped_sliders, self.difficulty_attributes.max_combo - score.max_combo),
+                    min(
+                        maximum_possible_dropped_sliders,
+                        self.difficulty_attributes.max_combo - score.max_combo,
+                    ),
                     0,
-                    estimate_difficult_sliders
+                    estimate_difficult_sliders,
                 )
             else:
                 estimate_improperly_followed_difficult_sliders = clamp(
                     score.beatmap.count_sliders - score.statistics.count_slider_tail_hit + score.statistics.count_large_tick_miss,  # type: ignore
                     0,
-                    estimate_difficult_sliders
+                    estimate_difficult_sliders,
                 )
 
             slider_nerf_factor = (
-                (1 - self.difficulty_attributes.slider_factor)  # type: ignore
-                * pow(1 - estimate_improperly_followed_difficult_sliders / estimate_difficult_sliders, 3)
-                + self.difficulty_attributes.slider_factor
-            )
+                1 - self.difficulty_attributes.slider_factor
+            ) * pow(  # type: ignore
+                1
+                - estimate_improperly_followed_difficult_sliders
+                / estimate_difficult_sliders,
+                3,
+            ) + self.difficulty_attributes.slider_factor
             aim_value *= slider_nerf_factor
 
         accuracy = score.accuracy
@@ -256,7 +275,7 @@ class OsuPerformanceCalculator(AbstractPerformanceCalculator):
     ) -> float:
         if Mod.Relax in score.mods:
             return 0
-        
+
         speed_value = (
             math.pow(
                 5.0 * max(1.0, self.difficulty_attributes.speed_difficulty / 0.0675)  # type: ignore
@@ -269,7 +288,11 @@ class OsuPerformanceCalculator(AbstractPerformanceCalculator):
         length_bonus = (
             0.95
             + 0.4 * min(1.0, total_hits / 2000.0)
-            + (((math.log10(total_hits / 2000.0) * 0.5) * int(total_hits > 2000)) if total_hits > 0 else 0)
+            + (
+                ((math.log10(total_hits / 2000.0) * 0.5) * int(total_hits > 2000))
+                if total_hits > 0
+                else 0
+            )
         )
         speed_value *= length_bonus
 
@@ -331,7 +354,11 @@ class OsuPerformanceCalculator(AbstractPerformanceCalculator):
 
         speed_value *= math.pow(
             0.99,
-            0 if score.statistics.count_50 < total_hits / 500 else score.statistics.count_50 - total_hits / 500
+            (
+                0
+                if score.statistics.count_50 < total_hits / 500
+                else score.statistics.count_50 - total_hits / 500
+            ),
         )
 
         return speed_value
@@ -406,7 +433,6 @@ class OsuPerformanceCalculator(AbstractPerformanceCalculator):
         )
 
         return flashlight_value
-    
 
     def _get_combo_scaling_factor(self, score: Score) -> float:
         if self.difficulty_attributes.max_combo <= 0:
@@ -417,14 +443,14 @@ class OsuPerformanceCalculator(AbstractPerformanceCalculator):
             / math.pow(self.difficulty_attributes.max_combo, 0.8),
             1.0,
         )
-    
 
     def _calculate_miss_penalty(
-        self,
-        effective_miss_count: float,
-        difficult_strain_count: float
+        self, effective_miss_count: float, difficult_strain_count: float,
     ) -> float:
-        return 0.96 / ((effective_miss_count / (4 * pow(math.log(difficult_strain_count), 0.94))) + 1)
+        return 0.96 / (
+            (effective_miss_count / (4 * pow(math.log(difficult_strain_count), 0.94)))
+            + 1
+        )
 
 
 class TaikoPerformanceCalculator(AbstractPerformanceCalculator):
@@ -606,7 +632,8 @@ class ManiaPerformanceCalculator(AbstractPerformanceCalculator):
 
     def _compute_difficulty_value(self, accuracy: float, total_hits: int) -> float:
         difficulty_value = (
-            8 * math.pow(max(self.difficulty_attributes.star_rating - 0.15, 0.05), 2.2)
+            8
+            * math.pow(max(self.difficulty_attributes.star_rating - 0.15, 0.05), 2.2)
             * max(0.0, 5.0 * accuracy - 4.0)
             * (1.0 + 0.1 * min(1.0, total_hits / 1500))
         )
