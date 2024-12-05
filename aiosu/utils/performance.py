@@ -108,7 +108,8 @@ class OsuPerformanceCalculator(AbstractPerformanceCalculator):
 
                 if score.max_combo < full_combo_threshold:
                     effective_miss_count = full_combo_threshold / max(
-                        1, score.max_combo,
+                        1,
+                        score.max_combo,
                     )
 
                 effective_miss_count = min(
@@ -122,13 +123,16 @@ class OsuPerformanceCalculator(AbstractPerformanceCalculator):
 
                 if score.max_combo < full_combo_threshold:
                     effective_miss_count = full_combo_threshold / max(
-                        1, score.max_combo,
+                        1,
+                        score.max_combo,
                     )
 
                 effective_miss_count = min(effective_miss_count, score.statistics.count_large_tick_miss + score.statistics.count_miss)  # type: ignore
 
         effective_miss_count = clamp(
-            effective_miss_count, score.statistics.count_miss, total_hits,
+            effective_miss_count,
+            score.statistics.count_miss,
+            total_hits,
         )
 
         multiplier = OSU_BASE_MULTIPLIER
@@ -445,7 +449,9 @@ class OsuPerformanceCalculator(AbstractPerformanceCalculator):
         )
 
     def _calculate_miss_penalty(
-        self, effective_miss_count: float, difficult_strain_count: float,
+        self,
+        effective_miss_count: float,
+        difficult_strain_count: float,
     ) -> float:
         return 0.96 / (
             (effective_miss_count / (4 * pow(math.log(difficult_strain_count), 0.94)))
