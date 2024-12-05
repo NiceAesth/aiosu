@@ -114,6 +114,8 @@ class ScoreStatistics(BaseModel):
     count_300: int
     count_geki: int
     count_katu: int
+    count_large_tick_miss: Optional[int] = None
+    count_slider_tail_hit: Optional[int] = None
 
     @model_validator(mode="before")
     @classmethod

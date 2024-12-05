@@ -368,6 +368,8 @@ class BeatmapDifficultyAttributes(BaseModel):
     slider_factor: Optional[float] = None
     speed_difficulty: Optional[float] = None
     speed_note_count: Optional[float] = None
+    aim_difficult_strain_count: Optional[float] = None
+    speed_difficult_strain_count: Optional[float] = None
     # osu taiko
     stamina_difficulty: Optional[float] = None
     rhythm_difficulty: Optional[float] = None
