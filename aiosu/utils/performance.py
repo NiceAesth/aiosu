@@ -79,7 +79,7 @@ class OsuPerformanceCalculator(AbstractPerformanceCalculator):
     :type difficulty_attributes: BeatmapDifficultyAttributes
     """
 
-    def _is_slider_head_accuracy(self, Score) -> bool:
+    def _is_slider_head_accuracy(self, score: Score) -> bool:
         return True
 
     def calculate(self, score: Score) -> OsuPerformanceAttributes:
