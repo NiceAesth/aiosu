@@ -11,16 +11,16 @@ repos:
       - id: requirements-txt-fixer
       - id: trailing-whitespace
   - repo: https://github.com/psf/black
-    rev: 24.10.0
+    rev: 25.1.0
     hooks:
       - id: black
   - repo: https://github.com/asottile/pyupgrade
-    rev: v3.19.0
+    rev: v3.19.1
     hooks:
       - id: pyupgrade
         args: [--py39-plus, --keep-runtime-typing]
   - repo: https://github.com/pycqa/isort
-    rev: 5.13.2
+    rev: 6.0.1
     hooks:
       - id: isort
   - repo: https://github.com/asottile/add-trailing-comma
@@ -32,11 +32,11 @@ repos:
     hooks:
       - id: blacken-docs
   - repo: https://github.com/hadialqattan/pycln
-    rev: v2.4.0
+    rev: v2.5.0
     hooks:
       - id: pycln
   - repo: https://github.com/python-poetry/poetry
-    rev: 1.8.0
+    rev: 2.1.1
     hooks:
       - id: poetry-check
   - repo: https://github.com/aio-libs/sort-all
