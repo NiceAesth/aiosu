@@ -104,8 +104,6 @@ class OsuPerformanceCalculator(AbstractPerformanceCalculator):
 
         assert score.beatmap.count_spinners is not None
         assert score.beatmap.count_sliders is not None
-        assert score.statistics.count_slider_tail_hit is not None
-        assert score.statistics.count_large_tick_miss is not None
 
         if score.beatmap.count_sliders > 0:
             if self._is_slider_head_accuracy(score):
@@ -127,6 +125,9 @@ class OsuPerformanceCalculator(AbstractPerformanceCalculator):
                     + score.statistics.count_miss,
                 )
             else:
+                assert score.statistics.count_slider_tail_hit is not None
+                assert score.statistics.count_large_tick_miss is not None
+
                 full_combo_threshold = self.difficulty_attributes.max_combo - (
                     score.beatmap.count_sliders - score.statistics.count_slider_tail_hit
                 )
