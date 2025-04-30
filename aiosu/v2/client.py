@@ -1226,7 +1226,8 @@ class Client(Eventable):
             params,
             kwargs,
             key="mods",
-            converter=lambda x: [str(y) for y in Mods(x)],
+            param_name="mods[]",
+            converter=lambda x: [str(y) for y in Mods(x)] if len(x) > 0 else "NM",
         )
         add_param(params, kwargs, key="type")
         add_param(params, kwargs, key="legacy_only", converter=int)
