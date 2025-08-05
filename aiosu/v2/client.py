@@ -1511,7 +1511,9 @@ class Client(Eventable):
             params,
             kwargs,
             key="type",
-            converter=lambda x: str(BeatmapPackType[x]),
+            converter=lambda x: str(
+                x if isinstance(x, BeatmapPackType) else BeatmapPackType[x],
+            ),
         )
         add_param(params, kwargs, key="cursor_string")
         json = await self._request("GET", url, params=params)
