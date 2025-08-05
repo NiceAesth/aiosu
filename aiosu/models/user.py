@@ -42,6 +42,7 @@ __all__ = (
     "UserStats",
     "UserStatsRulesets",
     "UserStatsVariant",
+    "UserTeam",
 )
 
 
@@ -286,6 +287,13 @@ class UserRelation(BaseModel):
     target: Optional[User] = None
 
 
+class UserTeam(BaseModel):
+    id: int
+    name: str
+    short_name: str
+    flag_url: Optional[str] = None
+
+
 class User(BaseModel):
     avatar_url: str
     country_code: str
@@ -346,6 +354,7 @@ class User(BaseModel):
     statistics: Optional[UserStats] = None
     statistics_rulesets: Optional[UserStatsRulesets] = None
     support_level: Optional[int] = None
+    team: Optional[UserTeam] = None
     unread_pm_count: Optional[int] = None
     user_achievements: Optional[list[UserAchievmement]] = None
 
