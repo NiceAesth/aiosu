@@ -57,7 +57,7 @@ _mod_short_names = {
     "Key1": "1K",
     "Key3": "3K",
     "Key2": "2K",
-    "ScoreV2": "V2",
+    "ScoreV2": "SV2",
     "Mirror": "MR",
 }
 
