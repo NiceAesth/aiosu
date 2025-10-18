@@ -23,7 +23,7 @@ version = "2.3.2"
 description = "Simple and fast osu! API v1 and v2 library"
 requires-python = ">=3.10,<4.0"
 authors = [{ name = "Nice Aesthetics", email = "nice@aesth.dev" }]
-license = { text = "GPL-3.0-or-later" }
+license = "GPL-3.0-or-later"
 readme = "README.rst"
 keywords = ["osu!", "osu", "api"]
 dependencies = [
