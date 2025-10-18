@@ -6,7 +6,6 @@ from __future__ import annotations
 
 from datetime import datetime
 from typing import Literal
-from typing import Optional
 
 from pydantic import Field
 
@@ -56,35 +55,35 @@ class ArtistLabel(BaseModel):
     description: str
     icon_url: str
     header_url: str
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
-    soundcloud: Optional[str] = None
-    website: Optional[str] = None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
+    soundcloud: str | None = None
+    website: str | None = None
 
 
 class Artist(BaseModel):
     id: int
     name: str
-    user_id: Optional[int] = None
-    description: Optional[str] = None
-    visible: Optional[bool] = None
-    header_url: Optional[str] = None
-    cover_url: Optional[str] = None
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
-    beatmapsets: Optional[list[Beatmapset]] = None
-    label: Optional[ArtistLabel] = None
-    albums: Optional[list[ArtistAlbum]] = None
-    tracks: Optional[list[ArtistTrack]] = None
-    bandcamp: Optional[str] = None
-    facebook: Optional[str] = None
-    patreon: Optional[str] = None
-    soundcloud: Optional[str] = None
-    spotify: Optional[str] = None
-    twitter: Optional[str] = None
-    website: Optional[str] = None
-    youtube: Optional[str] = None
-    video_url: Optional[str] = None
+    user_id: int | None = None
+    description: str | None = None
+    visible: bool | None = None
+    header_url: str | None = None
+    cover_url: str | None = None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
+    beatmapsets: list[Beatmapset] | None = None
+    label: ArtistLabel | None = None
+    albums: list[ArtistAlbum] | None = None
+    tracks: list[ArtistTrack] | None = None
+    bandcamp: str | None = None
+    facebook: str | None = None
+    patreon: str | None = None
+    soundcloud: str | None = None
+    spotify: str | None = None
+    twitter: str | None = None
+    website: str | None = None
+    youtube: str | None = None
+    video_url: str | None = None
 
 
 class ArtistAlbum(BaseModel):
@@ -110,14 +109,14 @@ class ArtistTrack(BaseModel):
     artist: Artist
     osz_url: str = Field(alias="osz")
     preview_url: str = Field(alias="preview")
-    album: Optional[ArtistAlbum] = None
-    album_id: Optional[int] = None
-    updated_at: Optional[datetime] = None
-    version: Optional[str] = None
+    album: ArtistAlbum | None = None
+    album_id: int | None = None
+    updated_at: datetime | None = None
+    version: str | None = None
 
 
 class ArtistTracksResponse(CursorModel):
     """Artist response model."""
 
     artist_tracks: list[ArtistTrack]
-    search: Optional[ArtistSearch] = None
+    search: ArtistSearch | None = None

@@ -4,7 +4,6 @@ from collections.abc import Mapping
 from datetime import datetime
 from enum import IntEnum
 from enum import unique
-from typing import Optional
 
 from pydantic import Field
 from pydantic import field_validator
@@ -99,7 +98,7 @@ class MatchGame(BaseModel):
     team_type: MatchTeamType
     scores: list[MatchScore]
     mods: Mods
-    end_time: Optional[datetime] = None
+    end_time: datetime | None = None
     """None if game was aborted."""
 
     @field_validator("mode", mode="before")
@@ -130,7 +129,7 @@ class Match(BaseModel):
     name: str
     start_time: datetime
     games: list[MatchGame]
-    end_time: Optional[datetime] = None
+    end_time: datetime | None = None
     """None if game is ongoing."""
 
     @model_validator(mode="before")

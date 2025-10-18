@@ -6,7 +6,6 @@ from __future__ import annotations
 
 from datetime import datetime
 from functools import cached_property
-from typing import Optional
 
 from pydantic import Field
 from pydantic import computed_field
@@ -32,7 +31,7 @@ __all__ = (
 def calculate_score_completion(
     statistics: LazerScoreStatistics,
     beatmap: Beatmap,
-) -> Optional[float]:
+) -> float | None:
     """Calculates completion for a score.
 
     :param statistics: The statistics of the score
@@ -123,8 +122,8 @@ class LazerReplayData(BaseModel):
     mods: list[LazerMod]
     statistics: LazerScoreStatistics
     maximum_statistics: LazerScoreStatistics
-    online_id: Optional[int] = None
-    client_version: Optional[str] = None
+    online_id: int | None = None
+    client_version: str | None = None
 
 
 class LazerScore(BaseModel):
@@ -144,26 +143,26 @@ class LazerScore(BaseModel):
     total_score: int = Field(validation_alias="score")
     type: ScoreType
     user_id: int
-    beatmap: Optional[Beatmap] = None
-    beatmapset: Optional[Beatmapset] = None
-    best_id: Optional[int] = None
-    build_id: Optional[int] = None
-    current_user_attributes: Optional[CurrentUserAttributes] = None
-    id: Optional[int] = None
-    match: Optional[MultiplayerMatch] = None
-    preserved: Optional[bool] = None
-    position: Optional[int] = None
-    ranked: Optional[bool] = None
-    rank_country: Optional[int] = None
-    rank_global: Optional[int] = None
-    legacy_score_id: Optional[int] = None
-    legacy_total_score: Optional[int] = None
-    playlist_item_id: Optional[int] = None
-    pp: Optional[float] = None
-    room_id: Optional[int] = None
-    started_at: Optional[datetime] = None
-    user: Optional[User] = None
-    weight: Optional[ScoreWeight] = None
+    beatmap: Beatmap | None = None
+    beatmapset: Beatmapset | None = None
+    best_id: int | None = None
+    build_id: int | None = None
+    current_user_attributes: CurrentUserAttributes | None = None
+    id: int | None = None
+    match: MultiplayerMatch | None = None
+    preserved: bool | None = None
+    position: int | None = None
+    ranked: bool | None = None
+    rank_country: int | None = None
+    rank_global: int | None = None
+    legacy_score_id: int | None = None
+    legacy_total_score: int | None = None
+    playlist_item_id: int | None = None
+    pp: float | None = None
+    room_id: int | None = None
+    started_at: datetime | None = None
+    user: User | None = None
+    weight: ScoreWeight | None = None
 
     @property
     def created_at(self) -> datetime:
@@ -179,7 +178,7 @@ class LazerScore(BaseModel):
         return self.has_replay
 
     @property
-    def score_url(self) -> Optional[str]:
+    def score_url(self) -> str | None:
         r"""Link to the score.
 
         :return: Link to the score on the osu! website
@@ -195,7 +194,7 @@ class LazerScore(BaseModel):
         return f"https://osu.ppy.sh/scores/{self.mode.name_api}/{self.best_id}"
 
     @property
-    def replay_url(self) -> Optional[str]:
+    def replay_url(self) -> str | None:
         r"""Link to the replay.
 
         :return: Link to download the replay on the osu! website
@@ -210,7 +209,7 @@ class LazerScore(BaseModel):
 
     @computed_field  # type: ignore
     @cached_property
-    def completion(self) -> Optional[float]:
+    def completion(self) -> float | None:
         """Beatmap completion.
 
         :return: Beatmap completion of a score (%). 100% for passes. None if no beatmap.

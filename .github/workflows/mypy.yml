@@ -27,4 +27,4 @@ jobs:
           path: ''
           requirements: ".[test]"
           mypy_flags: '--config-file pyproject.toml'
-          python_version: "3.9"
+          python_version: "3.10"

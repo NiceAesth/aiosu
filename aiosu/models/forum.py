@@ -6,7 +6,6 @@ from __future__ import annotations
 
 from datetime import datetime
 from typing import Literal
-from typing import Optional
 
 from .base import BaseModel
 from .common import CursorModel
@@ -32,7 +31,7 @@ ForumTopicType = Literal[
 class ForumPollOption(BaseModel):
     id: int
     text: HTMLBody
-    vote_count: Optional[int] = None
+    vote_count: int | None = None
 
 
 class ForumPoll(BaseModel):
@@ -43,8 +42,8 @@ class ForumPoll(BaseModel):
     options: list[ForumPollOption]
     started_at: datetime
     title: HTMLBody
-    ended_at: Optional[datetime] = None
-    last_vote_at: Optional[datetime] = None
+    ended_at: datetime | None = None
+    last_vote_at: datetime | None = None
 
 
 class ForumTopic(BaseModel):
@@ -59,8 +58,8 @@ class ForumTopic(BaseModel):
     type: ForumTopicType
     updated_at: datetime
     user_id: int
-    deleted_at: Optional[datetime] = None
-    poll: Optional[ForumPoll] = None
+    deleted_at: datetime | None = None
+    poll: ForumPoll | None = None
 
 
 class ForumPost(BaseModel):
@@ -69,10 +68,10 @@ class ForumPost(BaseModel):
     forum_id: int
     topic_id: int
     user_id: int
-    edited_by_id: Optional[int] = None
-    edited_at: Optional[datetime] = None
-    deleted_at: Optional[datetime] = None
-    body: Optional[HTMLBody] = None
+    edited_by_id: int | None = None
+    edited_at: datetime | None = None
+    deleted_at: datetime | None = None
+    body: HTMLBody | None = None
 
 
 class ForumTopicResponse(CursorModel):

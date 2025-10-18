@@ -5,11 +5,10 @@ This module contains models for miscellaneous objects.
 from __future__ import annotations
 
 from collections.abc import Awaitable
+from collections.abc import Callable
 from datetime import datetime
 from functools import cached_property
-from typing import Callable
 from typing import Literal
-from typing import Optional
 
 from emojiflags.lookup import lookup as flag_lookup  # type: ignore
 from pydantic import Field
@@ -71,8 +70,8 @@ class Achievement(BaseModel):
     grouping: str
     icon_url: str
     ordering: int
-    mode: Optional[Gamemode] = None
-    instructions: Optional[str] = None
+    mode: Gamemode | None = None
+    instructions: str | None = None
 
 
 class Country(BaseModel):
@@ -92,40 +91,40 @@ class Country(BaseModel):
 
 class HTMLBody(BaseModel):
     html: str
-    raw: Optional[str] = None
-    bbcode: Optional[str] = None
+    raw: str | None = None
+    bbcode: str | None = None
 
 
 class PinAttributes(BaseModel):
     is_pinned: bool
     score_id: int
-    score_type: Optional[ScoreType] = None
+    score_type: ScoreType | None = None
 
 
 class CurrentUserAttributes(BaseModel):
-    can_beatmap_update_owner: Optional[bool] = None
-    can_delete: Optional[bool] = None
-    can_edit_metadata: Optional[bool] = None
-    can_edit_tags: Optional[bool] = None
-    can_hype: Optional[bool] = None
-    can_hype_reason: Optional[str] = None
-    can_love: Optional[bool] = None
-    can_remove_from_loved: Optional[bool] = None
-    is_watching: Optional[bool] = None
-    new_hype_time: Optional[datetime] = None
-    nomination_modes: Optional[list[Gamemode]] = None
-    remaining_hype: Optional[int] = None
-    can_destroy: Optional[bool] = None
-    can_reopen: Optional[bool] = None
-    can_moderate_kudosu: Optional[bool] = None
-    can_resolve: Optional[bool] = None
-    vote_score: Optional[int] = None
-    can_message: Optional[bool] = None
-    can_message_error: Optional[str] = None
-    last_read_id: Optional[int] = None
-    can_new_comment: Optional[bool] = None
-    can_new_comment_reason: Optional[str] = None
-    pin: Optional[PinAttributes] = None
+    can_beatmap_update_owner: bool | None = None
+    can_delete: bool | None = None
+    can_edit_metadata: bool | None = None
+    can_edit_tags: bool | None = None
+    can_hype: bool | None = None
+    can_hype_reason: str | None = None
+    can_love: bool | None = None
+    can_remove_from_loved: bool | None = None
+    is_watching: bool | None = None
+    new_hype_time: datetime | None = None
+    nomination_modes: list[Gamemode] | None = None
+    remaining_hype: int | None = None
+    can_destroy: bool | None = None
+    can_reopen: bool | None = None
+    can_moderate_kudosu: bool | None = None
+    can_resolve: bool | None = None
+    vote_score: int | None = None
+    can_message: bool | None = None
+    can_message_error: str | None = None
+    last_read_id: int | None = None
+    can_new_comment: bool | None = None
+    can_new_comment_reason: str | None = None
+    pin: PinAttributes | None = None
 
 
 class CursorModel(BaseModel):
@@ -134,8 +133,8 @@ class CursorModel(BaseModel):
     Use the provided .model_dump_json() or .model_dump() methods instead.
     """
 
-    cursor_string: Optional[str] = None
-    next: Optional[Callable[[object, object], Awaitable[CursorModel]]] = Field(
+    cursor_string: str | None = None
+    next: Callable[[object, object], Awaitable[CursorModel]] | None = Field(
         default=None,
         exclude=True,
     )

@@ -5,7 +5,6 @@ This module contains authorization functions.
 from __future__ import annotations
 
 import urllib.parse
-from typing import Optional
 
 import aiohttp
 import orjson
@@ -70,7 +69,7 @@ def generate_url(
     redirect_uri: str,
     base_url: str = "https://osu.ppy.sh",
     scopes: Scopes = Scopes.PUBLIC | Scopes.IDENTIFY,
-    state: Optional[str] = None,
+    state: str | None = None,
 ) -> str:
     r"""Generates an OAuth URL.
 

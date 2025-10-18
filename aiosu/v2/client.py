@@ -8,11 +8,11 @@ from __future__ import annotations
 
 import functools
 from collections.abc import Awaitable
+from collections.abc import Callable
 from datetime import datetime
 from functools import partial
 from io import BytesIO
 from typing import TYPE_CHECKING
-from typing import Callable
 from typing import Literal
 from typing import TypeVar
 from typing import cast
@@ -90,8 +90,6 @@ from .repository import SimpleTokenRepository
 if TYPE_CHECKING:
     from types import TracebackType
     from typing import Any
-    from typing import Optional
-    from typing import Union
 
 __all__ = ("Client",)
 
@@ -238,22 +236,22 @@ class Client(Eventable):
         self.session_id: int = kwargs.pop("session_id", 0)
         self.client_id: int = kwargs.pop("client_id", None)
         self.client_secret: str = kwargs.pop("client_secret", None)
-        self._initial_token: Optional[OAuthToken] = kwargs.pop("token", None)
+        self._initial_token: OAuthToken | None = kwargs.pop("token", None)
         self.base_url: str = kwargs.pop("base_url", "https://osu.ppy.sh")
         self._limiter: AsyncLimiter = AsyncLimiter(
             max_rate=max_rate,
             time_period=time_period,
         )
-        self._session: Optional[aiohttp.ClientSession] = None
+        self._session: aiohttp.ClientSession | None = None
 
     async def __aenter__(self) -> Client:
         return self
 
     async def __aexit__(
         self,
-        exc_type: Optional[type[BaseException]],
-        exc: Optional[BaseException],
-        traceback: Optional[TracebackType],
+        exc_type: type[BaseException] | None,
+        exc: BaseException | None,
+        traceback: TracebackType | None,
     ) -> None:
         await self.aclose()
 
@@ -315,7 +313,7 @@ class Client(Eventable):
             "Accept": "application/json",
         }
 
-    async def _refresh_auth_data(self) -> dict[str, Union[str, int]]:
+    async def _refresh_auth_data(self) -> dict[str, str | int]:
         token = await self.get_current_token()
         return {
             "client_id": self.client_id,
@@ -324,7 +322,7 @@ class Client(Eventable):
             "refresh_token": token.refresh_token,
         }
 
-    def _refresh_guest_data(self) -> dict[str, Union[str, int]]:
+    def _refresh_guest_data(self) -> dict[str, str | int]:
         return {
             "client_id": self.client_id,
             "client_secret": self.client_secret,
@@ -528,7 +526,7 @@ class Client(Eventable):
     @prepare_token
     async def lookup_changelog_build(
         self,
-        changelog_query: Union[str, int],
+        changelog_query: str | int,
         **kwargs: Any,
     ) -> Build:
         r"""Looks up a build from the changelog.
@@ -594,7 +592,7 @@ class Client(Eventable):
     @prepare_token
     async def get_news_post(
         self,
-        news_query: Union[str, int],
+        news_query: str | int,
         **kwargs: Any,
     ) -> NewsPost:
         r"""Gets a news post.
@@ -777,7 +775,7 @@ class Client(Eventable):
     @prepare_token
     @check_token
     @requires_scope(Scopes.PUBLIC)
-    async def get_user(self, user_query: Union[str, int], **kwargs: Any) -> User:
+    async def get_user(self, user_query: str | int, **kwargs: Any) -> User:
         r"""Gets a user by a query.
 
         :param user_query: Username or ID to search by
@@ -868,7 +866,7 @@ class Client(Eventable):
         user_id: int,
         request_type: str,
         **kwargs: Any,
-    ) -> list[Union[Score, LazerScore]]:
+    ) -> list[Score | LazerScore]:
         r"""INTERNAL: Get a user's scores by type
 
         :param user_id: User ID to search by
@@ -926,7 +924,7 @@ class Client(Eventable):
         self,
         user_id: int,
         **kwargs: Any,
-    ) -> list[Union[Score, LazerScore]]:
+    ) -> list[Score | LazerScore]:
         r"""Get a user's recent scores.
 
         :param user_id: User ID to search by
@@ -957,7 +955,7 @@ class Client(Eventable):
         self,
         user_id: int,
         **kwargs: Any,
-    ) -> list[Union[Score, LazerScore]]:
+    ) -> list[Score | LazerScore]:
         r"""Get a user's top scores.
 
         :param user_id: User ID to search by
@@ -986,7 +984,7 @@ class Client(Eventable):
         self,
         user_id: int,
         **kwargs: Any,
-    ) -> list[Union[Score, LazerScore]]:
+    ) -> list[Score | LazerScore]:
         r"""Get a user's first place scores.
 
         :param user_id: User ID to search by
@@ -1015,7 +1013,7 @@ class Client(Eventable):
         self,
         user_id: int,
         **kwargs: Any,
-    ) -> list[Union[Score, LazerScore]]:
+    ) -> list[Score | LazerScore]:
         r"""Get a user's pinned scores.
 
         :param user_id: User ID to search by
@@ -1767,7 +1765,7 @@ class Client(Eventable):
         legacy_score_id: int,
         mode: Gamemode,
         **kwargs: Any,
-    ) -> Union[Score, LazerScore]:
+    ) -> Score | LazerScore:
         r"""Gets data about a score.
 
         :param legacy_score_id: The ID of the score

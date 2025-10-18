@@ -7,11 +7,10 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
     from collections.abc import Mapping
     from collections.abc import MutableMapping
     from typing import Any
-    from typing import Callable
-    from typing import Optional
     from typing import TypeVar
 
     T = TypeVar("T")
@@ -64,8 +63,8 @@ def add_param(
     params: MutableMapping[str, Any],
     kwargs: Mapping[str, object],
     key: str,
-    param_name: Optional[str] = None,
-    converter: Optional[Callable[[Any], T]] = None,
+    param_name: str | None = None,
+    converter: Callable[[Any], T] | None = None,
 ) -> bool:
     r"""Adds a parameter to a dictionary if it exists in kwargs.
 
@@ -97,7 +96,7 @@ def add_range(
     params: MutableMapping[str, Any],
     kwargs: Mapping[str, object],
     key: str,
-    param_name: Optional[str] = None,
+    param_name: str | None = None,
 ) -> None:
     r"""Adds a range parameter to a dictionary if it exists in kwargs.
 

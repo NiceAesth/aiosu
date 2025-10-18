@@ -6,7 +6,6 @@ from __future__ import annotations
 
 from datetime import datetime
 from typing import Literal
-from typing import Optional
 
 from .base import BaseModel
 from .common import CursorModel
@@ -28,8 +27,8 @@ class NewsSearch(BaseModel):
 
 
 class Navigation(BaseModel):
-    newer: Optional[NewsPost] = None
-    older: Optional[NewsPost] = None
+    newer: NewsPost | None = None
+    older: NewsPost | None = None
 
 
 class NewsPost(BaseModel):
@@ -40,10 +39,10 @@ class NewsPost(BaseModel):
     edit_url: str
     published_at: datetime
     updated_at: datetime
-    first_image: Optional[str] = None
-    content: Optional[str] = None
-    preview: Optional[str] = None
-    navigation: Optional[Navigation] = None
+    first_image: str | None = None
+    content: str | None = None
+    preview: str | None = None
+    navigation: Navigation | None = None
 
 
 class NewsSidebar(BaseModel):

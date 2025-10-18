@@ -7,7 +7,6 @@ from __future__ import annotations
 from datetime import datetime
 from enum import IntFlag
 from enum import unique
-from typing import Optional
 
 from pydantic import model_validator
 
@@ -99,10 +98,10 @@ class ReplayFile(BaseModel):
     statistics: ScoreStatistics
     replay_data: list[ReplayEvent]
     lifebar_data: list[ReplayLifebarEvent]
-    mod_extras: Optional[float] = None
-    skip_offset: Optional[int] = None
-    rng_seed: Optional[int] = None
-    lazer_replay_data: Optional[LazerReplayData] = None
+    mod_extras: float | None = None
+    skip_offset: int | None = None
+    rng_seed: int | None = None
+    lazer_replay_data: LazerReplayData | None = None
 
     def __repr__(self) -> str:
         return f"<Replay {self.player_name} {self.map_md5}>"

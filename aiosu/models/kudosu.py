@@ -6,7 +6,6 @@ from __future__ import annotations
 
 from datetime import datetime
 from typing import Literal
-from typing import Optional
 
 from .base import BaseModel
 
@@ -34,7 +33,7 @@ class KudosuGiver(BaseModel):
 
 class KudosuPost(BaseModel):
     title: str
-    url: Optional[str] = None
+    url: str | None = None
 
 
 class KudosuHistory(BaseModel):
@@ -43,5 +42,5 @@ class KudosuHistory(BaseModel):
     created_at: datetime
     amount: int
     model: str
-    giver: Optional[KudosuGiver] = None
-    post: Optional[KudosuPost] = None
+    giver: KudosuGiver | None = None
+    post: KudosuPost | None = None

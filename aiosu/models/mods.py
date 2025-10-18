@@ -15,7 +15,7 @@ from pydantic_core import CoreSchema
 from pydantic_core import core_schema
 
 if TYPE_CHECKING:
-    from typing import Union
+    pass
 
 __all__ = (
     "FreemodAllowed",
@@ -145,7 +145,7 @@ class Mod(IntEnum):
 class Mods(UserList):
     """List of Mod objects"""
 
-    def __init__(self, mods: Union[list[str], str, int]) -> None:
+    def __init__(self, mods: list[str] | str | int) -> None:
         super().__init__(self)
         self.data = []
         if isinstance(mods, str):  # string of mods
