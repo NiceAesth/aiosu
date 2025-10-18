@@ -10,7 +10,6 @@ import os
 from abc import ABC
 from abc import abstractmethod
 from functools import partial
-from typing import Optional
 
 import aiohttp
 import orjson
@@ -40,9 +39,9 @@ class TestGeneratorBase(ABC):
         url: str,
         filename: str,
         expect_status: int = 200,
-        headers: Optional[dict] = None,
-        params: Optional[dict] = None,
-        data: Optional[dict] = None,
+        headers: dict | None = None,
+        params: dict | None = None,
+        data: dict | None = None,
     ) -> None:
         self.routes.append(
             partial(
@@ -70,9 +69,9 @@ class TestGeneratorBase(ABC):
         url: str,
         filename: str,
         expect_status: int,
-        headers: Optional[dict] = None,
-        params: Optional[dict] = None,
-        data: Optional[dict] = None,
+        headers: dict | None = None,
+        params: dict | None = None,
+        data: dict | None = None,
     ) -> None:
         async with self.client._session.request(
             method,

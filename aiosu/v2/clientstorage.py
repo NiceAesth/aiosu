@@ -6,8 +6,8 @@ from __future__ import annotations
 
 import functools
 from collections.abc import Awaitable
+from collections.abc import Callable
 from typing import TYPE_CHECKING
-from typing import Callable
 from typing import TypeVar
 from typing import cast
 
@@ -23,8 +23,6 @@ from .repository import SimpleTokenRepository
 if TYPE_CHECKING:
     from types import TracebackType
     from typing import Any
-    from typing import Optional
-    from typing import Union
 
 __all__ = ("ClientStorage",)
 
@@ -76,9 +74,9 @@ class ClientStorage(Eventable):
 
     async def __aexit__(
         self,
-        exc_type: Optional[type[BaseException]],
-        exc: Optional[BaseException],
-        traceback: Optional[TracebackType],
+        exc_type: type[BaseException] | None,
+        exc: BaseException | None,
+        traceback: TracebackType | None,
     ) -> None:
         await self.aclose()
 
@@ -114,7 +112,7 @@ class ClientStorage(Eventable):
 
         return cast(F, _on_client_update)
 
-    def _get_client_args(self) -> dict[str, Union[str, int]]:
+    def _get_client_args(self) -> dict[str, str | int]:
         return {
             "client_secret": self.client_secret,
             "client_id": self.client_id,

@@ -5,7 +5,6 @@ This module contains models for chat.
 from __future__ import annotations
 
 from typing import Literal
-from typing import Optional
 
 from pydantic import Field
 
@@ -53,11 +52,11 @@ class ChatChannel(BaseModel):
     name: str
     moderated: bool
     message_length_limit: int
-    icon: Optional[str] = None
-    description: Optional[str] = None
-    last_message_id: Optional[int] = None
-    user_ids: Optional[list[int]] = Field(default=None, alias="users")
-    current_user_attributes: Optional[CurrentUserAttributes] = None
+    icon: str | None = None
+    description: str | None = None
+    last_message_id: int | None = None
+    user_ids: list[int] | None = Field(default=None, alias="users")
+    current_user_attributes: CurrentUserAttributes | None = None
 
 
 class ChatMessage(BaseModel):
@@ -67,8 +66,8 @@ class ChatMessage(BaseModel):
     timestamp: str
     content: str
     is_action: bool
-    uuid: Optional[str] = None
-    sender: Optional[User] = None
+    uuid: str | None = None
+    sender: User | None = None
 
 
 class ChatMessageCreateResponse(BaseModel):
@@ -77,11 +76,11 @@ class ChatMessageCreateResponse(BaseModel):
 
 
 class ChatUpdateResponse(BaseModel):
-    messages: Optional[list[ChatMessage]] = None
-    presence: Optional[list[ChatChannel]] = None
+    messages: list[ChatMessage] | None = None
+    presence: list[ChatChannel] | None = None
     silences: list
 
 
 class ChatChannelResponse(BaseModel):
     channel: ChatChannel
-    users: Optional[list[User]] = None
+    users: list[User] | None = None

@@ -7,8 +7,6 @@ from __future__ import annotations
 from collections.abc import Mapping
 from datetime import datetime
 from typing import Literal
-from typing import Optional
-from typing import Union
 
 from pydantic import Field
 from pydantic import model_validator
@@ -76,15 +74,15 @@ class MultiplayerScoresAround(BaseModel):
 
 class MultiplayerScoresResponse(CursorModel):
     scores: list[LazerScore]
-    user_score: Optional[LazerScore] = None
-    total: Optional[int] = None
+    user_score: LazerScore | None = None
+    total: int | None = None
 
 
 class MultiplayerMatch(BaseModel):
     id: int
     name: str
     start_time: datetime
-    end_time: Optional[datetime] = None
+    end_time: datetime | None = None
 
 
 class MultiplayerGame(BaseModel):
@@ -93,19 +91,19 @@ class MultiplayerGame(BaseModel):
     mode: Gamemode
     scoring_type: MultiplayerScoringType
     team_type: MultiplayerTeamType
-    mods: list[Union[Mods, LazerMod]]
+    mods: list[Mods | LazerMod]
     beatmap_id: int
     scores: list[Score]
-    beatmap: Optional[Beatmap] = None
-    end_time: Optional[datetime] = None
+    beatmap: Beatmap | None = None
+    end_time: datetime | None = None
 
 
 class MultiplayerEvent(BaseModel):
     id: int
     timestamp: datetime
     type: MultiplayerEventType
-    user_id: Optional[int] = None
-    game: Optional[MultiplayerGame] = None
+    user_id: int | None = None
+    game: MultiplayerGame | None = None
 
     @model_validator(mode="before")
     @classmethod
@@ -121,7 +119,7 @@ class MultiplayerMatchResponse(BaseModel):
     users: list[User]
     first_event_id: int
     latest_event_id: int
-    current_game_id: Optional[int] = None
+    current_game_id: int | None = None
 
 
 class MultiplayerMatchesResponse(CursorModel):
@@ -138,8 +136,8 @@ class MultiplayerPlaylistItem(BaseModel):
     expired: bool
     owner_id: int
     beatmap: Beatmap
-    playlist_order: Optional[int] = None
-    played_at: Optional[datetime] = None
+    playlist_order: int | None = None
+    played_at: datetime | None = None
 
 
 class MultiplayerRoom(BaseModel):
@@ -156,10 +154,10 @@ class MultiplayerRoom(BaseModel):
     queue_mode: MultiplayerQueueMode
     playlist: list[MultiplayerPlaylistItem]
     recent_participants: list[User]
-    participant_count: Optional[int] = None
-    starts_at: Optional[datetime] = None
-    ends_at: Optional[datetime] = None
-    max_attempts: Optional[int] = None
+    participant_count: int | None = None
+    starts_at: datetime | None = None
+    ends_at: datetime | None = None
+    max_attempts: int | None = None
 
 
 class MultiplayerLeaderboardItem(BaseModel):
@@ -171,12 +169,12 @@ class MultiplayerLeaderboardItem(BaseModel):
     total_score: int
     user_id: int
     user: User
-    position: Optional[int] = None
+    position: int | None = None
 
 
 class MultiplayerLeaderboardResponse(BaseModel):
     leaderboard: list[MultiplayerLeaderboardItem]
-    user_score: Optional[MultiplayerLeaderboardItem] = None
+    user_score: MultiplayerLeaderboardItem | None = None
 
 
 class MultiplayerRoomsResponse(CursorModel):

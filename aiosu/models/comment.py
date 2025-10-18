@@ -6,7 +6,6 @@ from __future__ import annotations
 
 from datetime import datetime
 from typing import Literal
-from typing import Optional
 
 from .base import BaseModel
 from .common import CurrentUserAttributes
@@ -26,13 +25,13 @@ CommentableType = Literal["beatmapset", "news_post", "build"]
 
 
 class Commentable(BaseModel):
-    id: Optional[int] = None
-    title: Optional[str] = None
-    url: Optional[str] = None
-    type: Optional[str] = None
-    owner_id: Optional[int] = None
-    owner_title: Optional[str] = None
-    current_user_attributes: Optional[CurrentUserAttributes] = None
+    id: int | None = None
+    title: str | None = None
+    url: str | None = None
+    type: str | None = None
+    owner_id: int | None = None
+    owner_title: str | None = None
+    current_user_attributes: CurrentUserAttributes | None = None
 
 
 class Comment(BaseModel):
@@ -44,14 +43,14 @@ class Comment(BaseModel):
     pinned: bool
     votes_count: int
     replies_count: int
-    message: Optional[str] = None
-    message_html: Optional[str] = None
-    deleted_at: Optional[datetime] = None
-    edited_at: Optional[datetime] = None
-    edited_by_id: Optional[int] = None
-    parent_id: Optional[int] = None
-    legacy_name: Optional[str] = None
-    user_id: Optional[int] = None
+    message: str | None = None
+    message_html: str | None = None
+    deleted_at: datetime | None = None
+    edited_at: datetime | None = None
+    edited_by_id: int | None = None
+    parent_id: int | None = None
+    legacy_name: str | None = None
+    user_id: int | None = None
 
 
 class CommentBundle(CursorModel):
@@ -63,7 +62,7 @@ class CommentBundle(CursorModel):
     user_follow: bool
     user_votes: list[int]
     users: list[User]
-    pinned_comments: Optional[list[Comment]] = None
-    total: Optional[int] = None
-    top_level_count: Optional[int] = None
-    has_more_id: Optional[int] = None
+    pinned_comments: list[Comment] | None = None
+    total: int | None = None
+    top_level_count: int | None = None
+    has_more_id: int | None = None
