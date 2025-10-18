@@ -6,7 +6,6 @@ from __future__ import annotations
 
 from datetime import datetime
 from typing import Literal
-from typing import Optional
 
 from .base import BaseModel
 
@@ -22,4 +21,4 @@ class Spotlight(BaseModel):
     type: SpotlightType
     start_date: datetime
     end_date: datetime
-    participant_count: Optional[int] = None
+    participant_count: int | None = None

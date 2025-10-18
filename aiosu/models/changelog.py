@@ -6,7 +6,6 @@ from __future__ import annotations
 
 from datetime import datetime
 from typing import Literal
-from typing import Optional
 
 from pydantic import Field
 
@@ -31,41 +30,41 @@ ChangelogEntryType = Literal["add", "fix"]
 
 class GithubUser(BaseModel):
     display_name: str
-    github_url: Optional[str] = None
-    id: Optional[int] = None
-    osu_username: Optional[str] = None
-    user_id: Optional[int] = None
-    user_url: Optional[str] = None
+    github_url: str | None = None
+    id: int | None = None
+    osu_username: str | None = None
+    user_id: int | None = None
+    user_url: str | None = None
 
 
 class ChangelogEntry(BaseModel):
     type: ChangelogEntryType
     category: str
     major: bool
-    id: Optional[int] = None
-    title: Optional[str] = None
-    created_at: Optional[datetime] = None
-    url: Optional[str] = None
-    github_url: Optional[str] = None
-    github_pull_request_id: Optional[int] = None
-    repository: Optional[str] = None
-    message: Optional[str] = None
-    message_html: Optional[str] = None
-    github_user: Optional[GithubUser] = None
+    id: int | None = None
+    title: str | None = None
+    created_at: datetime | None = None
+    url: str | None = None
+    github_url: str | None = None
+    github_pull_request_id: int | None = None
+    repository: str | None = None
+    message: str | None = None
+    message_html: str | None = None
+    github_user: GithubUser | None = None
 
 
 class Version(BaseModel):
-    next: Optional[Build] = None
-    previous: Optional[Build] = None
+    next: Build | None = None
+    previous: Build | None = None
 
 
 class UpdateStream(BaseModel):
     id: int
     is_featured: bool
     name: str
-    display_name: Optional[str] = None
-    user_count: Optional[int] = None
-    latest_build: Optional[Build] = None
+    display_name: str | None = None
+    user_count: int | None = None
+    latest_build: Build | None = None
 
 
 class Build(BaseModel):
@@ -74,18 +73,18 @@ class Build(BaseModel):
     display_version: str
     users: int
     version: str
-    youtube_id: Optional[str] = None
-    update_stream: Optional[UpdateStream] = None
-    changelog_entries: Optional[list[ChangelogEntry]] = None
-    versions: Optional[Version] = None
+    youtube_id: str | None = None
+    update_stream: UpdateStream | None = None
+    changelog_entries: list[ChangelogEntry] | None = None
+    versions: Version | None = None
 
 
 class ChangelogSearch(BaseModel):
     limit: int
-    fro: Optional[str] = Field(default=None, alias="from")
-    to: Optional[str] = None
-    max_id: Optional[int] = None
-    stream: Optional[str] = None
+    fro: str | None = Field(default=None, alias="from")
+    to: str | None = None
+    max_id: int | None = None
+    stream: str | None = None
 
 
 class ChangelogListing(CursorModel):

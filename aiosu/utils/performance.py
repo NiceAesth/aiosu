@@ -6,8 +6,8 @@ from __future__ import annotations
 
 import abc
 import math
+from collections.abc import Callable
 from typing import TYPE_CHECKING
-from typing import Callable
 
 from ..models import CatchPerformanceAttributes
 from ..models import Gamemode

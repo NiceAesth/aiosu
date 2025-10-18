@@ -7,7 +7,6 @@ from __future__ import annotations
 from datetime import datetime
 from typing import TYPE_CHECKING
 from typing import Literal
-from typing import Optional
 
 from pydantic import Field
 
@@ -59,7 +58,7 @@ class EventBeatmapset(BaseModel):
 class EventUser(BaseModel):
     username: str
     url: str
-    previous_username: Optional[str] = Field(default=None, alias="previousUsername")
+    previous_username: str | None = Field(default=None, alias="previousUsername")
 
 
 class Event(BaseModel):
@@ -67,16 +66,16 @@ class Event(BaseModel):
     id: int
     type: EventType
     r"""Information on types: https://github.com/ppy/osu-web/blob/master/resources/js/interfaces/event-json.ts"""
-    parse_error: Optional[bool] = None
-    achievement: Optional[Achievement] = None
-    user: Optional[EventUser] = None
-    beatmap: Optional[EventBeatmap] = None
-    beatmapset: Optional[EventBeatmapset] = None
-    approval: Optional[BeatmapRankStatus] = None
-    count: Optional[int] = None
-    rank: Optional[int] = None
-    mode: Optional[Gamemode] = None
-    score_rank: Optional[str] = Field(default=None, alias="scoreRank")
+    parse_error: bool | None = None
+    achievement: Achievement | None = None
+    user: EventUser | None = None
+    beatmap: EventBeatmap | None = None
+    beatmapset: EventBeatmapset | None = None
+    approval: BeatmapRankStatus | None = None
+    count: int | None = None
+    rank: int | None = None
+    mode: Gamemode | None = None
+    score_rank: str | None = Field(default=None, alias="scoreRank")
 
 
 class EventResponse(CursorModel):

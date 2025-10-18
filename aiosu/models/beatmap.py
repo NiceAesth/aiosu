@@ -10,7 +10,6 @@ from enum import Enum
 from enum import unique
 from functools import cached_property
 from typing import Literal
-from typing import Optional
 
 from pydantic import Field
 from pydantic import computed_field
@@ -281,23 +280,23 @@ class BeatmapPackType(Enum):
 
 
 class BeatmapDescription(BaseModel):
-    bbcode: Optional[str] = None
-    description: Optional[str] = None
+    bbcode: str | None = None
+    description: str | None = None
 
 
 class BeatmapGenre(BaseModel):
     name: str
-    id: Optional[int] = None
+    id: int | None = None
 
 
 class BeatmapLanguage(BaseModel):
     name: str
-    id: Optional[int] = None
+    id: int | None = None
 
 
 class BeatmapAvailability(BaseModel):
-    more_information: Optional[str] = None
-    download_disabled: Optional[bool] = None
+    more_information: str | None = None
+    download_disabled: bool | None = None
 
     @classmethod
     def _from_api_v1(cls, data: Mapping[str, object]) -> BeatmapAvailability:
@@ -305,15 +304,15 @@ class BeatmapAvailability(BaseModel):
 
 
 class BeatmapNominations(BaseModel):
-    current: Optional[int] = None
-    required: Optional[int] = None
+    current: int | None = None
+    required: int | None = None
 
 
 class BeatmapNomination(BaseModel):
     beatmapset_id: int
     reset: bool
     user_id: int
-    rulesets: Optional[list[Gamemode]] = None
+    rulesets: list[Gamemode] | None = None
 
 
 class BeatmapCovers(BaseModel):
@@ -321,10 +320,10 @@ class BeatmapCovers(BaseModel):
     card: str
     list: str
     slimcover: str
-    cover_2_x: Optional[str] = Field(default=None, alias="cover@2x")
-    card_2_x: Optional[str] = Field(default=None, alias="card@2x")
-    list_2_x: Optional[str] = Field(default=None, alias="list@2x")
-    slimcover_2_x: Optional[str] = Field(default=None, alias="slimcover@2x")
+    cover_2_x: str | None = Field(default=None, alias="cover@2x")
+    card_2_x: str | None = Field(default=None, alias="card@2x")
+    list_2_x: str | None = Field(default=None, alias="list@2x")
+    slimcover_2_x: str | None = Field(default=None, alias="slimcover@2x")
 
     @classmethod
     def from_beatmapset_id(cls, beatmapset_id: int) -> BeatmapCovers:
@@ -353,30 +352,30 @@ class BeatmapHype(BaseModel):
 
 
 class BeatmapFailtimes(BaseModel):
-    exit: Optional[list[int]] = None
-    fail: Optional[list[int]] = None
+    exit: list[int] | None = None
+    fail: list[int] | None = None
 
 
 class BeatmapDifficultyAttributes(BaseModel):
     max_combo: int
     star_rating: float
     # osu standard
-    aim_difficulty: Optional[float] = None
-    approach_rate: Optional[float] = None  # osu catch + standard
-    flashlight_difficulty: Optional[float] = None
-    overall_difficulty: Optional[float] = None
-    slider_factor: Optional[float] = None
-    speed_difficulty: Optional[float] = None
-    speed_note_count: Optional[float] = None
-    aim_difficult_strain_count: Optional[float] = None
-    speed_difficult_strain_count: Optional[float] = None
+    aim_difficulty: float | None = None
+    approach_rate: float | None = None  # osu catch + standard
+    flashlight_difficulty: float | None = None
+    overall_difficulty: float | None = None
+    slider_factor: float | None = None
+    speed_difficulty: float | None = None
+    speed_note_count: float | None = None
+    aim_difficult_strain_count: float | None = None
+    speed_difficult_strain_count: float | None = None
     # osu taiko
-    stamina_difficulty: Optional[float] = None
-    rhythm_difficulty: Optional[float] = None
-    colour_difficulty: Optional[float] = None
+    stamina_difficulty: float | None = None
+    rhythm_difficulty: float | None = None
+    colour_difficulty: float | None = None
     # osu mania
-    great_hit_window: Optional[float] = None
-    score_multiplier: Optional[float] = None
+    great_hit_window: float | None = None
+    score_multiplier: float | None = None
 
 
 class Beatmap(BaseModel):
@@ -389,25 +388,25 @@ class Beatmap(BaseModel):
     total_length: int
     user_id: int
     version: str
-    accuracy: Optional[float] = None
-    ar: Optional[float] = None
-    cs: Optional[float] = None
-    bpm: Optional[float] = None
-    convert: Optional[bool] = None
-    count_circles: Optional[int] = None
-    count_sliders: Optional[int] = None
-    count_spinners: Optional[int] = None
-    deleted_at: Optional[datetime] = None
-    drain: Optional[float] = None
-    hit_length: Optional[int] = None
-    is_scoreable: Optional[bool] = None
-    last_updated: Optional[datetime] = None
-    passcount: Optional[int] = None
-    play_count: Optional[int] = Field(default=None, alias="playcount")
-    checksum: Optional[str] = None
-    max_combo: Optional[int] = None
-    beatmapset: Optional[Beatmapset] = None
-    failtimes: Optional[BeatmapFailtimes] = None
+    accuracy: float | None = None
+    ar: float | None = None
+    cs: float | None = None
+    bpm: float | None = None
+    convert: bool | None = None
+    count_circles: int | None = None
+    count_sliders: int | None = None
+    count_spinners: int | None = None
+    deleted_at: datetime | None = None
+    drain: float | None = None
+    hit_length: int | None = None
+    is_scoreable: bool | None = None
+    last_updated: datetime | None = None
+    passcount: int | None = None
+    play_count: int | None = Field(default=None, alias="playcount")
+    checksum: str | None = None
+    max_combo: int | None = None
+    beatmapset: Beatmapset | None = None
+    failtimes: BeatmapFailtimes | None = None
 
     @property
     def discussion_url(self) -> str:
@@ -415,7 +414,7 @@ class Beatmap(BaseModel):
 
     @computed_field  # type: ignore
     @cached_property
-    def count_objects(self) -> Optional[int]:
+    def count_objects(self) -> int | None:
         """Total count of the objects.
 
         :return: Sum of counts of all objects. None if no object count information.
@@ -486,37 +485,37 @@ class Beatmapset(BaseModel):
     title_unicode: str
     user_id: int
     video: bool
-    nsfw: Optional[bool] = None
-    hype: Optional[BeatmapHype] = None
-    availability: Optional[BeatmapAvailability] = None
-    bpm: Optional[float] = None
-    can_be_hyped: Optional[bool] = None
-    discussion_enabled: Optional[bool] = None
-    discussion_locked: Optional[bool] = None
-    is_scoreable: Optional[bool] = None
-    last_updated: Optional[datetime] = None
-    legacy_thread_url: Optional[str] = None
-    nominations: Optional[BeatmapNominations] = None
-    current_nominations: Optional[list[BeatmapNomination]] = None
-    ranked_date: Optional[datetime] = None
-    storyboard: Optional[bool] = None
-    submitted_date: Optional[datetime] = None
-    tags: Optional[str] = None
-    pack_tags: Optional[list[str]] = None
-    track_id: Optional[int] = None
-    user: Optional[User] = None
-    related_users: Optional[list[User]] = None
-    current_user_attributes: Optional[CurrentUserAttributes] = None
-    description: Optional[BeatmapDescription] = None
-    genre: Optional[BeatmapGenre] = None
-    language: Optional[BeatmapLanguage] = None
-    ratings: Optional[list[int]] = None
-    recent_favourites: Optional[list[User]] = None
-    discussions: Optional[list[BeatmapsetDiscussion]] = None
-    events: Optional[list[BeatmapsetEvent]] = None
-    has_favourited: Optional[bool] = None
-    beatmaps: Optional[list[Beatmap]] = None
-    converts: Optional[list[Beatmap]] = None
+    nsfw: bool | None = None
+    hype: BeatmapHype | None = None
+    availability: BeatmapAvailability | None = None
+    bpm: float | None = None
+    can_be_hyped: bool | None = None
+    discussion_enabled: bool | None = None
+    discussion_locked: bool | None = None
+    is_scoreable: bool | None = None
+    last_updated: datetime | None = None
+    legacy_thread_url: str | None = None
+    nominations: BeatmapNominations | None = None
+    current_nominations: list[BeatmapNomination] | None = None
+    ranked_date: datetime | None = None
+    storyboard: bool | None = None
+    submitted_date: datetime | None = None
+    tags: str | None = None
+    pack_tags: list[str] | None = None
+    track_id: int | None = None
+    user: User | None = None
+    related_users: list[User] | None = None
+    current_user_attributes: CurrentUserAttributes | None = None
+    description: BeatmapDescription | None = None
+    genre: BeatmapGenre | None = None
+    language: BeatmapLanguage | None = None
+    ratings: list[int] | None = None
+    recent_favourites: list[User] | None = None
+    discussions: list[BeatmapsetDiscussion] | None = None
+    events: list[BeatmapsetEvent] | None = None
+    has_favourited: bool | None = None
+    beatmaps: list[Beatmap] | None = None
+    converts: list[Beatmap] | None = None
 
     @computed_field  # type: ignore
     @property
@@ -564,8 +563,8 @@ class BeatmapsetSearchResponse(CursorModel):
 class BeatmapUserPlaycount(BaseModel):
     count: int
     beatmap_id: int
-    beatmap: Optional[Beatmap] = None
-    beatmapset: Optional[Beatmapset] = None
+    beatmap: Beatmap | None = None
+    beatmapset: Beatmapset | None = None
 
 
 class BeatmapsetDiscussionPost(BaseModel):
@@ -574,11 +573,11 @@ class BeatmapsetDiscussionPost(BaseModel):
     system: bool
     message: str
     created_at: datetime
-    beatmap_discussion_id: Optional[int] = None
-    last_editor_id: Optional[int] = None
-    deleted_by_id: Optional[int] = None
-    updated_at: Optional[datetime] = None
-    deleted_at: Optional[datetime] = None
+    beatmap_discussion_id: int | None = None
+    last_editor_id: int | None = None
+    deleted_by_id: int | None = None
+    updated_at: datetime | None = None
+    deleted_at: datetime | None = None
 
 
 class BeatmapsetDiscussion(BaseModel):
@@ -590,40 +589,40 @@ class BeatmapsetDiscussion(BaseModel):
     can_be_resolved: bool
     can_grant_kudosu: bool
     created_at: datetime
-    beatmap_id: Optional[int] = None
-    deleted_by_id: Optional[int] = None
-    parent_id: Optional[int] = None
-    timestamp: Optional[int] = None
-    updated_at: Optional[datetime] = None
-    deleted_at: Optional[datetime] = None
-    last_post_at: Optional[datetime] = None
-    kudosu_denied: Optional[bool] = None
-    starting_post: Optional[BeatmapsetDiscussionPost] = None
+    beatmap_id: int | None = None
+    deleted_by_id: int | None = None
+    parent_id: int | None = None
+    timestamp: int | None = None
+    updated_at: datetime | None = None
+    deleted_at: datetime | None = None
+    last_post_at: datetime | None = None
+    kudosu_denied: bool | None = None
+    starting_post: BeatmapsetDiscussionPost | None = None
 
 
 class BeatmapsetVoteEvent(BaseModel):
     score: int
     user_id: int
-    id: Optional[int] = None
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
-    beatmapset_discussion_id: Optional[int] = None
+    id: int | None = None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
+    beatmapset_discussion_id: int | None = None
 
 
 class BeatmapsetEventComment(BaseModel):
-    beatmap_discussion_id: Optional[int] = None
-    beatmap_discussion_post_id: Optional[int] = None
-    new_vote: Optional[BeatmapsetVoteEvent] = None
-    votes: Optional[list[BeatmapsetVoteEvent]] = None
-    mode: Optional[Gamemode] = None
-    reason: Optional[str] = None
-    source_user_id: Optional[int] = None
-    source_user_username: Optional[str] = None
-    nominator_ids: Optional[list[int]] = None
-    new: Optional[str] = None
-    old: Optional[str] = None
-    new_user_id: Optional[int] = None
-    new_user_username: Optional[str] = None
+    beatmap_discussion_id: int | None = None
+    beatmap_discussion_post_id: int | None = None
+    new_vote: BeatmapsetVoteEvent | None = None
+    votes: list[BeatmapsetVoteEvent] | None = None
+    mode: Gamemode | None = None
+    reason: str | None = None
+    source_user_id: int | None = None
+    source_user_username: str | None = None
+    nominator_ids: list[int] | None = None
+    new: str | None = None
+    old: str | None = None
+    new_user_id: int | None = None
+    new_user_username: str | None = None
 
 
 class BeatmapsetEvent(BaseModel):
@@ -631,10 +630,10 @@ class BeatmapsetEvent(BaseModel):
     type: BeatmapsetEventType
     r"""Information on types: https://github.com/ppy/osu-web/blob/master/resources/js/interfaces/beatmapset-event-json.ts"""
     created_at: datetime
-    user_id: Optional[int] = None
-    beatmapset: Optional[Beatmapset] = None
-    discussion: Optional[BeatmapsetDiscussion] = None
-    comment: Optional[dict] = None
+    user_id: int | None = None
+    beatmapset: Beatmapset | None = None
+    discussion: BeatmapsetDiscussion | None = None
+    comment: dict | None = None
 
 
 class BeatmapPackUserCompletion(BaseModel):
@@ -649,12 +648,12 @@ class BeatmapPack(BaseModel):
     no_diff_reduction: bool
     tag: str
     url: str
-    ruleset_id: Optional[int] = None
-    beatmapsets: Optional[list[Beatmapset]] = None
-    user_completion_data: Optional[BeatmapPackUserCompletion] = None
+    ruleset_id: int | None = None
+    beatmapsets: list[Beatmapset] | None = None
+    user_completion_data: BeatmapPackUserCompletion | None = None
 
     @property
-    def mode(self) -> Optional[Gamemode]:
+    def mode(self) -> Gamemode | None:
         if self.ruleset_id is None:
             return None
         return Gamemode(self.ruleset_id)

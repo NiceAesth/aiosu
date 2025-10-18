@@ -10,7 +10,6 @@ from enum import Enum
 from enum import unique
 from functools import cached_property
 from typing import Literal
-from typing import Optional
 
 from pydantic import Field
 from pydantic import computed_field
@@ -130,15 +129,15 @@ class UserRankHighest(BaseModel):
 
 class UserProfileCover(BaseModel):
     url: str
-    custom_url: Optional[str] = None
-    id: Optional[str] = None
+    custom_url: str | None = None
+    id: str | None = None
 
 
 class UserProfileTournamentBanner(BaseModel):
     tournament_id: int
-    id: Optional[int] = None
-    image: Optional[str] = None
-    image_2_x: Optional[str] = Field(default=None, alias="image@2x")
+    id: int | None = None
+    image: str | None = None
+    image_2_x: str | None = Field(default=None, alias="image@2x")
 
 
 class UserBadge(BaseModel):
@@ -155,7 +154,7 @@ class UserAccountHistory(BaseModel):
     length: int
     permanent: bool
     type: UserAccountHistoryType
-    description: Optional[str] = None
+    description: str | None = None
 
 
 class UserGradeCounts(BaseModel):
@@ -191,44 +190,44 @@ class UserGroup(BaseModel):
     has_listing: bool
     has_playmodes: bool
     is_probationary: bool
-    colour: Optional[str] = None
-    playmodes: Optional[list[Gamemode]] = None
-    description: Optional[str] = None
+    colour: str | None = None
+    playmodes: list[Gamemode] | None = None
+    description: str | None = None
 
 
 class UserStatsVariant(BaseModel):
     mode: Gamemode
     variant: str
     pp: float
-    country_rank: Optional[int] = None
-    global_rank: Optional[int] = None
+    country_rank: int | None = None
+    global_rank: int | None = None
 
 
 class UserStats(BaseModel):
     """Fields are marked as optional since they might be missing from rankings other than performance."""
 
-    ranked_score: Optional[int] = None
-    play_count: Optional[int] = None
-    grade_counts: Optional[UserGradeCounts] = None
-    total_hits: Optional[int] = None
-    is_ranked: Optional[bool] = None
-    total_score: Optional[int] = None
-    level: Optional[UserLevel] = None
-    hit_accuracy: Optional[float] = None
-    play_time: Optional[int] = None
-    pp: Optional[float] = None
-    pp_exp: Optional[float] = None
-    replays_watched_by_others: Optional[int] = None
-    maximum_combo: Optional[int] = None
-    global_rank: Optional[int] = None
-    global_rank_exp: Optional[int] = None
-    country_rank: Optional[int] = None
-    user: Optional[User] = None
-    count_300: Optional[int] = None
-    count_100: Optional[int] = None
-    count_50: Optional[int] = None
-    count_miss: Optional[int] = None
-    variants: Optional[list[UserStatsVariant]] = None
+    ranked_score: int | None = None
+    play_count: int | None = None
+    grade_counts: UserGradeCounts | None = None
+    total_hits: int | None = None
+    is_ranked: bool | None = None
+    total_score: int | None = None
+    level: UserLevel | None = None
+    hit_accuracy: float | None = None
+    play_time: int | None = None
+    pp: float | None = None
+    pp_exp: float | None = None
+    replays_watched_by_others: int | None = None
+    maximum_combo: int | None = None
+    global_rank: int | None = None
+    global_rank_exp: int | None = None
+    country_rank: int | None = None
+    user: User | None = None
+    count_300: int | None = None
+    count_100: int | None = None
+    count_50: int | None = None
+    count_miss: int | None = None
+    variants: list[UserStatsVariant] | None = None
 
     @computed_field  # type: ignore
     @cached_property
@@ -269,10 +268,10 @@ class UserStats(BaseModel):
 
 
 class UserStatsRulesets(BaseModel):
-    osu: Optional[UserStats] = None
-    taiko: Optional[UserStats] = None
-    fruits: Optional[UserStats] = None
-    mania: Optional[UserStats] = None
+    osu: UserStats | None = None
+    taiko: UserStats | None = None
+    fruits: UserStats | None = None
+    mania: UserStats | None = None
 
 
 class UserAchievmement(BaseModel):
@@ -284,14 +283,14 @@ class UserRelation(BaseModel):
     target_id: int
     relation_type: str
     mutual: bool
-    target: Optional[User] = None
+    target: User | None = None
 
 
 class UserTeam(BaseModel):
     id: int
     name: str
     short_name: str
-    flag_url: Optional[str] = None
+    flag_url: str | None = None
 
 
 class User(BaseModel):
@@ -299,64 +298,64 @@ class User(BaseModel):
     country_code: str
     id: int
     username: str
-    default_group: Optional[str] = None
-    is_active: Optional[bool] = None
-    is_bot: Optional[bool] = None
-    is_online: Optional[bool] = None
-    is_supporter: Optional[bool] = None
-    pm_friends_only: Optional[bool] = None
-    profile_colour: Optional[str] = None
-    is_deleted: Optional[bool] = None
-    last_visit: Optional[datetime] = None
-    discord: Optional[str] = None
-    has_supported: Optional[bool] = None
-    interests: Optional[str] = None
-    join_date: Optional[datetime] = None
-    kudosu: Optional[UserKudosu] = None
-    location: Optional[str] = None
-    max_blocks: Optional[int] = None
-    max_friends: Optional[int] = None
-    occupation: Optional[str] = None
-    playmode: Optional[Gamemode] = None
-    playstyle: Optional[list[str]] = None
-    post_count: Optional[int] = None
-    profile_hue: Optional[int] = None
-    profile_order: Optional[list[str]] = None
-    title: Optional[str] = None
-    twitter: Optional[str] = None
-    website: Optional[str] = None
-    country: Optional[Country] = None
-    cover: Optional[UserProfileCover] = None
-    is_restricted: Optional[bool] = None
-    account_history: Optional[list[UserAccountHistory]] = None
-    active_tournament_banners: Optional[list[UserProfileTournamentBanner]] = None
-    badges: Optional[list[UserBadge]] = None
-    beatmap_playcounts_count: Optional[int] = None
-    favourite_beatmapset_count: Optional[int] = None
-    follow_user_mapping: Optional[list[int]] = None
-    follower_count: Optional[int] = None
-    friends: Optional[list[UserRelation]] = None
-    graveyard_beatmapset_count: Optional[int] = None
-    groups: Optional[list[UserGroup]] = None
-    loved_beatmapset_count: Optional[int] = None
-    mapping_follower_count: Optional[int] = None
-    monthly_playcounts: Optional[list[TimestampedCount]] = None
-    page: Optional[HTMLBody] = None
-    pending_beatmapset_count: Optional[int] = None
-    previous_usernames: Optional[list[str]] = None
-    rank_highest: Optional[UserRankHighest] = None
-    rank_history: Optional[UserRankHistoryElement] = None
-    ranked_beatmapset_count: Optional[int] = None
-    replays_watched_counts: Optional[list[TimestampedCount]] = None
-    scores_best_count: Optional[int] = None
-    scores_first_count: Optional[int] = None
-    scores_recent_count: Optional[int] = None
-    statistics: Optional[UserStats] = None
-    statistics_rulesets: Optional[UserStatsRulesets] = None
-    support_level: Optional[int] = None
-    team: Optional[UserTeam] = None
-    unread_pm_count: Optional[int] = None
-    user_achievements: Optional[list[UserAchievmement]] = None
+    default_group: str | None = None
+    is_active: bool | None = None
+    is_bot: bool | None = None
+    is_online: bool | None = None
+    is_supporter: bool | None = None
+    pm_friends_only: bool | None = None
+    profile_colour: str | None = None
+    is_deleted: bool | None = None
+    last_visit: datetime | None = None
+    discord: str | None = None
+    has_supported: bool | None = None
+    interests: str | None = None
+    join_date: datetime | None = None
+    kudosu: UserKudosu | None = None
+    location: str | None = None
+    max_blocks: int | None = None
+    max_friends: int | None = None
+    occupation: str | None = None
+    playmode: Gamemode | None = None
+    playstyle: list[str] | None = None
+    post_count: int | None = None
+    profile_hue: int | None = None
+    profile_order: list[str] | None = None
+    title: str | None = None
+    twitter: str | None = None
+    website: str | None = None
+    country: Country | None = None
+    cover: UserProfileCover | None = None
+    is_restricted: bool | None = None
+    account_history: list[UserAccountHistory] | None = None
+    active_tournament_banners: list[UserProfileTournamentBanner] | None = None
+    badges: list[UserBadge] | None = None
+    beatmap_playcounts_count: int | None = None
+    favourite_beatmapset_count: int | None = None
+    follow_user_mapping: list[int] | None = None
+    follower_count: int | None = None
+    friends: list[UserRelation] | None = None
+    graveyard_beatmapset_count: int | None = None
+    groups: list[UserGroup] | None = None
+    loved_beatmapset_count: int | None = None
+    mapping_follower_count: int | None = None
+    monthly_playcounts: list[TimestampedCount] | None = None
+    page: HTMLBody | None = None
+    pending_beatmapset_count: int | None = None
+    previous_usernames: list[str] | None = None
+    rank_highest: UserRankHighest | None = None
+    rank_history: UserRankHistoryElement | None = None
+    ranked_beatmapset_count: int | None = None
+    replays_watched_counts: list[TimestampedCount] | None = None
+    scores_best_count: int | None = None
+    scores_first_count: int | None = None
+    scores_recent_count: int | None = None
+    statistics: UserStats | None = None
+    statistics_rulesets: UserStatsRulesets | None = None
+    support_level: int | None = None
+    team: UserTeam | None = None
+    unread_pm_count: int | None = None
+    user_achievements: list[UserAchievmement] | None = None
 
     @computed_field  # type: ignore
     @property

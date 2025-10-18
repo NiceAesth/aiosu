@@ -32,8 +32,6 @@ if TYPE_CHECKING:
     from collections.abc import MutableMapping
     from types import TracebackType
     from typing import Any
-    from typing import Optional
-    from typing import Union
 
 
 __all__ = ("Client",)
@@ -89,16 +87,16 @@ class Client:
             max_rate=max_rate,
             time_period=time_period,
         )
-        self._session: Optional[aiohttp.ClientSession] = None
+        self._session: aiohttp.ClientSession | None = None
 
     async def __aenter__(self) -> Client:
         return self
 
     async def __aexit__(
         self,
-        exc_type: Optional[type[BaseException]],
-        exc: Optional[BaseException],
-        traceback: Optional[TracebackType],
+        exc_type: type[BaseException] | None,
+        exc: BaseException | None,
+        traceback: TracebackType | None,
     ) -> None:
         await self.aclose()
 
@@ -131,7 +129,7 @@ class Client:
                     f"Unhandled Content Type '{content_type}'",
                 )
 
-    async def get_user(self, user_query: Union[str, int], **kwargs: Any) -> User:
+    async def get_user(self, user_query: str | int, **kwargs: Any) -> User:
         r"""Gets a user by a query.
 
         :param user_query: Username or ID to search by
@@ -177,7 +175,7 @@ class Client:
 
     async def __get_type_scores(
         self,
-        user_query: Union[str, int],
+        user_query: str | int,
         request_type: str,
         **kwargs: Any,
     ) -> list[Score]:
@@ -228,7 +226,7 @@ class Client:
 
     async def get_user_recents(
         self,
-        user_query: Union[str, int],
+        user_query: str | int,
         **kwargs: Any,
     ) -> list[Score]:
         r"""Get a user's recent scores.
@@ -257,7 +255,7 @@ class Client:
 
     async def get_user_bests(
         self,
-        user_query: Union[str, int],
+        user_query: str | int,
         **kwargs: Any,
     ) -> list[Score]:
         r"""Get a user's best scores.

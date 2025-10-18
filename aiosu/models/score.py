@@ -7,7 +7,6 @@ from __future__ import annotations
 from datetime import datetime
 from functools import cached_property
 from typing import TYPE_CHECKING
-from typing import Optional
 
 from pydantic import computed_field
 from pydantic import model_validator
@@ -50,7 +49,7 @@ def calculate_score_completion(
     mode: Gamemode,
     statistics: ScoreStatistics,
     beatmap: Beatmap,
-) -> Optional[float]:
+) -> float | None:
     """Calculates completion for a score.
 
     :param mode: The gamemode of the score
@@ -114,8 +113,8 @@ class ScoreStatistics(BaseModel):
     count_300: int
     count_geki: int
     count_katu: int
-    count_large_tick_miss: Optional[int] = None
-    count_slider_tail_hit: Optional[int] = None
+    count_large_tick_miss: int | None = None
+    count_slider_tail_hit: int | None = None
 
     @model_validator(mode="before")
     @classmethod
@@ -154,22 +153,22 @@ class Score(BaseModel):
     mode: Gamemode
     replay: bool
     type: ScoreType = "solo_score"
-    id: Optional[int] = None
+    id: int | None = None
     """Always present except for API v1 recent scores."""
-    pp: Optional[float] = 0
-    best_id: Optional[int] = None
-    beatmap: Optional[Beatmap] = None
-    beatmapset: Optional[Beatmapset] = None
-    weight: Optional[ScoreWeight] = None
-    user: Optional[User] = None
-    rank_global: Optional[int] = None
-    rank_country: Optional[int] = None
-    current_user_attributes: Optional[CurrentUserAttributes] = None
-    beatmap_id: Optional[int] = None
+    pp: float | None = 0
+    best_id: int | None = None
+    beatmap: Beatmap | None = None
+    beatmapset: Beatmapset | None = None
+    weight: ScoreWeight | None = None
+    user: User | None = None
+    rank_global: int | None = None
+    rank_country: int | None = None
+    current_user_attributes: CurrentUserAttributes | None = None
+    beatmap_id: int | None = None
     """Only present on API v1"""
 
     @property
-    def score_url(self) -> Optional[str]:
+    def score_url(self) -> str | None:
         r"""Link to the score.
 
         :return: Link to the score on the osu! website
@@ -185,7 +184,7 @@ class Score(BaseModel):
         return f"https://osu.ppy.sh/scores/{self.mode.name_api}/{self.best_id}"
 
     @property
-    def replay_url(self) -> Optional[str]:
+    def replay_url(self) -> str | None:
         r"""Link to the replay.
 
         :return: Link to download the replay on the osu! website
@@ -200,7 +199,7 @@ class Score(BaseModel):
 
     @computed_field  # type: ignore
     @cached_property
-    def completion(self) -> Optional[float]:
+    def completion(self) -> float | None:
         """Beatmap completion.
 
         :raises ValueError: If mode is unknown
