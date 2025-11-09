@@ -44,7 +44,7 @@ test = ["pytest", "pytest-asyncio", "pytest-mock", "toml", "types-toml"]
 docs = ["Sphinx", "furo", "toml"]
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^8.0.0"
+pytest = "^9.0.0"
 pytest-asyncio = "^1.0.0"
 pytest-mock = "^3.10.0"
 mypy = "^1.0"
