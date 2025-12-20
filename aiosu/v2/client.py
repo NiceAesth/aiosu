@@ -359,7 +359,7 @@ class Client(Eventable):
                 if content_type.startswith("application/x-osu"):
                     return BytesIO(body)
                 if content_type == "text/plain":
-                    return body.decode()
+                    return body.decode("utf-8-sig")
                 raise APIException(
                     resp.status,
                     f"Unhandled Content Type '{content_type}'",
@@ -1585,7 +1585,7 @@ class Client(Eventable):
         add_param(params, kwargs, key="user_id", param_name="user")
         add_param(params, kwargs, key="min_date")
         add_param(params, kwargs, key="max_date")
-        add_param(params, kwargs, key="types")
+        add_param(params, kwargs, key="types[]")
         json = await self._request("GET", url, params=params)
         return from_list(BeatmapsetEvent.model_validate, json.get("events", []))
 
