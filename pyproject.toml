@@ -19,7 +19,7 @@ testpaths = ["tests"]
 
 [project]
 name = "aiosu"
-version = "2.3.2"
+version = "2.3.3"
 description = "Simple and fast osu! API v1 and v2 library"
 requires-python = ">=3.10,<4.0"
 authors = [{ name = "Nice Aesthetics", email = "nice@aesth.dev" }]
@@ -50,7 +50,7 @@ pytest-mock = "^3.10.0"
 mypy = "^1.0"
 toml = "^0.10.2"
 types-toml = "^0.10.8.1"
-sphinx = "^9.0.0"
+sphinx = "^8.0.0"
 furo = "^2025.0.0"
 pytest-cov = "^7.0.0"
 black = { version = "^25.0.0", allow-prereleases = true }
