@@ -123,7 +123,7 @@ class Client:
                 if content_type == "application/octet-stream":
                     return BytesIO(body)
                 if content_type == "text/plain":
-                    return body.decode()
+                    return body.decode("utf-8-sig")
                 raise APIException(
                     resp.status,
                     f"Unhandled Content Type '{content_type}'",
