@@ -88,7 +88,11 @@ def add_param(
     if converter:
         value = converter(value)
 
-    params[param_name or key] = value
+    p_name = param_name or key
+    if isinstance(value, list):
+        p_name += "[]"
+
+    params[p_name] = value
     return True
 
 

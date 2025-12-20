@@ -1224,7 +1224,6 @@ class Client(Eventable):
             params,
             kwargs,
             key="mods",
-            param_name="mods[]",
             converter=lambda x: [str(y) for y in Mods(x)] if len(x) > 0 else "NM",
         )
         add_param(params, kwargs, key="type")
@@ -1264,7 +1263,7 @@ class Client(Eventable):
         """
         url = f"{self.base_url}/api/v2/beatmaps"
         params: dict[str, object] = {
-            "ids": beatmap_ids,
+            "ids[]": beatmap_ids,
         }
         json = await self._request("GET", url, params=params)
         return from_list(Beatmap.model_validate, json.get("beatmaps", []))
@@ -1585,7 +1584,7 @@ class Client(Eventable):
         add_param(params, kwargs, key="user_id", param_name="user")
         add_param(params, kwargs, key="min_date")
         add_param(params, kwargs, key="max_date")
-        add_param(params, kwargs, key="types[]")
+        add_param(params, kwargs, key="types")
         json = await self._request("GET", url, params=params)
         return from_list(BeatmapsetEvent.model_validate, json.get("events", []))
 
@@ -1691,7 +1690,7 @@ class Client(Eventable):
         add_param(params, kwargs, key="limit")
         add_param(params, kwargs, key="page")
         add_param(params, kwargs, key="sort")
-        add_param(params, kwargs, key="types[]")
+        add_param(params, kwargs, key="types")
         add_param(params, kwargs, key="user", param_name="user_id")
         add_param(params, kwargs, key="with_deleted", converter=to_lower_str)
         add_param(params, kwargs, key="cursor_string")
