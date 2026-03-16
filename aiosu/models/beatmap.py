@@ -517,6 +517,15 @@ class Beatmapset(BaseModel):
     beatmaps: list[Beatmap] | None = None
     converts: list[Beatmap] | None = None
 
+    @model_validator(mode="before")
+    @classmethod
+    def _set_url(cls, values: dict[str, object]) -> dict[str, object]:
+        if isinstance(values["preview_url"], str) and not values[
+            "preview_url"
+        ].startswith("https://"):
+            values["preview_url"] = f"https:{values['preview_url']}"
+        return values
+
     @computed_field  # type: ignore
     @property
     def url(self) -> str:
@@ -538,7 +547,7 @@ class Beatmapset(BaseModel):
                 "favourite_count": data["favourite_count"],
                 "creator": data["creator"],
                 "play_count": data["playcount"],
-                "preview_url": f"//b.ppy.sh/preview/{data['beatmapset_id']}.mp3",
+                "preview_url": f"https://b.ppy.sh/preview/{data['beatmapset_id']}.mp3",
                 "source": data["source"],
                 "status": cast_int(data["approved"]),
                 "title": data["title"],
