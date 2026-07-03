@@ -6,10 +6,12 @@ from __future__ import annotations
 
 from datetime import datetime
 from datetime import timedelta
+from datetime import timezone
 from functools import cached_property
 
 import jwt
 from pydantic import computed_field
+from pydantic import field_validator
 from pydantic import model_validator
 
 from .base import FrozenModel
@@ -23,7 +25,7 @@ class OAuthToken(FrozenModel):
     """Defaults to 'Bearer'"""
     access_token: str = ""
     refresh_token: str = ""
-    expires_on: datetime = datetime.utcfromtimestamp(31536000)
+    expires_on: datetime = datetime.fromtimestamp(31536000, tz=timezone.utc)
     """Can be a datetime.datetime object or a string. Alternatively, expires_in may be passed representing the number of seconds the token will be valid for."""
 
     @computed_field  # type: ignore
@@ -55,7 +57,16 @@ class OAuthToken(FrozenModel):
     def _set_expires_on(cls, values: dict[str, object]) -> dict[str, object]:
         expires_in = values.get("expires_in")
         if isinstance(expires_in, int):
-            values["expires_on"] = datetime.utcnow() + timedelta(
+            values["expires_on"] = datetime.now(timezone.utc) + timedelta(
                 seconds=expires_in,
             )
         return values
+
+    @field_validator("expires_on", mode="after")
+    @classmethod
+    def _ensure_aware(cls, value: datetime) -> datetime:
+        """Naive datetimes are treated as UTC. Mixing naive and aware values
+        in expiry comparisons shifts the epoch by the host's UTC offset."""
+        if value.tzinfo is None:
+            return value.replace(tzinfo=timezone.utc)
+        return value
