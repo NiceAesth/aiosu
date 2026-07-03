@@ -40,16 +40,20 @@ repository = "https://github.com/NiceAesth/aiosu"
 documentation = "https://aiosu.readthedocs.io/"
 
 [project.optional-dependencies]
-test = ["pytest", "pytest-asyncio", "pytest-mock", "toml", "types-toml"]
-docs = ["Sphinx", "furo", "toml"]
+test = [
+    "pytest",
+    "pytest-asyncio",
+    "pytest-mock",
+    "tomli; python_version < '3.11'",
+]
+docs = ["Sphinx", "furo", "tomli; python_version < '3.11'"]
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^9.0.0"
 pytest-asyncio = "^1.0.0"
 pytest-mock = "^3.10.0"
 mypy = "^1.0"
-toml = "^0.10.2"
-types-toml = "^0.10.8.1"
+tomli = { version = "^2.0.1", python = "<3.11" }
 sphinx = "^8.0.0"
 furo = "^2025.0.0"
 pytest-cov = "^7.0.0"

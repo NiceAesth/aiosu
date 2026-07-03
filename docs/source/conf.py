@@ -11,14 +11,18 @@ import os
 import sys
 from datetime import date
 
-import toml
+if sys.version_info >= (3, 11):
+    import tomllib
+else:
+    import tomli as tomllib
 
 sys.path.insert(0, os.path.abspath("../../aiosu/"))
 
 project = "aiosu"
 author = "Nice Aesthetics"
 project_copyright = f"{date.today().year}, {author}"
-release = toml.load(os.path.abspath("../../pyproject.toml"))["project"]["version"]
+with open(os.path.abspath("../../pyproject.toml"), "rb") as _f:
+    release = tomllib.load(_f)["project"]["version"]
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
