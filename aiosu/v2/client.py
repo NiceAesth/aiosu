@@ -6,10 +6,12 @@ You can read more about it here: https://osu.ppy.sh/docs/index.html
 
 from __future__ import annotations
 
+import asyncio
 import functools
 from collections.abc import Awaitable
 from collections.abc import Callable
 from datetime import datetime
+from datetime import timezone
 from functools import partial
 from io import BytesIO
 from typing import TYPE_CHECKING
@@ -129,15 +131,7 @@ def check_token(func: F) -> F:
 
     @functools.wraps(func)
     async def _check_token(self: Client, *args: Any, **kwargs: Any) -> object:
-        token = await self.get_current_token()
-        if datetime.utcnow().timestamp() > token.expires_on.timestamp():
-            try:
-                await self._refresh()
-            except APIException:
-                await self._delete_token()
-                raise RefreshTokenExpiredError(
-                    "Refresh token has expired. Please re-authenticate.",
-                )
+        await self._ensure_valid_token()
         return await func(self, *args, **kwargs)
 
     return cast(F, _check_token)
@@ -198,6 +192,8 @@ class Client(Eventable):
             Optional, defaults to client credentials if not provided
         * *limiter* (``tuple[int, int]``) --
             Optional, rate limit, defaults to (600, 60) (600 requests per minute)
+        * *timeout* (``float``) --
+            Optional, total request timeout in seconds, defaults to 60
     """
 
     __slots__ = (
@@ -205,6 +201,7 @@ class Client(Eventable):
         "_initial_token",
         "_session",
         "_limiter",
+        "_timeout",
         "session_id",
         "client_id",
         "client_secret",
@@ -241,6 +238,9 @@ class Client(Eventable):
         self._limiter: AsyncLimiter = AsyncLimiter(
             max_rate=max_rate,
             time_period=time_period,
+        )
+        self._timeout: aiohttp.ClientTimeout = aiohttp.ClientTimeout(
+            total=kwargs.pop("timeout", 60),
         )
         self._session: aiohttp.ClientSession | None = None
 
@@ -288,6 +288,21 @@ class Client(Eventable):
         elif self._initial_token is not None:
             await self._update_token(self._initial_token)
         self._initial_token = None
+
+    async def _ensure_valid_token(self) -> None:
+        """Refresh the current token if it has expired.
+
+        :raises RefreshTokenExpiredError: If the refresh token has expired
+        """
+        token = await self.get_current_token()
+        if datetime.now(timezone.utc) > token.expires_on:
+            try:
+                await self._refresh()
+            except APIException:
+                await self._delete_token()
+                raise RefreshTokenExpiredError(
+                    "Refresh token has expired. Please re-authenticate.",
+                )
 
     async def _add_token(self, token: OAuthToken) -> None:
         """Add a token to the current session"""
@@ -339,7 +354,10 @@ class Client(Eventable):
         await self._prepare_token()
 
         if self._session is None:
-            self._session = aiohttp.ClientSession(headers=await self._get_headers())
+            self._session = aiohttp.ClientSession(
+                headers=await self._get_headers(),
+                timeout=self._timeout,
+            )
 
         async with self._limiter:
             async with self._session.request(request_type, *args, **kwargs) as resp:
@@ -379,7 +397,7 @@ class Client(Eventable):
         else:
             data = self._refresh_guest_data()
 
-        async with aiohttp.ClientSession() as temp_session:
+        async with aiohttp.ClientSession(timeout=self._timeout) as temp_session:
             async with self._limiter:
                 async with temp_session.post(url, json=data) as resp:
                     body = await resp.read()
@@ -400,6 +418,7 @@ class Client(Eventable):
                     await self._update_token(new_token)
                     self._session = aiohttp.ClientSession(
                         headers=await self._get_headers(),
+                        timeout=self._timeout,
                     )
 
         await self._process_event(
@@ -1475,7 +1494,7 @@ class Client(Eventable):
         add_param(params, kwargs, key="bundled")
         add_param(params, kwargs, key="sort")
         add_param(params, kwargs, key="cursor_string", param_name="cursor")
-        json = await self._request("GET", url)
+        json = await self._request("GET", url, params=params)
         resp = BeatmapsetSearchResponse.model_validate(json)
         if resp.cursor_string:
             kwargs["cursor_string"] = resp.cursor_string
@@ -1816,6 +1835,20 @@ class Client(Eventable):
         json = await self._request("GET", url, headers=headers)
         return LazerScore.model_validate(json)
 
+    async def _download_replay(self, url: str) -> BytesIO:
+        try:
+            replay: BytesIO = await self._request(
+                "GET",
+                url,
+            )
+            return replay
+        except (TimeoutError, asyncio.TimeoutError):
+            raise APIException(404, "Specified replay couldn't be found.")
+        except APIException as e:
+            if e.status == 504:
+                raise APIException(404, "Specified replay couldn't be found.")
+            raise
+
     @prepare_token
     @check_token
     @requires_scope(Scopes.PUBLIC)
@@ -1837,7 +1870,7 @@ class Client(Eventable):
         :rtype: io.BytesIO
         """
         url = f"{self.base_url}/api/v2/scores/{mode}/{legacy_score_id}/download"
-        return await self._request("GET", url)
+        return await self._download_replay(url)
 
     @prepare_token
     @check_token
@@ -1857,7 +1890,7 @@ class Client(Eventable):
         :rtype: io.BytesIO
         """
         url = f"{self.base_url}/api/v2/scores/{score_id}/download"
-        return await self._request("GET", url)
+        return await self._download_replay(url)
 
     @prepare_token
     @check_token
@@ -2193,7 +2226,7 @@ class Client(Eventable):
         url = f"{self.base_url}/api/v2/chat/updates"
         params: dict[str, object] = {
             "since": since,
-            "limit:": limit,
+            "limit": limit,
         }
         add_param(params, kwargs, key="channel_id")
         add_param(params, kwargs, key="includes")
@@ -2269,7 +2302,7 @@ class Client(Eventable):
             raise ValueError("limit must be between 1 and 50")
         url = f"{self.base_url}/api/v2/chat/channels/{channel_id}/messages"
         params: dict[str, object] = {
-            "limit:": limit,
+            "limit": limit,
         }
         add_param(params, kwargs, key="since")
         add_param(params, kwargs, key="until")
