@@ -52,7 +52,7 @@ docs = ["Sphinx", "furo", "tomli; python_version < '3.11'"]
 pytest = "^9.0.0"
 pytest-asyncio = "^1.0.0"
 pytest-mock = "^3.10.0"
-mypy = "^1.0"
+mypy = "^2.0.0"
 tomli = { version = "^2.0.1", python = "<3.11" }
 sphinx = "^8.0.0"
 furo = "^2025.0.0"
