@@ -2134,7 +2134,7 @@ class Client(Eventable):
         :return: Forum topic object
         :rtype: aiosu.models.forum.ForumTopic
         """
-        url = f"{self.base_url}/api/v2/forums/topics/{topic_id}/title"
+        url = f"{self.base_url}/api/v2/forums/topics/{topic_id}"
         data: dict[str, dict[str, str]] = {
             "forum_topic": {
                 "topic_title": new_title,

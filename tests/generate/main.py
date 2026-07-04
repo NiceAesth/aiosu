@@ -810,7 +810,7 @@ class TestGeneratorDev(TestGeneratorBase):
         )
         self._register_route(
             "PUT",
-            f"{BASE_URL_DEV}/api/v2/forums/topics/515/title",
+            f"{BASE_URL_DEV}/api/v2/forums/topics/515",
             f"{DATA_DIR}/v2/edit_forum_topic_title_200.json",
             data={"forum_topic": {"topic_title": "Test topic"}},
         )
@@ -856,16 +856,16 @@ class TestGeneratorDev(TestGeneratorBase):
             "POST",
             f"{BASE_URL_DEV}/api/v2/chat/channels",
             f"{DATA_DIR}/v2/create_chat_channel_200.json",
-            data={"message": "Test", "target_id": 665},
+            data={"type": "PM", "message": "Test", "target_id": 665},
         )
         self._register_route(
             "PUT",
-            f"{BASE_URL_DEV}/api/v2/chat/channels/6364/users/665",
+            f"{BASE_URL_DEV}/api/v2/chat/channels/6/users/664",
             f"{DATA_DIR}/v2/join_channel_200.json",
         )
         self._register_route(
             "POST",
-            f"{BASE_URL_DEV}/api/v2/chat/channels/1/messages",
+            f"{BASE_URL_DEV}/api/v2/chat/channels/5/messages",
             f"{DATA_DIR}/v2/send_message_200.json",
             data={"message": "Test"},
         )

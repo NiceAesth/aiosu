@@ -306,12 +306,12 @@ tests = [
     generate_test(
         aiosu.v2.Client.join_channel,
         STATUS_CAN_200,
-        func_kwargs={"channel_id": 6364, "user_id": 665},
+        func_kwargs={"channel_id": 6, "user_id": 664},
     ),
     generate_test(
         aiosu.v2.Client.send_message,
         STATUS_CAN_200,
-        func_kwargs={"channel_id": 1, "message": "Test", "is_action": False},
+        func_kwargs={"channel_id": 5, "message": "Test", "is_action": False},
     ),
     generate_test(
         aiosu.v2.Client.send_private_message,
