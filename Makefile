@@ -36,6 +36,9 @@ test:
 profile:
 	poetry run pytest --durations=3
 
+generate-data:
+	cd tests/generate && poetry run python main.py
+
 serve-docs:
 	@cd docs;\
 	make html;\

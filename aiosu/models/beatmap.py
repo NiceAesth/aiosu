@@ -33,6 +33,7 @@ __all__ = (
     "BeatmapHype",
     "BeatmapLanguage",
     "BeatmapNominations",
+    "BeatmapOwner",
     "BeatmapPack",
     "BeatmapPackType",
     "BeatmapPackUserCompletion",
@@ -76,6 +77,8 @@ BeatmapsetSortType = Literal[
     "plays_desc",
     "favourites_asc",
     "favourites_desc",
+    "updated_asc",
+    "updated_desc",
 ]
 
 BeatmapsetCategory = Literal[
@@ -351,6 +354,11 @@ class BeatmapHype(BaseModel):
     required: int
 
 
+class BeatmapOwner(BaseModel):
+    id: int
+    username: str
+
+
 class BeatmapFailtimes(BaseModel):
     exit: list[int] | None = None
     fail: list[int] | None = None
@@ -405,6 +413,8 @@ class Beatmap(BaseModel):
     play_count: int | None = Field(default=None, alias="playcount")
     checksum: str | None = None
     max_combo: int | None = None
+    owners: list[BeatmapOwner] | None = None
+    current_user_playcount: int | None = None
     beatmapset: Beatmapset | None = None
     failtimes: BeatmapFailtimes | None = None
 
@@ -485,6 +495,13 @@ class Beatmapset(BaseModel):
     title_unicode: str
     user_id: int
     video: bool
+    anime_cover: bool | None = None
+    genre_id: int | None = None
+    language_id: int | None = None
+    offset: int | None = None
+    spotlight: bool | None = None
+    rating: float | None = None
+    deleted_at: datetime | None = None
     nsfw: bool | None = None
     hype: BeatmapHype | None = None
     availability: BeatmapAvailability | None = None

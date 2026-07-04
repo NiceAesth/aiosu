@@ -26,6 +26,9 @@ class Scopes(IntFlag):
     CHAT_WRITE = 1 << 6
     CHAT_WRITE_MANAGE = 1 << 7
     LAZER = 1 << 8  # unused, lazer endpoints are not planned for support
+    MULTIPLAYER_WRITE_MANAGE = 1 << 9
+    FORUM_WRITE_MANAGE = 1 << 10
+    GROUP_PERMISSIONS = 1 << 11
 
     def __flags__(self) -> list[Scopes]:
         scopes_list = [scope for scope in Scopes if self & scope]
@@ -53,6 +56,14 @@ API_SCOPE_NAMES = {
     "chat.write": Scopes.CHAT_WRITE,
     "chat.write_manage": Scopes.CHAT_WRITE_MANAGE,
     "lazer": Scopes.LAZER,
+    "multiplayer.write_manage": Scopes.MULTIPLAYER_WRITE_MANAGE,
+    "forum.write_manage": Scopes.FORUM_WRITE_MANAGE,
+    "group_permissions": Scopes.GROUP_PERMISSIONS,
 }
 VALID_CLIENT_SCOPES = Scopes.PUBLIC | Scopes.DELEGATE
-OWN_CLIENT_SCOPES = Scopes.CHAT_READ | Scopes.CHAT_WRITE | Scopes.CHAT_WRITE_MANAGE
+OWN_CLIENT_SCOPES = (
+    Scopes.CHAT_READ
+    | Scopes.CHAT_WRITE
+    | Scopes.CHAT_WRITE_MANAGE
+    | Scopes.MULTIPLAYER_WRITE_MANAGE
+)

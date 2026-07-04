@@ -22,16 +22,15 @@ STATUS_CAN_404_HTML = {
     200: "application/json",
     404: "text/html",
 }
-STATUS_CAN_404_OCTET = {
+STATUS_CAN_200_OCTET = {
     200: "application/octet-stream",
-    404: "application/json",
 }
 
 
 @pytest.fixture(autouse=True)
 def token():
     token = aiosu.models.OAuthToken(
-        access_token="eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiI5OTk5IiwianRpIjoiYXNkZiIsImlhdCI6MTY3Mjk1MDI0NS45MjAxMzMsIm5iZiI6MTY3Mjk1MDI0NS45MjAxMzYsImV4cCI6MTY3MzAzNTc4NC4wMTY2MjEsInN1YiI6Ijc3ODI1NTMiLCJzY29wZXMiOlsiZnJpZW5kcy5yZWFkIiwiaWRlbnRpZnkiLCJwdWJsaWMiXX0.dps4hJ4HwjQ7scacQRBHs1FN0tcGPfYPCUxQjt6ueEo4Q-G-BmkJSGQo6dDhXD1WnXFJdW14prl_fzjvBi7U-9Y7AcLHSMRSbmRa2uS7KciZv7vHpS6Cs64uZO1WqBpOswZJtCfjBeimSrvU9O_zezg3cujrhNTCwbsBOaK1mR9YtxXhw4Y6ORLKqS9ahF1FyXBIZ3pSFBFOxbAtIIDwtZq9CDbffqQrVL7MiNojPBVmhReomf2pSyNM0UIA5u7pCXQOsb4VvmhSPGj7HPoORNyc6CM1iwcmGsrEPDL3d1ZtNtYyiLtarvUZx1WUau9GDAs-AtJ9XaypJTqUjfya7g",
+        access_token="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiI5OTk5IiwianRpIjoiYXNkZiIsImlhdCI6MTY3Mjk1MDI0NS45MjAxMzMsIm5iZiI6MTY3Mjk1MDI0NS45MjAxMzYsImV4cCI6MTY3MzAzNTc4NC4wMTY2MjEsInN1YiI6Ijc3ODI1NTMiLCJzY29wZXMiOlsiY2hhdC5yZWFkIiwiY2hhdC53cml0ZSIsImNoYXQud3JpdGVfbWFuYWdlIiwiZm9ydW0ud3JpdGUiLCJmcmllbmRzLnJlYWQiLCJpZGVudGlmeSIsInB1YmxpYyJdfQ.S_JhNdYLm0PdDpPj42xumaNyKARZUxDOesLwNPTLBrQ",
         refresh_token="hi",
         expires_in=86400,
     )
@@ -247,12 +246,12 @@ tests = [
     ),
     generate_test(
         aiosu.v2.Client.get_score_replay,
-        STATUS_CAN_404_OCTET,
+        STATUS_CAN_200_OCTET,
         func_kwargs={"legacy_score_id": 4220635589, "mode": "osu"},
     ),
     generate_test(
         aiosu.v2.Client.get_score_replay_lazer,
-        STATUS_CAN_404_OCTET,
+        STATUS_CAN_200_OCTET,
         func_kwargs={"score_id": 1581778626},
     ),
     generate_test(
@@ -266,6 +265,58 @@ tests = [
         aiosu.v2.Client.get_forum_topic,
         STATUS_CAN_404,
         func_kwargs={"topic_id": 7},
+    ),
+    generate_test(
+        aiosu.v2.Client.create_forum_topic,
+        STATUS_CAN_200,
+        func_kwargs={"forum_id": 74, "title": "Test topic", "content": "Test body"},
+    ),
+    generate_test(
+        aiosu.v2.Client.reply_forum_topic,
+        STATUS_CAN_200,
+        func_kwargs={"topic_id": 515, "content": "Test body"},
+    ),
+    generate_test(
+        aiosu.v2.Client.edit_forum_topic_title,
+        STATUS_CAN_200,
+        func_kwargs={"topic_id": 515, "new_title": "Test topic"},
+    ),
+    generate_test(
+        aiosu.v2.Client.edit_forum_post,
+        STATUS_CAN_200,
+        func_kwargs={"post_id": 638, "new_content": "Test body"},
+    ),
+    generate_test(aiosu.v2.Client.get_chat_ack, STATUS_CAN_200),
+    generate_test(
+        aiosu.v2.Client.get_channel,
+        STATUS_CAN_404,
+        func_kwargs={"channel_id": 5},
+    ),
+    generate_test(aiosu.v2.Client.get_channels, STATUS_CAN_200),
+    generate_test(
+        aiosu.v2.Client.get_channel_messages,
+        STATUS_CAN_404,
+        func_kwargs={"channel_id": 5},
+    ),
+    generate_test(
+        aiosu.v2.Client.create_chat_channel,
+        STATUS_CAN_200,
+        func_kwargs={"type": "PM", "target_id": 665},
+    ),
+    generate_test(
+        aiosu.v2.Client.join_channel,
+        STATUS_CAN_200,
+        func_kwargs={"channel_id": 6, "user_id": 664},
+    ),
+    generate_test(
+        aiosu.v2.Client.send_message,
+        STATUS_CAN_200,
+        func_kwargs={"channel_id": 5, "message": "Test", "is_action": False},
+    ),
+    generate_test(
+        aiosu.v2.Client.send_private_message,
+        STATUS_CAN_200,
+        func_kwargs={"user_id": 665, "message": "Test", "is_action": False},
     ),
     generate_test(aiosu.v2.Client.get_multiplayer_matches, STATUS_CAN_200),
     generate_test(

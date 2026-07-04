@@ -33,8 +33,11 @@ __all__ = (
     "MultiplayerQueueMode",
     "MultiplayerRoom",
     "MultiplayerRoomCategory",
+    "MultiplayerRoomDifficultyRange",
     "MultiplayerRoomGroupType",
     "MultiplayerRoomMode",
+    "MultiplayerRoomPlaylistItemStats",
+    "MultiplayerRoomType",
     "MultiplayerRoomsResponse",
     "MultiplayerScoreSortType",
     "MultiplayerScoresAround",
@@ -62,8 +65,20 @@ MultiplayerEventType = Literal[
     "other",
 ]
 MultiplayerRoomMode = Literal["owned", "participated", "ended"]
-MultiplayerRoomCategory = Literal["normal", "spotlight", "featured_artist"]
+MultiplayerRoomCategory = Literal[
+    "normal",
+    "spotlight",
+    "featured_artist",
+    "daily_challenge",
+]
 MultiplayerRoomGroupType = Literal["playlists", "realtime"]
+MultiplayerRoomType = Literal[
+    "playlists",
+    "head_to_head",
+    "team_versus",
+    "matchmaking",
+    "ranked_play",
+]
 MultiplayerQueueMode = Literal["host_only", "all_players", "all_players_round_robin"]
 
 
@@ -140,11 +155,22 @@ class MultiplayerPlaylistItem(BaseModel):
     played_at: datetime | None = None
 
 
+class MultiplayerRoomDifficultyRange(BaseModel):
+    min: float
+    max: float
+
+
+class MultiplayerRoomPlaylistItemStats(BaseModel):
+    count_active: int
+    count_total: int
+    ruleset_ids: list[int]
+
+
 class MultiplayerRoom(BaseModel):
     id: int
     name: str
     category: MultiplayerRoomCategory
-    type: MultiplayerRoomGroupType
+    type: MultiplayerRoomType
     user_id: int
     channel_id: int
     active: bool
@@ -152,9 +178,16 @@ class MultiplayerRoom(BaseModel):
     auto_skip: bool
     host: User
     queue_mode: MultiplayerQueueMode
-    playlist: list[MultiplayerPlaylistItem]
     recent_participants: list[User]
+    playlist: list[MultiplayerPlaylistItem] | None = None
+    current_playlist_item: MultiplayerPlaylistItem | None = None
+    difficulty_range: MultiplayerRoomDifficultyRange | None = None
+    playlist_item_stats: MultiplayerRoomPlaylistItemStats | None = None
+    description: str | None = None
+    status: str | None = None
     participant_count: int | None = None
+    max_participants: int | None = None
+    pinned: bool | None = None
     starts_at: datetime | None = None
     ends_at: datetime | None = None
     max_attempts: int | None = None

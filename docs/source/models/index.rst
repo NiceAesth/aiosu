@@ -40,6 +40,10 @@ User
     :undoc-members:
     :inherited-members: BaseModel
 
+.. autodata:: aiosu.models.user.UserAccountHistoryType
+
+.. autodata:: aiosu.models.user.ManiaStatsVariantsType
+
 Beatmap
 -------
 
@@ -140,6 +144,10 @@ Multiplayer
     :undoc-members:
     :inherited-members: BaseModel
 
+.. autodata:: aiosu.models.multiplayer.MultiplayerScoringType
+
+.. autodata:: aiosu.models.multiplayer.MultiplayerTeamType
+
 .. autodata:: aiosu.models.multiplayer.MultiplayerScoreSortType
 
 .. autodata:: aiosu.models.multiplayer.MultiplayerEventType
@@ -149,6 +157,8 @@ Multiplayer
 .. autodata:: aiosu.models.multiplayer.MultiplayerRoomCategory
 
 .. autodata:: aiosu.models.multiplayer.MultiplayerRoomGroupType
+
+.. autodata:: aiosu.models.multiplayer.MultiplayerRoomType
 
 .. autodata:: aiosu.models.multiplayer.MultiplayerQueueMode
 

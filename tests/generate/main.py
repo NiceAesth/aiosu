@@ -7,12 +7,16 @@ from __future__ import annotations
 import asyncio
 import logging
 import os
+import sys
+import urllib.parse
+import webbrowser
 from abc import ABC
 from abc import abstractmethod
 from functools import partial
 
 import aiohttp
 import orjson
+from aiohttp import web
 from dotenv import load_dotenv
 
 import aiosu
@@ -21,9 +25,115 @@ API_MODES = ["osu", "taiko", "fruits", "mania"]
 BASE_URL = "https://osu.ppy.sh"
 BASE_URL_LAZER = "https://lazer.ppy.sh"
 BASE_URL_DEV = "https://dev.ppy.sh"
-DATA_DIR = "../data"
+DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "data")
+DEFAULT_REDIRECT_URI = "http://localhost:7270/callback"
+OAUTH_TIMEOUT = 300
+MAX_ATTEMPTS = 3
+RETRY_DELAY = 5
+FULL_SCOPES = (
+    aiosu.models.Scopes.PUBLIC
+    | aiosu.models.Scopes.IDENTIFY
+    | aiosu.models.Scopes.FRIENDS_READ
+    | aiosu.models.Scopes.FORUM_WRITE
+    | aiosu.models.Scopes.CHAT_READ
+    | aiosu.models.Scopes.CHAT_WRITE
+    | aiosu.models.Scopes.CHAT_WRITE_MANAGE
+)
 
 logger = logging.getLogger("aiosu")
+
+
+async def interactive_oauth_token(
+    client_id: int,
+    client_secret: str,
+    redirect_uri: str,
+    base_url: str = BASE_URL,
+    scopes: aiosu.models.Scopes = FULL_SCOPES,
+) -> aiosu.models.OAuthToken:
+    """
+    Obtain an OAuth token by opening the authorization page in the browser
+    and catching the redirect on a local callback server.
+    """
+
+    parsed = urllib.parse.urlparse(redirect_uri)
+    code_future: asyncio.Future[str] = asyncio.get_running_loop().create_future()
+
+    async def callback(request: web.Request) -> web.Response:
+        if not code_future.done():
+            code = request.query.get("code")
+            if code is not None:
+                code_future.set_result(code)
+            else:
+                error = request.query.get("error", "no code returned")
+                code_future.set_exception(
+                    RuntimeError(f"OAuth authorization failed: {error}"),
+                )
+        return web.Response(
+            text="<html><body><h3>aiosu test generator</h3>"
+            "<p>Authorization received. You may close this tab.</p></body></html>",
+            content_type="text/html",
+        )
+
+    app = web.Application()
+    app.router.add_get(parsed.path or "/", callback)
+    runner = web.AppRunner(app)
+    await runner.setup()
+    site = web.TCPSite(runner, parsed.hostname or "localhost", parsed.port or 80)
+    await site.start()
+
+    auth_url = aiosu.utils.auth.generate_url(
+        client_id=client_id,
+        redirect_uri=redirect_uri,
+        base_url=base_url,
+        scopes=scopes,
+    )
+    logger.info(f"Requesting authorization: {auth_url}")
+    if not webbrowser.open(auth_url):
+        logger.info("Could not open a browser. Please visit the URL manually.")
+    try:
+        code = await asyncio.wait_for(code_future, timeout=OAUTH_TIMEOUT)
+    finally:
+        await runner.cleanup()
+
+    return await aiosu.utils.auth.process_code(
+        client_id,
+        client_secret,
+        redirect_uri,
+        code,
+        base_url=base_url,
+    )
+
+
+async def get_token(env_prefix: str, base_url: str) -> aiosu.models.OAuthToken:
+    """
+    Build a token from ``{env_prefix}ACCESS_TOKEN`` if set, otherwise run the
+    interactive browser flow using ``{env_prefix}CLIENT_ID``/``{env_prefix}CLIENT_SECRET``.
+    """
+
+    access_token = os.environ.get(f"{env_prefix}ACCESS_TOKEN")
+    if access_token:
+        return aiosu.models.OAuthToken(
+            access_token=access_token,
+            refresh_token="",
+            expires_in=86400,
+        )
+    client_id = os.environ.get(f"{env_prefix}CLIENT_ID")
+    client_secret = os.environ.get(f"{env_prefix}CLIENT_SECRET")
+    if not (client_id and client_secret):
+        raise ValueError(
+            f"Either {env_prefix}ACCESS_TOKEN or {env_prefix}CLIENT_ID and "
+            f"{env_prefix}CLIENT_SECRET must be set",
+        )
+    redirect_uri = os.environ.get(
+        f"{env_prefix}REDIRECT_URI",
+        DEFAULT_REDIRECT_URI,
+    )
+    return await interactive_oauth_token(
+        int(client_id),
+        client_secret,
+        redirect_uri,
+        base_url=base_url,
+    )
 
 
 class TestGeneratorBase(ABC):
@@ -73,31 +183,35 @@ class TestGeneratorBase(ABC):
         params: dict | None = None,
         data: dict | None = None,
     ) -> None:
-        async with self.client._session.request(
-            method,
-            url,
-            data=data,
-            params=params,
-            headers=headers,
-        ) as resp:
-            if resp.status != expect_status:
-                raise ValueError(
-                    f"Expected {method} {url} to return {expect_status}, got {resp.status}",
-                )
+        for attempt in range(1, MAX_ATTEMPTS + 1):
+            async with self.client._session.request(
+                method,
+                url,
+                json=data,
+                params=params,
+                headers=headers,
+            ) as resp:
+                if resp.status == expect_status:
+                    resp_data = await resp.read()
+                    with open(os.path.normpath(filename), "wb") as f:
+                        f.write(resp_data)
+                    return
 
-            resp_data = await resp.read()
-            with open(filename, "wb") as f:
-                f.write(resp_data)
+                if resp.status < 500 or attempt == MAX_ATTEMPTS:
+                    raise ValueError(
+                        f"Expected {method} {url} to return {expect_status}, got {resp.status}",
+                    )
+                logger.warning(
+                    f"{method} {url} returned {resp.status}, "
+                    f"retrying ({attempt}/{MAX_ATTEMPTS})",
+                )
+            await asyncio.sleep(RETRY_DELAY * attempt)
 
     async def run(self) -> None:
         self._register_routes()
         for route in self.routes:
             logger.info(f"Running {route}")
-            try:
-                await route()
-            except ValueError as e:
-                logger.error(f"Error while running {route}: {e}")
-                exit(1)
+            await route()
 
 
 class TestGeneratorV1(TestGeneratorBase):
@@ -165,8 +279,10 @@ class TestGeneratorV1(TestGeneratorBase):
 
     async def run(self) -> None:
         self.client._session = aiohttp.ClientSession()
-        await super().run()
-        await self.client.aclose()
+        try:
+            await super().run()
+        finally:
+            await self.client.aclose()
 
 
 class TestGeneratorV2(TestGeneratorBase):
@@ -539,6 +655,9 @@ class TestGeneratorV2(TestGeneratorBase):
             expect_status=404,
             headers={"x-api-version": "20220705"},
         )
+        # Invalid score IDs no longer return a 404 on the download routes;
+        # the request stalls until the gateway responds with a 504, so the
+        # 504 fixtures are kept in the repository instead of being generated.
         self._register_route(
             "GET",
             f"{BASE_URL}/api/v2/scores/osu/4220635589/download",
@@ -546,20 +665,8 @@ class TestGeneratorV2(TestGeneratorBase):
         )
         self._register_route(
             "GET",
-            f"{BASE_URL}/api/v2/scores/osu/0/download",
-            f"{DATA_DIR}/v2/get_score_replay_404.json",
-            expect_status=404,
-        )
-        self._register_route(
-            "GET",
             f"{BASE_URL}/api/v2/scores/1581778626/download",
             f"{DATA_DIR}/v2/get_score_replay_lazer_200.osr",
-        )
-        self._register_route(
-            "GET",
-            f"{BASE_URL}/api/v2/scores/0/download",
-            f"{DATA_DIR}/v2/get_score_replay_lazer_404.json",
-            expect_status=404,
         )
         self._register_route(
             "GET",
@@ -593,87 +700,6 @@ class TestGeneratorV2(TestGeneratorBase):
             f"{DATA_DIR}/v2/get_forum_topic_404.json",
             expect_status=404,
         )
-        """
-        self._register_route(
-            "POST",
-            f"{BASE_URL_DEV}/api/v2/forums/topics",
-            f"{DATA_DIR}/v2/create_forum_topic_200.json",
-            data={"title": "Test topic", "body": "Test body", "forum_id": 7},
-        )
-        self._register_route(
-            "POST",
-            f"{BASE_URL_DEV}/api/v2/forums/topics/7/reply",
-            f"{DATA_DIR}/v2/reply_forum_topic_200.json",
-            data={"body": "Test body"},
-        )
-        self._register_route(
-            "PUT",
-            f"{BASE_URL_DEV}/api/v2/forums/topics/7/title",
-            f"{DATA_DIR}/v2/edit_forum_topic_title_200.json",
-            data={"title": "Test topic"},
-        )
-        self._register_route(
-            "PUT",
-            f"{BASE_URL_DEV}/api/v2/forums/posts/7",
-            f"{DATA_DIR}/v2/edit_forum_post_200.json",
-            data={"body": "Test body"},
-        )
-        self._register_route(
-            "POST",
-            f"{BASE_URL_DEV}/api/v2/chat/ack",
-            f"{DATA_DIR}/v2/get_chat_ack.json",
-        )
-        self._register_route(
-            "GET",
-            f"{BASE_URL_DEV}/api/v2/chat/channels/1",
-            f"{DATA_DIR}/v2/get_channel_200.json",
-        )
-        self._register_route(
-            "GET",
-            f"{BASE_URL_DEV}/api/v2/chat/channels/0",
-            f"{DATA_DIR}/v2/get_channel_404.json",
-            expect_status=404,
-        )
-        self._register_route(
-            "GET",
-            f"{BASE_URL_DEV}/api/v2/chat/channels",
-            f"{DATA_DIR}/v2/get_channels_200.json",
-        )
-        self._register_route(
-            "GET",
-            f"{BASE_URL_DEV}/api/v2/chat/channels/1/messages",
-            f"{DATA_DIR}/v2/get_channel_messages_200.json",
-        )
-        self._register_route(
-            "GET",
-            f"{BASE_URL_DEV}/api/v2/chat/channels/0/messages",
-            f"{DATA_DIR}/v2/get_channel_messages_404.json",
-            expect_status=404,
-        )
-        self._register_route(
-            "POST",
-            f"{BASE_URL_DEV}/api/v2/chat/channels",
-            f"{DATA_DIR}/v2/create_chat_channel_200.json",
-            data={"message": "Test", "target_id": 664},
-        )
-        self._register_route(
-            "PUT",
-            f"{BASE_URL_DEV}/api/v2/chat/channels/1/users/665",
-            f"{DATA_DIR}/v2/join_channel_200.json",
-        )
-        self._register_route(
-            "POST",
-            f"{BASE_URL_DEV}/api/v2/chat/channels/1/messages",
-            f"{DATA_DIR}/v2/send_message_200.json",
-            data={"message": "Test"},
-        )
-        self._register_route(
-            "POST",
-            f"{BASE_URL_DEV}/api/v2/chat/chat/new",
-            f"{DATA_DIR}/v2/send_private_message_200.json",
-            data={"message": "Test", "target_id": 664},
-        )
-        """
         self._register_route(
             "GET",
             f"{BASE_URL}/api/v2/matches",
@@ -741,22 +767,124 @@ class TestGeneratorV2(TestGeneratorBase):
         self.client._session = aiohttp.ClientSession(
             headers=await self.client._get_headers(),
         )
-        await super().run()
+        try:
+            await super().run()
 
-        for mode in API_MODES:
-            with open(f"{DATA_DIR}/v2/score_{mode}.json") as f:
-                data = f.read()
-                data_json = orjson.loads(data)
-                for score in data_json:
-                    await self._save_data(
-                        "POST",
-                        f"{BASE_URL}/api/v2/beatmaps/{score['beatmap']['id']}/attributes",
-                        f"{DATA_DIR}/v2/difficulty_attributes_{mode}.json",
-                        200,
-                        params={"ruleset_id": score["mode_int"]},
-                    )
+            for mode in API_MODES:
+                with open(f"{DATA_DIR}/v2/score_{mode}.json") as f:
+                    data = f.read()
+                    data_json = orjson.loads(data)
+                    for score in data_json:
+                        await self._save_data(
+                            "POST",
+                            f"{BASE_URL}/api/v2/beatmaps/{score['beatmap']['id']}/attributes",
+                            f"{DATA_DIR}/v2/difficulty_attributes_{mode}.json",
+                            200,
+                            params={"ruleset_id": score["mode_int"]},
+                        )
+        finally:
+            await self.client.aclose()
 
-        await self.client.aclose()
+
+class TestGeneratorDev(TestGeneratorBase):
+    """Generates data for endpoints that mutate state, against https://dev.ppy.sh."""
+
+    def __init__(self, token: aiosu.models.OAuthToken) -> None:
+        super().__init__()
+
+        self.client = aiosu.v2.Client(token=token, base_url=BASE_URL_DEV)
+        self._ensure_dir(f"{DATA_DIR}/v2")
+
+    def _register_routes(self) -> None:
+        self._register_route(
+            "POST",
+            f"{BASE_URL_DEV}/api/v2/forums/topics",
+            f"{DATA_DIR}/v2/create_forum_topic_200.json",
+            data={"title": "Test topic", "body": "Test body", "forum_id": 74},
+        )
+        self._register_route(
+            "POST",
+            f"{BASE_URL_DEV}/api/v2/forums/topics/515/reply",
+            f"{DATA_DIR}/v2/reply_forum_topic_200.json",
+            data={"body": "Test body"},
+        )
+        self._register_route(
+            "PUT",
+            f"{BASE_URL_DEV}/api/v2/forums/topics/515",
+            f"{DATA_DIR}/v2/edit_forum_topic_title_200.json",
+            data={"forum_topic": {"topic_title": "Test topic"}},
+        )
+        self._register_route(
+            "PUT",
+            f"{BASE_URL_DEV}/api/v2/forums/posts/638",
+            f"{DATA_DIR}/v2/edit_forum_post_200.json",
+            data={"body": "Test body"},
+        )
+        self._register_route(
+            "POST",
+            f"{BASE_URL_DEV}/api/v2/chat/ack",
+            f"{DATA_DIR}/v2/get_chat_ack_200.json",
+        )
+        self._register_route(
+            "GET",
+            f"{BASE_URL_DEV}/api/v2/chat/channels/5",
+            f"{DATA_DIR}/v2/get_channel_200.json",
+        )
+        self._register_route(
+            "GET",
+            f"{BASE_URL_DEV}/api/v2/chat/channels/0",
+            f"{DATA_DIR}/v2/get_channel_404.json",
+            expect_status=404,
+        )
+        self._register_route(
+            "GET",
+            f"{BASE_URL_DEV}/api/v2/chat/channels",
+            f"{DATA_DIR}/v2/get_channels_200.json",
+        )
+        self._register_route(
+            "GET",
+            f"{BASE_URL_DEV}/api/v2/chat/channels/5/messages",
+            f"{DATA_DIR}/v2/get_channel_messages_200.json",
+        )
+        self._register_route(
+            "GET",
+            f"{BASE_URL_DEV}/api/v2/chat/channels/0/messages",
+            f"{DATA_DIR}/v2/get_channel_messages_404.json",
+            expect_status=404,
+        )
+        self._register_route(
+            "POST",
+            f"{BASE_URL_DEV}/api/v2/chat/channels",
+            f"{DATA_DIR}/v2/create_chat_channel_200.json",
+            data={"type": "PM", "message": "Test", "target_id": 665},
+        )
+        self._register_route(
+            "PUT",
+            f"{BASE_URL_DEV}/api/v2/chat/channels/6/users/664",
+            f"{DATA_DIR}/v2/join_channel_200.json",
+        )
+        self._register_route(
+            "POST",
+            f"{BASE_URL_DEV}/api/v2/chat/channels/5/messages",
+            f"{DATA_DIR}/v2/send_message_200.json",
+            data={"message": "Test"},
+        )
+        self._register_route(
+            "POST",
+            f"{BASE_URL_DEV}/api/v2/chat/new",
+            f"{DATA_DIR}/v2/send_private_message_200.json",
+            data={"message": "Test", "target_id": 665},
+        )
+
+    async def run(self) -> None:
+        await self.client._prepare_token()
+        self.client._session = aiohttp.ClientSession(
+            headers=await self.client._get_headers(),
+        )
+        try:
+            await super().run()
+        finally:
+            await self.client.aclose()
 
 
 async def main() -> None:
@@ -766,15 +894,25 @@ async def main() -> None:
     generator_v1 = TestGeneratorV1(api_key=api_key)
     await generator_v1.run()
 
-    token = aiosu.models.OAuthToken(
-        access_token=os.environ.get("OSU_ACCESS_TOKEN", ""),
-        refresh_token="",
-        expires_in=86400,
-    )
+    token = await get_token("OSU_", BASE_URL)
     generator_v2 = TestGeneratorV2(token=token)
     await generator_v2.run()
 
+    if os.environ.get("OSU_DEV_ACCESS_TOKEN") or os.environ.get("OSU_DEV_CLIENT_ID"):
+        dev_token = await get_token("OSU_DEV_", BASE_URL_DEV)
+        generator_dev = TestGeneratorDev(token=dev_token)
+        await generator_dev.run()
+    else:
+        logger.info(
+            "Skipping dev endpoints: set OSU_DEV_CLIENT_ID and OSU_DEV_CLIENT_SECRET "
+            "(or OSU_DEV_ACCESS_TOKEN) to generate them",
+        )
+
 
 if __name__ == "__main__":
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(main())
+    logging.basicConfig(level=logging.INFO)
+    try:
+        asyncio.run(main())
+    except ValueError as e:
+        logger.error(f"Error while generating test data: {e}")
+        sys.exit(1)
