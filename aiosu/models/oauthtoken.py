@@ -65,8 +65,7 @@ class OAuthToken(FrozenModel):
     @field_validator("expires_on", mode="after")
     @classmethod
     def _ensure_aware(cls, value: datetime) -> datetime:
-        """Naive datetimes are treated as UTC. Mixing naive and aware values
-        in expiry comparisons shifts the epoch by the host's UTC offset."""
+        """Naive datetimes are treated as UTC."""
         if value.tzinfo is None:
             return value.replace(tzinfo=timezone.utc)
         return value

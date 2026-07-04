@@ -50,8 +50,11 @@ async def interactive_oauth_token(
     base_url: str = BASE_URL,
     scopes: aiosu.models.Scopes = FULL_SCOPES,
 ) -> aiosu.models.OAuthToken:
-    """Obtain an OAuth token by opening the authorization page in the browser
-    and catching the redirect on a local callback server."""
+    """
+    Obtain an OAuth token by opening the authorization page in the browser
+    and catching the redirect on a local callback server.
+    """
+
     parsed = urllib.parse.urlparse(redirect_uri)
     code_future: asyncio.Future[str] = asyncio.get_running_loop().create_future()
 
@@ -102,9 +105,11 @@ async def interactive_oauth_token(
 
 
 async def get_token(env_prefix: str, base_url: str) -> aiosu.models.OAuthToken:
-    """Build a token from ``{env_prefix}ACCESS_TOKEN`` if set, otherwise run the
+    """
+    Build a token from ``{env_prefix}ACCESS_TOKEN`` if set, otherwise run the
     interactive browser flow using ``{env_prefix}CLIENT_ID``/``{env_prefix}CLIENT_SECRET``.
     """
+
     access_token = os.environ.get(f"{env_prefix}ACCESS_TOKEN")
     if access_token:
         return aiosu.models.OAuthToken(
