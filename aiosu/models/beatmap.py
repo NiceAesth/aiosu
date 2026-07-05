@@ -33,12 +33,15 @@ __all__ = (
     "BeatmapHype",
     "BeatmapLanguage",
     "BeatmapNominations",
+    "BeatmapNominationsSummary",
     "BeatmapOwner",
     "BeatmapPack",
     "BeatmapPackType",
     "BeatmapPackUserCompletion",
     "BeatmapPacksResponse",
     "BeatmapRankStatus",
+    "BeatmapTag",
+    "BeatmapTagCount",
     "BeatmapUserPlaycount",
     "Beatmapset",
     "BeatmapsetBundleFilterType",
@@ -55,6 +58,7 @@ __all__ = (
     "BeatmapsetEventType",
     "BeatmapsetGenre",
     "BeatmapsetLanguage",
+    "BeatmapsetNominationsRequiredMeta",
     "BeatmapsetRequestStatus",
     "BeatmapsetSearchResponse",
     "BeatmapsetSortType",
@@ -311,6 +315,31 @@ class BeatmapNominations(BaseModel):
     required: int | None = None
 
 
+class BeatmapsetNominationsRequiredMeta(BaseModel):
+    main_ruleset: int
+    non_main_ruleset: int
+
+
+class BeatmapNominationsSummary(BaseModel):
+    current: int
+    eligible_main_rulesets: list[Gamemode] | None = None
+    required_meta: BeatmapsetNominationsRequiredMeta | None = None
+
+
+class BeatmapTag(BaseModel):
+    id: int
+    name: str
+    ruleset_id: int | None = None
+    description: str | None = None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
+
+
+class BeatmapTagCount(BaseModel):
+    tag_id: int
+    count: int
+
+
 class BeatmapNomination(BaseModel):
     beatmapset_id: int
     reset: bool
@@ -396,11 +425,14 @@ class Beatmap(BaseModel):
     total_length: int
     user_id: int
     version: str
+    lazer_only: bool
     accuracy: float | None = None
     ar: float | None = None
     cs: float | None = None
     bpm: float | None = None
     convert: bool | None = None
+    current_user_tag_ids: list[int] | None = None
+    top_tag_ids: list[BeatmapTagCount] | None = None
     count_circles: int | None = None
     count_sliders: int | None = None
     count_spinners: int | None = None
@@ -476,6 +508,7 @@ class Beatmap(BaseModel):
                 "count_sliders": data["count_slider"],
                 "count_spinners": data["count_spinner"],
                 "max_combo": data["max_combo"],
+                "lazer_only": False,
             },
         )
 
@@ -513,7 +546,10 @@ class Beatmapset(BaseModel):
     last_updated: datetime | None = None
     legacy_thread_url: str | None = None
     nominations: BeatmapNominations | None = None
+    nominations_summary: BeatmapNominationsSummary | None = None
     current_nominations: list[BeatmapNomination] | None = None
+    version_count: int | None = None
+    related_tags: list[BeatmapTag] | None = None
     ranked_date: datetime | None = None
     storyboard: bool | None = None
     submitted_date: datetime | None = None
