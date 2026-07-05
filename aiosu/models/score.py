@@ -166,6 +166,7 @@ class Score(BaseModel):
     current_user_attributes: CurrentUserAttributes | None = None
     beatmap_id: int | None = None
     """Only present on API v1"""
+    replay_views: int | None = None
 
     @property
     def score_url(self) -> str | None:

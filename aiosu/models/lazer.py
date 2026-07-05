@@ -150,17 +150,22 @@ class LazerScore(BaseModel):
     current_user_attributes: CurrentUserAttributes | None = None
     id: int | None = None
     match: MultiplayerMatch | None = None
-    preserved: bool | None = None
+    preserve: bool | None = None
+    processed: bool | None = None
     position: int | None = None
     ranked: bool | None = None
     rank_country: int | None = None
     rank_global: int | None = None
+    classic_total_score: int | None = None
+    total_score_without_mods: int | None = None
     legacy_score_id: int | None = None
     legacy_total_score: int | None = None
     playlist_item_id: int | None = None
     pp: float | None = None
     room_id: int | None = None
+    solo_score_id: int | None = None
     started_at: datetime | None = None
+    replay_views: int | None = None
     user: User | None = None
     weight: ScoreWeight | None = None
 

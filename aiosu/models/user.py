@@ -23,7 +23,11 @@ from .common import TimestampedCount
 from .gamemode import Gamemode
 
 __all__ = (
+    "DailyChallengeUserStats",
     "ManiaStatsVariantsType",
+    "MatchmakingPool",
+    "MatchmakingUserStats",
+    "SeasonUserStats",
     "User",
     "UserAccountHistory",
     "UserAccountHistoryType",
@@ -293,6 +297,49 @@ class UserTeam(BaseModel):
     flag_url: str | None = None
 
 
+class DailyChallengeUserStats(BaseModel):
+    user_id: int
+    daily_streak_best: int
+    daily_streak_current: int
+    weekly_streak_best: int
+    weekly_streak_current: int
+    playcount: int
+    top_10p_placements: int
+    top_50p_placements: int
+    last_update: datetime | None = None
+    last_weekly_streak: datetime | None = None
+
+
+class MatchmakingPool(BaseModel):
+    id: int
+    name: str
+    active: bool
+    ruleset_id: int
+    type: str
+    variant_id: int
+
+
+class MatchmakingUserStats(BaseModel):
+    user_id: int
+    pool_id: int
+    first_placements: int
+    is_rating_provisional: bool
+    plays: int
+    rank: int | None = None
+    rank_percent: float | None = None
+    rating: int | None = None
+    total_points: int | None = None
+    pool: MatchmakingPool | None = None
+
+
+class SeasonUserStats(BaseModel):
+    user_id: int | None = None
+    season_id: int | None = None
+    total_score: int | None = None
+    division_id: int | None = None
+    playcount: int | None = None
+
+
 class User(BaseModel):
     avatar_url: str
     country_code: str
@@ -328,8 +375,20 @@ class User(BaseModel):
     cover: UserProfileCover | None = None
     is_restricted: bool | None = None
     account_history: list[UserAccountHistory] | None = None
+    active_tournament_banner: UserProfileTournamentBanner | None = None
     active_tournament_banners: list[UserProfileTournamentBanner] | None = None
     badges: list[UserBadge] | None = None
+    comments_count: int | None = None
+    cover_url: str | None = None
+    daily_challenge_user_stats: DailyChallengeUserStats | None = None
+    matchmaking_stats: list[MatchmakingUserStats] | None = None
+    current_season_stats: SeasonUserStats | None = None
+    guest_beatmapset_count: int | None = None
+    nominated_beatmapset_count: int | None = None
+    ranked_and_approved_beatmapset_count: int | None = None
+    unranked_beatmapset_count: int | None = None
+    scores_pinned_count: int | None = None
+    title_url: str | None = None
     beatmap_playcounts_count: int | None = None
     favourite_beatmapset_count: int | None = None
     follow_user_mapping: list[int] | None = None

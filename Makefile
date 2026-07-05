@@ -5,7 +5,7 @@ CURRENT_BRANCH := $(shell git branch --show-current)
 
 shell:
 	poetry install --with dev
-	poetry shell
+	poetry env activate
 
 release:
 	$(if $(filter $(CURRENT_BRANCH),master),,$(error ERR: Not on master branch))
