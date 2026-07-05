@@ -30,6 +30,8 @@ __all__ = (
     "MultiplayerMatch",
     "MultiplayerMatchResponse",
     "MultiplayerMatchesResponse",
+    "MultiplayerPlaylistItem",
+    "MultiplayerPlaylistItemAttempt",
     "MultiplayerQueueMode",
     "MultiplayerRoom",
     "MultiplayerRoomCategory",
@@ -44,6 +46,7 @@ __all__ = (
     "MultiplayerScoresResponse",
     "MultiplayerScoringType",
     "MultiplayerTeamType",
+    "MultiplayerUserScoreSummary",
 )
 
 MultiplayerScoringType = Literal["score", "accuracy", "combo", "scorev2"]
@@ -151,6 +154,8 @@ class MultiplayerPlaylistItem(BaseModel):
     expired: bool
     owner_id: int
     beatmap: Beatmap
+    freestyle: bool | None = None
+    created_at: datetime | None = None
     playlist_order: int | None = None
     played_at: datetime | None = None
 
@@ -164,6 +169,22 @@ class MultiplayerRoomPlaylistItemStats(BaseModel):
     count_active: int
     count_total: int
     ruleset_ids: list[int]
+
+
+class MultiplayerPlaylistItemAttempt(BaseModel):
+    attempts: int
+    playlist_item_id: int
+
+
+class MultiplayerUserScoreSummary(BaseModel):
+    accuracy: float
+    attempts: int
+    completed: int
+    pp: float
+    room_id: int
+    total_score: int
+    user_id: int
+    playlist_item_attempts: list[MultiplayerPlaylistItemAttempt] | None = None
 
 
 class MultiplayerRoom(BaseModel):
@@ -191,6 +212,7 @@ class MultiplayerRoom(BaseModel):
     starts_at: datetime | None = None
     ends_at: datetime | None = None
     max_attempts: int | None = None
+    current_user_score: MultiplayerUserScoreSummary | None = None
 
 
 class MultiplayerLeaderboardItem(BaseModel):
