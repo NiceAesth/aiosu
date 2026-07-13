@@ -335,7 +335,7 @@ class MatchmakingUserStats(BaseModel):
 class SeasonUserStats(BaseModel):
     user_id: int | None = None
     season_id: int | None = None
-    total_score: int | None = None
+    total_score: float | None = None
     division_id: int | None = None
     playcount: int | None = None
 
