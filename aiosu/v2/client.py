@@ -202,6 +202,7 @@ class Client(Eventable):
         "_session",
         "_limiter",
         "_timeout",
+        "_refresh_lock",
         "session_id",
         "client_id",
         "client_secret",
@@ -243,6 +244,7 @@ class Client(Eventable):
             total=kwargs.pop("timeout", 60),
         )
         self._session: aiohttp.ClientSession | None = None
+        self._refresh_lock: asyncio.Lock = asyncio.Lock()
 
     async def __aenter__(self) -> Client:
         return self
@@ -294,15 +296,16 @@ class Client(Eventable):
 
         :raises RefreshTokenExpiredError: If the refresh token has expired
         """
-        token = await self.get_current_token()
-        if datetime.now(timezone.utc) > token.expires_on:
-            try:
-                await self._refresh()
-            except APIException:
-                await self._delete_token()
-                raise RefreshTokenExpiredError(
-                    "Refresh token has expired. Please re-authenticate.",
-                )
+        async with self._refresh_lock:
+            token = await self.get_current_token()
+            if datetime.now(timezone.utc) > token.expires_on:
+                try:
+                    await self._refresh()
+                except APIException:
+                    await self._delete_token()
+                    raise RefreshTokenExpiredError(
+                        "Refresh token has expired. Please re-authenticate.",
+                    )
 
     async def _add_token(self, token: OAuthToken) -> None:
         """Add a token to the current session"""
@@ -355,12 +358,19 @@ class Client(Eventable):
 
         if self._session is None:
             self._session = aiohttp.ClientSession(
-                headers=await self._get_headers(),
                 timeout=self._timeout,
             )
 
+        headers = await self._get_headers()
+        headers.update(kwargs.pop("headers", {}))
+
         async with self._limiter:
-            async with self._session.request(request_type, *args, **kwargs) as resp:
+            async with self._session.request(
+                request_type,
+                *args,
+                headers=headers,
+                **kwargs,
+            ) as resp:
                 if resp.status == 204:
                     return
                 body = await resp.read()
@@ -412,14 +422,8 @@ class Client(Eventable):
                     json = orjson.loads(body)
                     if resp.status != 200:
                         raise APIException(resp.status, json.get("error", ""))
-                    if self._session:
-                        await self._session.close()
                     new_token = OAuthToken.model_validate(json)
                     await self._update_token(new_token)
-                    self._session = aiohttp.ClientSession(
-                        headers=await self._get_headers(),
-                        timeout=self._timeout,
-                    )
 
         await self._process_event(
             ClientUpdateEvent(client=self, old_token=old_token, new_token=new_token),
