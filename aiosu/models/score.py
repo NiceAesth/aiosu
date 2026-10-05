@@ -134,6 +134,7 @@ class ScoreMatch(BaseModel):
 
 
 class ScoreStatistics(BaseModel):
+    mode: Gamemode = Field(default=Gamemode.STANDARD, exclude=True)
     miss: int = 0
     meh: int = 0
     ok: int = 0
@@ -152,7 +153,6 @@ class ScoreStatistics(BaseModel):
     slider_tail_hit: int | None = None
     legacy_combo_increase: int = 0
     _uses_hit_results: bool = PrivateAttr(default=False)
-    _mode: Gamemode = PrivateAttr(default=Gamemode.STANDARD)
     _taiko_count_katu: int = PrivateAttr(default=0)
 
     def model_copy(
@@ -171,7 +171,7 @@ class ScoreStatistics(BaseModel):
         return copied
 
     def _with_mode(self, mode: Gamemode) -> Self:
-        if self._mode == mode:
+        if self.mode == mode:
             return self
         if not self._uses_hit_results:
             return type(self).model_validate(
@@ -179,7 +179,7 @@ class ScoreStatistics(BaseModel):
                 context={"mode": mode},
             )
         statistics = self.model_copy()
-        statistics._mode = mode
+        statistics.mode = mode
         statistics._taiko_count_katu = 0
         return statistics
 
@@ -195,13 +195,13 @@ class ScoreStatistics(BaseModel):
     @computed_field  # type: ignore[prop-decorator]
     @property
     def count_100(self) -> int:
-        if self._mode == Gamemode.CTB:
+        if self.mode == Gamemode.CTB:
             return self.large_tick_hit
         return self.ok
 
     @count_100.setter
     def count_100(self, value: int) -> None:
-        if self._mode == Gamemode.CTB:
+        if self.mode == Gamemode.CTB:
             self.large_tick_hit = value
         else:
             self.ok = value
@@ -209,13 +209,13 @@ class ScoreStatistics(BaseModel):
     @computed_field  # type: ignore[prop-decorator]
     @property
     def count_50(self) -> int:
-        if self._mode == Gamemode.CTB:
+        if self.mode == Gamemode.CTB:
             return self.small_tick_hit
         return self.meh
 
     @count_50.setter
     def count_50(self, value: int) -> None:
-        if self._mode == Gamemode.CTB:
+        if self.mode == Gamemode.CTB:
             self.small_tick_hit = value
         else:
             self.meh = value
@@ -223,13 +223,13 @@ class ScoreStatistics(BaseModel):
     @computed_field  # type: ignore[prop-decorator]
     @property
     def count_geki(self) -> int:
-        if self._mode == Gamemode.TAIKO:
+        if self.mode == Gamemode.TAIKO:
             return self.large_bonus - self._taiko_count_katu
         return self.perfect
 
     @count_geki.setter
     def count_geki(self, value: int) -> None:
-        if self._mode == Gamemode.TAIKO:
+        if self.mode == Gamemode.TAIKO:
             self.large_bonus = value + self._taiko_count_katu
         else:
             self.perfect = value
@@ -237,17 +237,17 @@ class ScoreStatistics(BaseModel):
     @computed_field  # type: ignore[prop-decorator]
     @property
     def count_katu(self) -> int:
-        if self._mode == Gamemode.CTB:
+        if self.mode == Gamemode.CTB:
             return self.small_tick_miss
-        if self._mode == Gamemode.TAIKO:
+        if self.mode == Gamemode.TAIKO:
             return self._taiko_count_katu
         return self.good
 
     @count_katu.setter
     def count_katu(self, value: int) -> None:
-        if self._mode == Gamemode.CTB:
+        if self.mode == Gamemode.CTB:
             self.small_tick_miss = value
-        elif self._mode == Gamemode.TAIKO:
+        elif self.mode == Gamemode.TAIKO:
             if self._uses_hit_results:
                 raise ValueError("Set large_bonus directly for modern taiko scores")
             self.large_bonus = self.count_geki + value
@@ -258,13 +258,13 @@ class ScoreStatistics(BaseModel):
     @computed_field  # type: ignore[prop-decorator]
     @property
     def count_miss(self) -> int:
-        if self._mode == Gamemode.CTB:
+        if self.mode == Gamemode.CTB:
             return self.miss + cast_int(self.large_tick_miss)
         return self.miss
 
     @count_miss.setter
     def count_miss(self, value: int) -> None:
-        if self._mode == Gamemode.CTB:
+        if self.mode == Gamemode.CTB:
             if self._uses_hit_results:
                 raise ValueError(
                     "Set miss or large_tick_miss separately for catch scores",
@@ -280,7 +280,7 @@ class ScoreStatistics(BaseModel):
 
     @count_large_tick_miss.setter
     def count_large_tick_miss(self, value: int | None) -> None:
-        if self._mode == Gamemode.CTB and not self._uses_hit_results:
+        if self.mode == Gamemode.CTB and not self._uses_hit_results:
             self.miss += cast_int(self.large_tick_miss) - cast_int(value)
         self.large_tick_miss = value
 
@@ -335,7 +335,7 @@ class ScoreStatistics(BaseModel):
                 break
 
         context = info.context or {}
-        mode = Gamemode(context.get("mode", Gamemode.STANDARD))
+        mode = Gamemode(context.get("mode", data.pop("mode", Gamemode.STANDARD)))
         if uses_hit_results:
             data.setdefault("large_tick_miss", 0)
             data.setdefault("slider_tail_hit", 0)
@@ -352,9 +352,10 @@ class ScoreStatistics(BaseModel):
                     raise ValueError(f"Missing legacy statistic {name!r}")
             data = cls._hit_results_from_legacy_counts(data, mode)
 
+        data["mode"] = mode
         statistics = handler(data)
         statistics._uses_hit_results = uses_hit_results
-        statistics._mode = mode
+        statistics.mode = mode
         if not uses_hit_results and mode == Gamemode.TAIKO:
             statistics._taiko_count_katu = cast_int(values.get("count_katu"))
         return statistics

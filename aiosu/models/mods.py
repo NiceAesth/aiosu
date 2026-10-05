@@ -6,6 +6,7 @@ from __future__ import annotations
 
 from collections import UserList
 from typing import Any
+from typing import ClassVar
 
 from pydantic import ConfigDict
 from pydantic import Field
@@ -100,15 +101,51 @@ class _LegacyModFlags:
     Mirror = 1 << 30
 
 
-class Mod(BaseModel, _LegacyModFlags):
+class Mod(BaseModel):
     """An osu! mod with optional settings."""
+
+    NoMod: ClassVar[Mod]
+    NoFail: ClassVar[Mod]
+    Easy: ClassVar[Mod]
+    TouchDevice: ClassVar[Mod]
+    Hidden: ClassVar[Mod]
+    HardRock: ClassVar[Mod]
+    SuddenDeath: ClassVar[Mod]
+    DoubleTime: ClassVar[Mod]
+    Relax: ClassVar[Mod]
+    HalfTime: ClassVar[Mod]
+    Nightcore: ClassVar[Mod]
+    Flashlight: ClassVar[Mod]
+    Autoplay: ClassVar[Mod]
+    SpunOut: ClassVar[Mod]
+    Autopilot: ClassVar[Mod]
+    Perfect: ClassVar[Mod]
+    Key4: ClassVar[Mod]
+    Key5: ClassVar[Mod]
+    Key6: ClassVar[Mod]
+    Key7: ClassVar[Mod]
+    Key8: ClassVar[Mod]
+    FadeIn: ClassVar[Mod]
+    Random: ClassVar[Mod]
+    Cinema: ClassVar[Mod]
+    Target: ClassVar[Mod]
+    Key9: ClassVar[Mod]
+    KeyCoop: ClassVar[Mod]
+    Key1: ClassVar[Mod]
+    Key3: ClassVar[Mod]
+    Key2: ClassVar[Mod]
+    ScoreV2: ClassVar[Mod]
+    Mirror: ClassVar[Mod]
 
     model_config = ConfigDict(frozen=True)
     acronym: str
     settings: dict[str, Any] = Field(default_factory=dict)
     __hash__: Any = None
 
-    def __init__(self, acronym: str | int, **data: Any) -> None:
+    def __init__(self, acronym: str | int | Mod, **data: Any) -> None:
+        if isinstance(acronym, Mod):
+            data.setdefault("settings", acronym.settings.copy())
+            acronym = acronym.acronym
         super().__init__(acronym=acronym, **data)
 
     @property
@@ -147,13 +184,9 @@ class Mod(BaseModel, _LegacyModFlags):
         return self.short_name
 
     def __int__(self) -> int:
-        if self.settings:
-            raise ValueError(
-                f"Mod {self.acronym!r} has settings which cannot be represented by a legacy flag",
-            )
         if self.acronym not in _legacy_mods:
             raise ValueError(f"Mod {self.acronym!r} has no legacy flag")
-        return getattr(type(self), _legacy_mods[self.acronym])
+        return getattr(_LegacyModFlags, _legacy_mods[self.acronym])
 
     def __index__(self) -> int:
         return int(self)
@@ -205,7 +238,7 @@ class Mod(BaseModel, _LegacyModFlags):
     def _convert_acronym(cls, value: Any) -> Any:
         if isinstance(value, int):
             for acronym, name in _legacy_mods.items():
-                if getattr(cls, name) == value:
+                if getattr(_LegacyModFlags, name) == value:
                     return acronym
             raise ValueError(f"Mod {value!r} does not exist.")
         if value == "SV2":
@@ -434,16 +467,16 @@ class Mods(UserList[Mod]):
     def _parse_bitmask(value: int) -> list[Mod]:
         mods = []
         for name in _legacy_mods.values():
-            bitmask = getattr(Mod, name)
+            bitmask = getattr(_LegacyModFlags, name)
             if bitmask & value:
                 mods.append(Mod(bitmask))
         return mods
 
     def _add_implied_mods(self) -> None:
         if Mod.Nightcore in self and Mod.DoubleTime not in self:
-            self.data.append(Mod(Mod.DoubleTime))
+            self.data.append(Mod.DoubleTime)
         if Mod.Perfect in self and Mod.SuddenDeath not in self:
-            self.data.append(Mod(Mod.SuddenDeath))
+            self.data.append(Mod.SuddenDeath)
 
     def _is_implied(self, mod: Mod) -> bool:
         if mod.settings:
@@ -480,7 +513,10 @@ class Mods(UserList[Mod]):
         )
 
 
-KeyMod = (
+for _acronym, _name in _legacy_mods.items():
+    setattr(Mod, _name, Mod(_acronym))
+
+KeyMod = int(
     Mod.Key1
     | Mod.Key2
     | Mod.Key3
@@ -490,9 +526,9 @@ KeyMod = (
     | Mod.Key7
     | Mod.Key8
     | Mod.Key9
-    | Mod.KeyCoop
+    | Mod.KeyCoop,
 )
-FreemodAllowed = (
+FreemodAllowed = int(
     Mod.NoFail
     | Mod.Easy
     | Mod.Hidden
@@ -515,7 +551,7 @@ FreemodAllowed = (
     | Mod.Key1
     | Mod.Key3
     | Mod.Key2
-    | Mod.Mirror
+    | Mod.Mirror,
 )
-ScoreIncreaseMods = Mod.Hidden | Mod.HardRock | Mod.DoubleTime | Mod.Flashlight
-SpeedChangingMods = Mod.DoubleTime | Mod.HalfTime | Mod.Nightcore
+ScoreIncreaseMods = int(Mod.Hidden | Mod.HardRock | Mod.DoubleTime | Mod.Flashlight)
+SpeedChangingMods = int(Mod.DoubleTime | Mod.HalfTime | Mod.Nightcore)
