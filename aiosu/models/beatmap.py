@@ -398,21 +398,24 @@ class BeatmapDifficultyAttributes(BaseModel):
     star_rating: float
     # osu standard
     aim_difficulty: float | None = None
-    approach_rate: float | None = None  # osu catch + standard
-    flashlight_difficulty: float | None = None
-    overall_difficulty: float | None = None
-    slider_factor: float | None = None
+    aim_difficult_slider_count: float | None = None
     speed_difficulty: float | None = None
     speed_note_count: float | None = None
+    flashlight_difficulty: float | None = None
+    reading_difficulty: float | None = None
+    slider_factor: float | None = None
+    aim_top_weighted_slider_factor: float | None = None
+    speed_top_weighted_slider_factor: float | None = None
     aim_difficult_strain_count: float | None = None
     speed_difficult_strain_count: float | None = None
+    reading_difficult_note_count: float | None = None
+    nested_score_per_object: float | None = None
+    legacy_score_base_multiplier: float | None = None
+    maximum_legacy_combo_score: float | None = None
     # osu taiko
-    stamina_difficulty: float | None = None
     rhythm_difficulty: float | None = None
-    colour_difficulty: float | None = None
-    # osu mania
-    great_hit_window: float | None = None
-    score_multiplier: float | None = None
+    mono_stamina_factor: float | None = None
+    consistency_factor: float | None = None
 
 
 class Beatmap(BaseModel):
