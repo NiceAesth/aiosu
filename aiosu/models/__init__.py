@@ -29,4 +29,5 @@ from .score import *
 from .search import *
 from .spotlight import *
 from .user import *
+from .websocket import *
 from .wiki import *

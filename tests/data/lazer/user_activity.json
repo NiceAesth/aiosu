@@ -1,0 +1,5 @@
+{
+  "type": "UserActivityWebSocketMessage",
+  "status": "InLobby",
+  "data": { "room_id": 123, "room_name": "Test room" }
+}

@@ -1,0 +1,36 @@
+{
+  "type": "BeatmapStateWebSocketMessage",
+  "beatmap": {
+    "beatmap_id": 974423,
+    "beatmapset_id": 239330,
+    "beatmap_hash": "583aa402376a240ae57f0326c62f2452",
+    "metadata": {
+      "artist": "Rameses B",
+      "artist_unicode": "Rameses B",
+      "title": "We Love",
+      "title_unicode": "We Love",
+      "author": "Milan-",
+      "source": "",
+      "tags": "dnb drum and bass",
+      "user_tags": []
+    },
+    "difficulty": {
+      "approach_rate": 8.23,
+      "circle_size": 3,
+      "overall_difficulty": 8.03,
+      "drain_rate": 4
+    },
+    "difficulty_name": "Normal",
+    "ruleset_id": 0,
+    "bpm": 306,
+    "star_rating": 3.06,
+    "maximum_pp": 120.5,
+    "max_combo": 240,
+    "status": "Ranked",
+    "total_length": 95000,
+    "drain_length": 90000,
+    "object_count": 180
+  },
+  "ruleset_id": 0,
+  "mods": [{ "acronym": "DT", "settings": { "speed_change": 1.76 } }]
+}

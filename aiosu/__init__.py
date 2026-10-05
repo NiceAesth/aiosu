@@ -11,6 +11,7 @@ __copyright__ = f"Copyright {date.today().year} {__author__}"
 from . import events
 from . import exceptions
 from . import helpers
+from . import lazer
 from . import utils
 from . import v1
 from . import v2
@@ -21,6 +22,7 @@ __all__ = (
     "events",
     "exceptions",
     "helpers",
+    "lazer",
     "models",
     "utils",
     "v1",

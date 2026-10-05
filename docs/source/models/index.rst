@@ -1,6 +1,13 @@
 Models
 ======
 
+WebSocket
+---------
+
+.. automodule:: aiosu.models.websocket
+    :members:
+    :undoc-members:
+
 Common
 ------
 
