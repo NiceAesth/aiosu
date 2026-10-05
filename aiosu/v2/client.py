@@ -32,16 +32,16 @@ from ..helpers import add_range
 from ..helpers import append_param
 from ..helpers import from_list
 from ..models import ArtistTracksResponse
-from ..models import Beatmap
 from ..models import BeatmapDifficultyAttributes
+from ..models import BeatmapExtended
 from ..models import BeatmapPack
 from ..models import BeatmapPacksResponse
 from ..models import BeatmapPackType
-from ..models import Beatmapset
 from ..models import BeatmapsetDiscussionPostResponse
 from ..models import BeatmapsetDiscussionResponse
 from ..models import BeatmapsetDiscussionVoteResponse
 from ..models import BeatmapsetEvent
+from ..models import BeatmapsetExtended
 from ..models import BeatmapsetSearchResponse
 from ..models import BeatmapUserPlaycount
 from ..models import Build
@@ -81,6 +81,7 @@ from ..models import SeasonalBackgroundSet
 from ..models import Spotlight
 from ..models import User
 from ..models import UserBeatmapType
+from ..models import UserCompact
 from ..models import UserQueryType
 from ..models import UserRelation
 from ..models import WikiPage
@@ -517,17 +518,16 @@ class Client(Eventable):
         """
         url = f"{self.base_url}/api/v2/changelog"
         params: dict[str, object] = {
-            "message_formats": kwargs.pop("message_formats", ["html", "markdown"]),
+            "message_formats[]": kwargs.get("message_formats", ["html", "markdown"]),
         }
         add_param(params, kwargs, key="from")
         add_param(params, kwargs, key="to")
         add_param(params, kwargs, key="max_id")
         add_param(params, kwargs, key="stream")
-        add_param(params, kwargs, key="cursor_string")
         json = await self._request("GET", url, params=params)
         resp = ChangelogListing.model_validate(json)
-        if resp.cursor_string:  # Unused: API does not return cursor_string
-            kwargs["cursor_string"] = resp.cursor_string
+        if resp.builds and len(resp.builds) == resp.search.limit:
+            kwargs["max_id"] = resp.builds[-1].id - 1
             resp.next = partial(self.get_changelog_listing, **kwargs)
         return resp
 
@@ -570,7 +570,7 @@ class Client(Eventable):
         """
         url = f"{self.base_url}/api/v2/changelog/{changelog_query}"
         params: dict[str, object] = {
-            "message_formats": kwargs.pop("message_formats", ["html", "markdown"]),
+            "message_formats[]": kwargs.pop("message_formats", ["html", "markdown"]),
         }
         if "is_id" in kwargs or isinstance(changelog_query, int):
             params["key"] = "id"
@@ -834,7 +834,7 @@ class Client(Eventable):
     @prepare_token
     @check_token
     @requires_scope(Scopes.PUBLIC)
-    async def get_users(self, user_ids: list[int]) -> list[User]:
+    async def get_users(self, user_ids: list[int]) -> list[UserCompact]:
         r"""Get multiple user data.
 
         :param user_ids: The IDs of the users
@@ -842,14 +842,14 @@ class Client(Eventable):
         :raises APIException: Contains status code and error message
         :raises RefreshTokenExpiredError: If the client refresh token has expired
         :return: List of user data objects
-        :rtype: list[aiosu.models.user.User]
+        :rtype: list[aiosu.models.user.UserCompact]
         """
         url = f"{self.base_url}/api/v2/users"
         params: dict[str, object] = {
             "ids[]": user_ids,
         }
         json = await self._request("GET", url, params=params)
-        return from_list(User.model_validate, json.get("users", []))
+        return from_list(UserCompact.model_validate, json.get("users", []))
 
     @prepare_token
     @check_token
@@ -1071,7 +1071,7 @@ class Client(Eventable):
 
         :param user_id: User ID to search by
         :type user_id: int
-        :param beatmap_id: Beatmap ID to search by
+        :param beatmap_id: BeatmapExtended ID to search by
         :type beatmap_id: int
         :param \**kwargs:
             See below
@@ -1102,7 +1102,7 @@ class Client(Eventable):
         user_id: int,
         type: UserBeatmapType,
         **kwargs: Any,
-    ) -> list[Beatmapset]:
+    ) -> list[BeatmapsetExtended]:
         r"""Get a user's beatmaps.
 
         :param user_id: ID of the user
@@ -1121,14 +1121,14 @@ class Client(Eventable):
         :raises APIException: Contains status code and error message
         :raises RefreshTokenExpiredError: If the client refresh token has expired
         :return: List of requested beatmaps
-        :rtype: list[aiosu.models.beatmap.Beatmap]
+        :rtype: list[aiosu.models.beatmap.BeatmapsetExtended]
         """
         url = f"{self.base_url}/api/v2/users/{user_id}/beatmapsets/{type}"
         params: dict[str, object] = {}
         add_param(params, kwargs, key="limit")
         add_param(params, kwargs, key="offset")
         json = await self._request("GET", url, params=params)
-        return from_list(Beatmapset.model_validate, json)
+        return from_list(BeatmapsetExtended.model_validate, json)
 
     @prepare_token
     @check_token
@@ -1217,7 +1217,7 @@ class Client(Eventable):
     async def get_beatmap_scores(self, beatmap_id: int, **kwargs: Any) -> list[Score]:
         r"""Get scores submitted on a specific beatmap.
 
-        :param beatmap_id: Beatmap ID to search by
+        :param beatmap_id: BeatmapExtended ID to search by
         :type beatmap_id: int
         :param \**kwargs:
             See below
@@ -1254,7 +1254,7 @@ class Client(Eventable):
     @prepare_token
     @check_token
     @requires_scope(Scopes.PUBLIC)
-    async def get_beatmap(self, beatmap_id: int) -> Beatmap:
+    async def get_beatmap(self, beatmap_id: int) -> BeatmapExtended:
         r"""Get beatmap data.
 
         :param beatmap_id: The ID of the beatmap
@@ -1262,16 +1262,16 @@ class Client(Eventable):
         :raises APIException: Contains status code and error message
         :raises RefreshTokenExpiredError: If the client refresh token has expired
         :return: Beatmap data object
-        :rtype: aiosu.models.beatmap.Beatmap
+        :rtype: aiosu.models.beatmap.BeatmapExtended
         """
         url = f"{self.base_url}/api/v2/beatmaps/{beatmap_id}"
         json = await self._request("GET", url)
-        return Beatmap.model_validate(json)
+        return BeatmapExtended.model_validate(json)
 
     @prepare_token
     @check_token
     @requires_scope(Scopes.PUBLIC)
-    async def get_beatmaps(self, beatmap_ids: list[int]) -> list[Beatmap]:
+    async def get_beatmaps(self, beatmap_ids: list[int]) -> list[BeatmapExtended]:
         r"""Get multiple beatmap data.
 
         :param beatmap_ids: The IDs of the beatmaps
@@ -1279,19 +1279,19 @@ class Client(Eventable):
         :raises APIException: Contains status code and error message
         :raises RefreshTokenExpiredError: If the client refresh token has expired
         :return: List of beatmap data objects
-        :rtype: list[aiosu.models.beatmap.Beatmap]
+        :rtype: list[aiosu.models.beatmap.BeatmapExtended]
         """
         url = f"{self.base_url}/api/v2/beatmaps"
         params: dict[str, object] = {
             "ids[]": beatmap_ids,
         }
         json = await self._request("GET", url, params=params)
-        return from_list(Beatmap.model_validate, json.get("beatmaps", []))
+        return from_list(BeatmapExtended.model_validate, json.get("beatmaps", []))
 
     @prepare_token
     @check_token
     @requires_scope(Scopes.PUBLIC)
-    async def lookup_beatmap(self, **kwargs: Any) -> Beatmap:
+    async def lookup_beatmap(self, **kwargs: Any) -> BeatmapExtended:
         r"""Lookup beatmap data.
 
         :param \**kwargs:
@@ -1309,7 +1309,7 @@ class Client(Eventable):
         :raises APIException: Contains status code and error message
         :raises RefreshTokenExpiredError: If the client refresh token has expired
         :return: Beatmap data object
-        :rtype: aiosu.models.beatmap.Beatmap
+        :rtype: aiosu.models.beatmap.BeatmapExtended
         """
         url = f"{self.base_url}/api/v2/beatmaps/lookup"
         params: dict[str, object] = {}
@@ -1319,7 +1319,7 @@ class Client(Eventable):
         if not params:
             raise ValueError("One of checksum, filename or id must be provided.")
         json = await self._request("GET", url, params=params)
-        return Beatmap.model_validate(json)
+        return BeatmapExtended.model_validate(json)
 
     @prepare_token
     @check_token
@@ -1364,7 +1364,7 @@ class Client(Eventable):
     @prepare_token
     @check_token
     @requires_scope(Scopes.PUBLIC)
-    async def get_beatmapset(self, beatmapset_id: int) -> Beatmapset:
+    async def get_beatmapset(self, beatmapset_id: int) -> BeatmapsetExtended:
         r"""Get beatmapset data.
 
         :param beatmapset_id: The ID of the beatmapset
@@ -1372,16 +1372,16 @@ class Client(Eventable):
         :raises APIException: Contains status code and error message
         :raises RefreshTokenExpiredError: If the client refresh token has expired
         :return: Beatmapset data object
-        :rtype: aiosu.models.beatmap.Beatmapset
+        :rtype: aiosu.models.beatmap.BeatmapsetExtended
         """
         url = f"{self.base_url}/api/v2/beatmapsets/{beatmapset_id}"
         json = await self._request("GET", url)
-        return Beatmapset.model_validate(json)
+        return BeatmapsetExtended.model_validate(json)
 
     @prepare_token
     @check_token
     @requires_scope(Scopes.PUBLIC)
-    async def lookup_beatmapset(self, beatmap_id: int) -> Beatmapset:
+    async def lookup_beatmapset(self, beatmap_id: int) -> BeatmapsetExtended:
         r"""Lookup beatmap data.
 
         :param beatmap_id: The ID of a beatmap in the set
@@ -1390,14 +1390,14 @@ class Client(Eventable):
         :raises APIException: Contains status code and error message
         :raises RefreshTokenExpiredError: If the client refresh token has expired
         :return: Beatmapset data object
-        :rtype: aiosu.models.beatmap.Beatmapset
+        :rtype: aiosu.models.beatmap.BeatmapsetExtended
         """
         url = f"{self.base_url}/api/v2/beatmapsets/lookup"
         params: dict[str, object] = {
             "beatmap_id": beatmap_id,
         }
         json = await self._request("GET", url, params=params)
-        return Beatmapset.model_validate(json)
+        return BeatmapsetExtended.model_validate(json)
 
     @prepare_token
     @check_token

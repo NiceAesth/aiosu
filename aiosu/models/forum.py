@@ -60,6 +60,7 @@ class ForumTopic(BaseModel):
     user_id: int
     deleted_at: datetime | None = None
     poll: ForumPoll | None = None
+    views: int | None = None
 
 
 class ForumPost(BaseModel):

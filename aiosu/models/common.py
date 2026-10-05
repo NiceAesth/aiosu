@@ -55,7 +55,7 @@ class TimestampedCount(BaseModel):
     @classmethod
     def _date_validate(cls, v: object) -> datetime:
         if isinstance(v, str):
-            return datetime.strptime(v, "%Y-%m-%d")
+            return datetime.fromisoformat(v)
         if isinstance(v, datetime):
             return v
 
@@ -70,6 +70,8 @@ class Achievement(BaseModel):
     grouping: str
     icon_url: str
     ordering: int
+    achieved_count: int | None = None
+    achieved_percent: float | None = None
     mode: Gamemode | None = None
     instructions: str | None = None
 
@@ -93,6 +95,7 @@ class HTMLBody(BaseModel):
     html: str
     raw: str | None = None
     bbcode: str | None = None
+    markdown: str | None = None
 
 
 class PinAttributes(BaseModel):
@@ -105,6 +108,7 @@ class CurrentUserAttributes(BaseModel):
     can_beatmap_update_owner: bool | None = None
     can_delete: bool | None = None
     can_edit_metadata: bool | None = None
+    can_edit_offset: bool | None = None
     can_edit_tags: bool | None = None
     can_hype: bool | None = None
     can_hype_reason: str | None = None
@@ -112,7 +116,7 @@ class CurrentUserAttributes(BaseModel):
     can_remove_from_loved: bool | None = None
     is_watching: bool | None = None
     new_hype_time: datetime | None = None
-    nomination_modes: list[Gamemode] | None = None
+    nomination_modes: dict[Gamemode, Literal["full", "limited"]] | None = None
     remaining_hype: int | None = None
     can_destroy: bool | None = None
     can_reopen: bool | None = None
@@ -120,6 +124,7 @@ class CurrentUserAttributes(BaseModel):
     can_resolve: bool | None = None
     vote_score: int | None = None
     can_message: bool | None = None
+    can_list_users: bool | None = None
     can_message_error: str | None = None
     last_read_id: int | None = None
     can_new_comment: bool | None = None
@@ -134,7 +139,7 @@ class CursorModel(BaseModel):
     """
 
     cursor_string: str | None = None
-    next: Callable[[object, object], Awaitable[CursorModel]] | None = Field(
+    next: Callable[[], Awaitable[CursorModel]] | None = Field(
         default=None,
         exclude=True,
     )

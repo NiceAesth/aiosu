@@ -10,7 +10,7 @@ from typing import Literal
 from .base import BaseModel
 from .common import CurrentUserAttributes
 from .common import CursorModel
-from .user import User
+from .user import UserCompact
 
 __all__ = (
     "Comment",
@@ -51,6 +51,8 @@ class Comment(BaseModel):
     parent_id: int | None = None
     legacy_name: str | None = None
     user_id: int | None = None
+    deleted_by_id: int | None = None
+    user: UserCompact | None = None
 
 
 class CommentBundle(CursorModel):
@@ -61,7 +63,7 @@ class CommentBundle(CursorModel):
     sort: CommentSortType
     user_follow: bool
     user_votes: list[int]
-    users: list[User]
+    users: list[UserCompact]
     pinned_comments: list[Comment] | None = None
     total: int | None = None
     top_level_count: int | None = None

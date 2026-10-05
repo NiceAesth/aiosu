@@ -7,6 +7,8 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Literal
 
+from pydantic import Field
+
 from .base import BaseModel
 from .common import CursorModel
 
@@ -40,6 +42,7 @@ class NewsPost(BaseModel):
     published_at: datetime
     updated_at: datetime
     first_image: str | None = None
+    first_image_2x: str | None = Field(default=None, alias="first_image@2x")
     content: str | None = None
     preview: str | None = None
     navigation: Navigation | None = None

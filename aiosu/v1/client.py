@@ -19,11 +19,11 @@ from aiolimiter import AsyncLimiter
 from ..exceptions import APIException
 from ..helpers import add_param
 from ..helpers import from_list
-from ..models import Beatmapset
 from ..models import Gamemode
+from ..models import LegacyBeatmapset
+from ..models import LegacyUser
 from ..models import Mods
 from ..models import Score
-from ..models import User
 from ..models import UserQueryType
 from ..models.legacy import Match
 from ..models.legacy import ReplayCompact
@@ -129,7 +129,7 @@ class Client:
                     f"Unhandled Content Type '{content_type}'",
                 )
 
-    async def get_user(self, user_query: str | int, **kwargs: Any) -> User:
+    async def get_user(self, user_query: str | int, **kwargs: Any) -> LegacyUser:
         r"""Gets a user by a query.
 
         :param user_query: Username or ID to search by
@@ -148,7 +148,7 @@ class Client:
         :raises ValueError: If event_days is not between 1 and 31
         :raises APIException: Contains status code and error message
         :return: Requested user
-        :rtype: list[aiosu.models.user.User]
+        :rtype: aiosu.models.user.LegacyUser
         """
         url = f"{self.base_url}/api/get_user"
         if not 1 <= (event_days := kwargs.pop("limit", 1)) <= 31:
@@ -171,7 +171,7 @@ class Client:
         json = await self._request("GET", url, params=params)
         if not json:
             raise APIException(404, "User not found")
-        return User._from_api_v1(json[0])
+        return LegacyUser._from_api_v1(json[0])
 
     async def __get_type_scores(
         self,
@@ -282,7 +282,7 @@ class Client:
             raise ValueError("Invalid limit specified. Limit must be between 1 and 100")
         return await self.__get_type_scores(user_query, "best", limit=limit, **kwargs)
 
-    async def get_beatmap(self, **kwargs: Any) -> list[Beatmapset]:
+    async def get_beatmap(self, **kwargs: Any) -> list[LegacyBeatmapset]:
         r"""Get beatmap data.
 
         :param \**kwargs:
@@ -314,7 +314,7 @@ class Client:
         :raises ValueError: If none of hash, since, user_query, beatmap_id or beatmapset_id specified.
         :raises APIException: Contains status code and error message
         :return: List of beatmapsets each containing one difficulty of the result
-        :rtype: list[aiosu.models.beatmap.Beatmapset]
+        :rtype: list[aiosu.models.beatmap.LegacyBeatmapset]
         """
         if not 1 <= (limit := kwargs.get("limit", 500)) <= 500:
             raise ValueError("Invalid limit specified. Limit must be between 1 and 500")
@@ -344,7 +344,7 @@ class Client:
                 "Either hash, since, user_query, beatmap_id or beatmapset_id must be specified.",
             )
         json = await self._request("GET", url, params=params)
-        return from_list(Beatmapset._from_api_v1, json)
+        return from_list(LegacyBeatmapset._from_api_v1, json)
 
     async def get_beatmap_scores(self, beatmap_id: int, **kwargs: Any) -> list[Score]:
         r"""Get a user's best scores.

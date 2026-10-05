@@ -5,6 +5,7 @@ This module contains models for Beatmap objects.
 from __future__ import annotations
 
 from collections.abc import Mapping
+from collections.abc import Sequence
 from datetime import datetime
 from enum import Enum
 from enum import unique
@@ -20,7 +21,7 @@ from .base import cast_int
 from .common import CurrentUserAttributes
 from .common import CursorModel
 from .gamemode import Gamemode
-from .user import User
+from .user import UserCompact
 
 __all__ = (
     "Beatmap",
@@ -28,6 +29,7 @@ __all__ = (
     "BeatmapCovers",
     "BeatmapDescription",
     "BeatmapDifficultyAttributes",
+    "BeatmapExtended",
     "BeatmapFailtimes",
     "BeatmapGenre",
     "BeatmapHype",
@@ -52,10 +54,13 @@ __all__ = (
     "BeatmapsetDiscussionResponse",
     "BeatmapsetDiscussionVoteResponse",
     "BeatmapsetDiscussionVoteScoreType",
+    "BeatmapsetDiscussionVoters",
+    "BeatmapsetDiscussionVotes",
     "BeatmapsetDisscussionType",
     "BeatmapsetEvent",
     "BeatmapsetEventComment",
     "BeatmapsetEventType",
+    "BeatmapsetExtended",
     "BeatmapsetGenre",
     "BeatmapsetLanguage",
     "BeatmapsetNominationsRequiredMeta",
@@ -63,6 +68,8 @@ __all__ = (
     "BeatmapsetSearchResponse",
     "BeatmapsetSortType",
     "BeatmapsetVoteEvent",
+    "LegacyBeatmap",
+    "LegacyBeatmapset",
     "UserBeatmapType",
 )
 
@@ -288,7 +295,7 @@ class BeatmapPackType(Enum):
 
 class BeatmapDescription(BaseModel):
     bbcode: str | None = None
-    description: str | None = None
+    description: str
 
 
 class BeatmapGenre(BaseModel):
@@ -303,7 +310,7 @@ class BeatmapLanguage(BaseModel):
 
 class BeatmapAvailability(BaseModel):
     more_information: str | None = None
-    download_disabled: bool | None = None
+    download_disabled: bool
 
     @classmethod
     def _from_api_v1(cls, data: Mapping[str, object]) -> BeatmapAvailability:
@@ -311,8 +318,15 @@ class BeatmapAvailability(BaseModel):
 
 
 class BeatmapNominations(BaseModel):
-    current: int | None = None
+    current: int | dict[Gamemode, int] | None = None
     required: int | None = None
+    legacy_mode: bool | None = None
+    required_meta: BeatmapsetNominationsRequiredMeta | None = None
+    disqualification: BeatmapsetEvent | None = None
+    nomination_reset: BeatmapsetEvent | None = None
+    nominated: bool | None = None
+    ranking_eta: datetime | None = None
+    ranking_queue_position: int | None = None
 
 
 class BeatmapsetNominationsRequiredMeta(BaseModel):
@@ -322,8 +336,8 @@ class BeatmapsetNominationsRequiredMeta(BaseModel):
 
 class BeatmapNominationsSummary(BaseModel):
     current: int
-    eligible_main_rulesets: list[Gamemode] | None = None
-    required_meta: BeatmapsetNominationsRequiredMeta | None = None
+    eligible_main_rulesets: list[Gamemode] | None = Field(...)
+    required_meta: BeatmapsetNominationsRequiredMeta
 
 
 class BeatmapTag(BaseModel):
@@ -352,10 +366,10 @@ class BeatmapCovers(BaseModel):
     card: str
     list: str
     slimcover: str
-    cover_2_x: str | None = Field(default=None, alias="cover@2x")
-    card_2_x: str | None = Field(default=None, alias="card@2x")
-    list_2_x: str | None = Field(default=None, alias="list@2x")
-    slimcover_2_x: str | None = Field(default=None, alias="slimcover@2x")
+    cover_2_x: str = Field(alias="cover@2x")
+    card_2_x: str = Field(alias="card@2x")
+    list_2_x: str = Field(alias="list@2x")
+    slimcover_2_x: str = Field(alias="slimcover@2x")
 
     @classmethod
     def from_beatmapset_id(cls, beatmapset_id: int) -> BeatmapCovers:
@@ -389,8 +403,8 @@ class BeatmapOwner(BaseModel):
 
 
 class BeatmapFailtimes(BaseModel):
-    exit: list[int] | None = None
-    fail: list[int] | None = None
+    exit: list[int]
+    fail: list[int]
 
 
 class BeatmapDifficultyAttributes(BaseModel):
@@ -429,13 +443,67 @@ class Beatmap(BaseModel):
     user_id: int
     version: str
     lazer_only: bool
+    current_user_tag_ids: list[int] | None = None
+    top_tag_ids: list[BeatmapTagCount] | None = None
+    checksum: str | None = None
+    max_combo: int | None = None
+    owners: list[BeatmapOwner] | None = None
+    current_user_playcount: int | None = None
+    beatmapset: Beatmapset | None = None
+    failtimes: BeatmapFailtimes | None = None
+
+    user: UserCompact | None = None
+
+    @property
+    def discussion_url(self) -> str:
+        return f"https://osu.ppy.sh/beatmapsets/{self.beatmapset_id}/discussion/{self.id}/general"
+
+    @model_validator(mode="before")
+    @classmethod
+    def _set_url(cls, values: dict[str, object]) -> dict[str, object]:
+        if values.get("url") is None:
+            id = values["id"]
+            beatmapset_id = values["beatmapset_id"]
+            mode = Gamemode(values["mode"])
+            values["url"] = (
+                f"https://osu.ppy.sh/beatmapsets/{beatmapset_id}#{mode}/{id}"
+            )
+        return values
+
+
+class BeatmapExtended(Beatmap):
+    accuracy: float
+    ar: float
+    bpm: float
+    convert: bool | None
+    count_circles: int
+    count_sliders: int
+    count_spinners: int
+    cs: float
+    deleted_at: datetime | None
+    drain: float
+    hit_length: int
+    is_scoreable: bool
+    last_updated: datetime
+    mode_int: int
+    passcount: int
+    play_count: int = Field(alias="playcount")
+    ranked: BeatmapRankStatus
+    checksum: str | None = Field(...)
+    beatmapset: BeatmapsetExtended | None = None
+
+    @computed_field  # type: ignore
+    @cached_property
+    def count_objects(self) -> int:
+        return self.count_circles + self.count_sliders + self.count_spinners
+
+
+class LegacyBeatmap(Beatmap):
     accuracy: float | None = None
     ar: float | None = None
     cs: float | None = None
     bpm: float | None = None
     convert: bool | None = None
-    current_user_tag_ids: list[int] | None = None
-    top_tag_ids: list[BeatmapTagCount] | None = None
     count_circles: int | None = None
     count_sliders: int | None = None
     count_spinners: int | None = None
@@ -446,16 +514,6 @@ class Beatmap(BaseModel):
     last_updated: datetime | None = None
     passcount: int | None = None
     play_count: int | None = Field(default=None, alias="playcount")
-    checksum: str | None = None
-    max_combo: int | None = None
-    owners: list[BeatmapOwner] | None = None
-    current_user_playcount: int | None = None
-    beatmapset: Beatmapset | None = None
-    failtimes: BeatmapFailtimes | None = None
-
-    @property
-    def discussion_url(self) -> str:
-        return f"https://osu.ppy.sh/beatmapsets/{self.beatmapset_id}/discussion/{self.id}/general"
 
     @computed_field  # type: ignore
     @cached_property
@@ -473,20 +531,8 @@ class Beatmap(BaseModel):
             return None
         return self.count_spinners + self.count_circles + self.count_sliders
 
-    @model_validator(mode="before")
     @classmethod
-    def _set_url(cls, values: dict[str, object]) -> dict[str, object]:
-        if values.get("url") is None:
-            id = values["id"]
-            beatmapset_id = values["beatmapset_id"]
-            mode = Gamemode(values["mode"])
-            values["url"] = (
-                f"https://osu.ppy.sh/beatmapsets/{beatmapset_id}#{mode}/{id}"
-            )
-        return values
-
-    @classmethod
-    def _from_api_v1(cls, data: Mapping[str, object]) -> Beatmap:
+    def _from_api_v1(cls, data: Mapping[str, object]) -> LegacyBeatmap:
         return cls.model_validate(
             {
                 "beatmapset_id": data["beatmapset_id"],
@@ -495,7 +541,7 @@ class Beatmap(BaseModel):
                 "mode": cast_int(data["mode"]),
                 "status": cast_int(data["approved"]),
                 "total_length": data["total_length"],
-                "hit_length": data["total_length"],
+                "hit_length": data["hit_length"],
                 "user_id": data["creator_id"],
                 "version": data["version"],
                 "accuracy": data["diff_overall"],
@@ -516,7 +562,7 @@ class Beatmap(BaseModel):
         )
 
 
-class Beatmapset(BaseModel):
+class _BeatmapsetBase(BaseModel):
     id: int
     artist: str
     artist_unicode: str
@@ -531,47 +577,30 @@ class Beatmapset(BaseModel):
     title_unicode: str
     user_id: int
     video: bool
-    anime_cover: bool | None = None
-    genre_id: int | None = None
-    language_id: int | None = None
-    offset: int | None = None
-    spotlight: bool | None = None
-    rating: float | None = None
-    deleted_at: datetime | None = None
-    nsfw: bool | None = None
     hype: BeatmapHype | None = None
     availability: BeatmapAvailability | None = None
-    bpm: float | None = None
-    can_be_hyped: bool | None = None
-    discussion_enabled: bool | None = None
-    discussion_locked: bool | None = None
-    is_scoreable: bool | None = None
-    last_updated: datetime | None = None
-    legacy_thread_url: str | None = None
     nominations: BeatmapNominations | None = None
-    nominations_summary: BeatmapNominationsSummary | None = None
     current_nominations: list[BeatmapNomination] | None = None
     version_count: int | None = None
     related_tags: list[BeatmapTag] | None = None
-    ranked_date: datetime | None = None
-    storyboard: bool | None = None
-    submitted_date: datetime | None = None
-    tags: str | None = None
     pack_tags: list[str] | None = None
     track_id: int | None = None
-    user: User | None = None
-    related_users: list[User] | None = None
+    user: UserCompact | None = None
+    related_users: list[UserCompact] | None = None
     current_user_attributes: CurrentUserAttributes | None = None
     description: BeatmapDescription | None = None
     genre: BeatmapGenre | None = None
     language: BeatmapLanguage | None = None
     ratings: list[int] | None = None
-    recent_favourites: list[User] | None = None
+    recent_favourites: list[UserCompact] | None = None
     discussions: list[BeatmapsetDiscussion] | None = None
     events: list[BeatmapsetEvent] | None = None
     has_favourited: bool | None = None
-    beatmaps: list[Beatmap] | None = None
-    converts: list[Beatmap] | None = None
+    beatmaps: Sequence[Beatmap] | None = None
+    converts: list[BeatmapExtended] | None = None
+
+    eligible_main_rulesets: list[Gamemode] | None = None
+    main_ruleset: Gamemode | None = None
 
     @model_validator(mode="before")
     @classmethod
@@ -592,8 +621,64 @@ class Beatmapset(BaseModel):
     def discussion_url(self) -> str:
         return f"https://osu.ppy.sh/beatmapsets/{self.id}/discussion"
 
+
+class Beatmapset(_BeatmapsetBase):
+    anime_cover: bool
+    genre_id: int
+    language_id: int
+    offset: int
+    spotlight: bool
+    nsfw: bool
+    hype: BeatmapHype | None = Field(...)
+    track_id: int | None = Field(...)
+
+
+class BeatmapsetExtended(Beatmapset):
+    availability: BeatmapAvailability
+    bpm: float
+    can_be_hyped: bool
+    deleted_at: datetime | None
+    discussion_enabled: bool
+    discussion_locked: bool
+    is_scoreable: bool
+    last_updated: datetime
+    legacy_thread_url: str | None
+    nominations_summary: BeatmapNominationsSummary
+    ranked: BeatmapRankStatus
+    ranked_date: datetime | None
+    rating: float
+    storyboard: bool
+    submitted_date: datetime | None
+    tags: str
+    beatmaps: list[BeatmapExtended] | None = None
+    converts: list[BeatmapExtended] | None = None
+
+
+class LegacyBeatmapset(_BeatmapsetBase):
+    anime_cover: bool | None = None
+    genre_id: int | None = None
+    language_id: int | None = None
+    offset: int | None = None
+    spotlight: bool | None = None
+    nsfw: bool | None = None
+    rating: float | None = None
+    deleted_at: datetime | None = None
+    bpm: float | None = None
+    can_be_hyped: bool | None = None
+    discussion_enabled: bool | None = None
+    discussion_locked: bool | None = None
+    is_scoreable: bool | None = None
+    last_updated: datetime | None = None
+    legacy_thread_url: str | None = None
+    nominations_summary: BeatmapNominationsSummary | None = None
+    ranked_date: datetime | None = None
+    storyboard: bool | None = None
+    submitted_date: datetime | None = None
+    tags: str | None = None
+    beatmaps: list[LegacyBeatmap] | None = None
+
     @classmethod
-    def _from_api_v1(cls, data: Mapping[str, object]) -> Beatmapset:
+    def _from_api_v1(cls, data: Mapping[str, object]) -> LegacyBeatmapset:
         return cls.model_validate(
             {
                 "id": data["beatmapset_id"],
@@ -615,14 +700,14 @@ class Beatmapset(BaseModel):
                 "last_updated": data["last_update"],
                 "tags": data["tags"],
                 "storyboard": data["storyboard"],
-                "availabiliy": BeatmapAvailability._from_api_v1(data),
-                "beatmaps": [Beatmap._from_api_v1(data)],
+                "availability": BeatmapAvailability._from_api_v1(data),
+                "beatmaps": [LegacyBeatmap._from_api_v1(data)],
             },
         )
 
 
 class BeatmapsetSearchResponse(CursorModel):
-    beatmapsets: list[Beatmapset]
+    beatmapsets: list[BeatmapsetExtended]
 
 
 class BeatmapUserPlaycount(BaseModel):
@@ -638,11 +723,26 @@ class BeatmapsetDiscussionPost(BaseModel):
     system: bool
     message: str
     created_at: datetime
-    beatmap_discussion_id: int | None = None
+    beatmap_discussion_id: int | None = Field(
+        default=None,
+        alias="beatmapset_discussion_id",
+    )
+    beatmap_discussion: BeatmapsetDiscussion | None = None
     last_editor_id: int | None = None
     deleted_by_id: int | None = None
     updated_at: datetime | None = None
     deleted_at: datetime | None = None
+
+
+class BeatmapsetDiscussionVoters(BaseModel):
+    up: list[int]
+    down: list[int]
+
+
+class BeatmapsetDiscussionVotes(BaseModel):
+    up: int
+    down: int
+    voters: BeatmapsetDiscussionVoters
 
 
 class BeatmapsetDiscussion(BaseModel):
@@ -663,6 +763,11 @@ class BeatmapsetDiscussion(BaseModel):
     last_post_at: datetime | None = None
     kudosu_denied: bool | None = None
     starting_post: BeatmapsetDiscussionPost | None = None
+    posts: list[BeatmapsetDiscussionPost] | None = None
+    beatmap: Beatmap | None = None
+    beatmapset: Beatmapset | None = None
+    votes: BeatmapsetDiscussionVotes | None = None
+    current_user_attributes: CurrentUserAttributes | None = None
 
 
 class BeatmapsetVoteEvent(BaseModel):
@@ -740,7 +845,7 @@ class BeatmapsetDiscussionResponse(CursorModel):
     beatmaps: list[Beatmap]
     discussions: list[BeatmapsetDiscussion]
     included_discussions: list[BeatmapsetDiscussion]
-    users: list[User]
+    users: list[UserCompact]
     max_blocks: int
 
     @model_validator(mode="before")
@@ -755,10 +860,10 @@ class BeatmapsetDiscussionResponse(CursorModel):
 class BeatmapsetDiscussionPostResponse(CursorModel):
     beatmapsets: list[Beatmapset]
     posts: list[BeatmapsetDiscussionPost]
-    users: list[User]
+    users: list[UserCompact]
 
 
 class BeatmapsetDiscussionVoteResponse(CursorModel):
     votes: list[BeatmapsetVoteEvent]
     discussions: list[BeatmapsetDiscussion]
-    users: list[User]
+    users: list[UserCompact]
