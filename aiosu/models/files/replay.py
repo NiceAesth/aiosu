@@ -7,7 +7,10 @@ from __future__ import annotations
 from datetime import datetime
 from enum import IntFlag
 from enum import unique
+from typing import Any
 
+from pydantic import ValidationInfo
+from pydantic import field_validator
 from pydantic import model_validator
 
 from ..base import BaseModel
@@ -102,6 +105,19 @@ class ReplayFile(BaseModel):
     skip_offset: int | None = None
     rng_seed: int | None = None
     lazer_replay_data: LazerReplayData | None = None
+
+    @field_validator("statistics", "lazer_replay_data", mode="before")
+    @classmethod
+    def _normalize_statistics(cls, value: Any, info: ValidationInfo) -> Any:
+        if value is None:
+            return None
+        model = ScoreStatistics if info.field_name == "statistics" else LazerReplayData
+        if isinstance(value, model):
+            value = value.model_dump(exclude_none=True)
+        return model.model_validate(
+            value,
+            context={"mode": info.data.get("mode", Gamemode.STANDARD)},
+        )
 
     def __repr__(self) -> str:
         return f"<Replay {self.player_name} {self.map_md5}>"

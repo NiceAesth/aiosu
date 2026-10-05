@@ -9,14 +9,13 @@ from datetime import datetime
 from typing import Literal
 
 from pydantic import Field
+from pydantic import field_serializer
 from pydantic import model_validator
 
 from .base import BaseModel
 from .beatmap import Beatmap
 from .common import CursorModel
 from .gamemode import Gamemode
-from .lazer import LazerMod
-from .lazer import LazerScore
 from .mods import Mods
 from .score import Score
 from .user import User
@@ -91,8 +90,8 @@ class MultiplayerScoresAround(BaseModel):
 
 
 class MultiplayerScoresResponse(CursorModel):
-    scores: list[LazerScore]
-    user_score: LazerScore | None = None
+    scores: list[Score]
+    user_score: Score | None = None
     total: int | None = None
 
 
@@ -109,11 +108,21 @@ class MultiplayerGame(BaseModel):
     mode: Gamemode
     scoring_type: MultiplayerScoringType
     team_type: MultiplayerTeamType
-    mods: list[Mods | LazerMod]
+    mods: Mods
     beatmap_id: int
     scores: list[Score]
     beatmap: Beatmap | None = None
     end_time: datetime | None = None
+
+    @field_serializer("mods", when_used="json")
+    def _serialize_mods(self, mods: Mods) -> list[str | dict[str, object]]:
+        result: list[str | dict[str, object]] = []
+        for mod in mods.to_api():
+            if "settings" in mod:
+                result.append(mod)
+            else:
+                result.append(str(mod["acronym"]))
+        return result
 
 
 class MultiplayerEvent(BaseModel):
@@ -149,8 +158,8 @@ class MultiplayerPlaylistItem(BaseModel):
     room_id: int
     beatmap_id: int
     mode: Gamemode = Field(alias="ruleset_id")
-    allowed_mods: list[LazerMod]
-    required_mods: list[LazerMod]
+    allowed_mods: Mods
+    required_mods: Mods
     expired: bool
     owner_id: int
     beatmap: Beatmap

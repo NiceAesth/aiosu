@@ -62,7 +62,6 @@ from ..models import ForumTopic
 from ..models import ForumTopicResponse
 from ..models import Gamemode
 from ..models import KudosuHistory
-from ..models import LazerScore
 from ..models import Mods
 from ..models import MultiplayerLeaderboardResponse
 from ..models import MultiplayerMatchesResponse
@@ -887,7 +886,7 @@ class Client(Eventable):
         user_id: int,
         request_type: str,
         **kwargs: Any,
-    ) -> list[Score | LazerScore]:
+    ) -> list[Score]:
         r"""INTERNAL: Get a user's scores by type
 
         :param user_id: User ID to search by
@@ -916,7 +915,7 @@ class Client(Eventable):
         :raises APIException: Contains status code and error message
         :raises RefreshTokenExpiredError: If the client refresh token has expired
         :return: List of requested scores
-        :rtype: list[aiosu.models.score.Score] or list[aiosu.models.lazer.LazerScore]
+        :rtype: list[aiosu.models.score.Score]
         """
         if not 1 <= (limit := kwargs.pop("limit", 100)) <= 100:
             raise ValueError("Invalid limit specified. Limit must be between 1 and 100")
@@ -937,15 +936,13 @@ class Client(Eventable):
         if new_format:
             headers = {"x-api-version": "20220705"}
         json = await self._request("GET", url, params=params, headers=headers)
-        if new_format:
-            return from_list(LazerScore.model_validate, json)
         return from_list(Score.model_validate, json)
 
     async def get_user_recents(
         self,
         user_id: int,
         **kwargs: Any,
-    ) -> list[Score | LazerScore]:
+    ) -> list[Score]:
         r"""Get a user's recent scores.
 
         :param user_id: User ID to search by
@@ -968,7 +965,7 @@ class Client(Eventable):
         :raises APIException: Contains status code and error message
         :raises RefreshTokenExpiredError: If the client refresh token has expired
         :return: List of requested scores
-        :rtype: list[aiosu.models.score.Score] or list[aiosu.models.lazer.LazerScore]
+        :rtype: list[aiosu.models.score.Score]
         """
         return await self.__get_type_scores(user_id, "recent", **kwargs)
 
@@ -976,7 +973,7 @@ class Client(Eventable):
         self,
         user_id: int,
         **kwargs: Any,
-    ) -> list[Score | LazerScore]:
+    ) -> list[Score]:
         r"""Get a user's top scores.
 
         :param user_id: User ID to search by
@@ -997,7 +994,7 @@ class Client(Eventable):
         :raises APIException: Contains status code and error message
         :raises RefreshTokenExpiredError: If the client refresh token has expired
         :return: List of requested scores
-        :rtype: list[aiosu.models.score.Score] or list[aiosu.models.lazer.LazerScore]
+        :rtype: list[aiosu.models.score.Score]
         """
         return await self.__get_type_scores(user_id, "best", **kwargs)
 
@@ -1005,7 +1002,7 @@ class Client(Eventable):
         self,
         user_id: int,
         **kwargs: Any,
-    ) -> list[Score | LazerScore]:
+    ) -> list[Score]:
         r"""Get a user's first place scores.
 
         :param user_id: User ID to search by
@@ -1026,7 +1023,7 @@ class Client(Eventable):
         :raises APIException: Contains status code and error message
         :raises RefreshTokenExpiredError: If the client refresh token has expired
         :return: List of requested scores
-        :rtype: list[aiosu.models.score.Score] or list[aiosu.models.lazer.LazerScore]
+        :rtype: list[aiosu.models.score.Score]
         """
         return await self.__get_type_scores(user_id, "firsts", **kwargs)
 
@@ -1034,7 +1031,7 @@ class Client(Eventable):
         self,
         user_id: int,
         **kwargs: Any,
-    ) -> list[Score | LazerScore]:
+    ) -> list[Score]:
         r"""Get a user's pinned scores.
 
         :param user_id: User ID to search by
@@ -1055,7 +1052,7 @@ class Client(Eventable):
         :raises APIException: Contains status code and error message
         :raises RefreshTokenExpiredError: If the client refresh token has expired
         :return: List of requested scores
-        :rtype: list[aiosu.models.score.Score] or list[aiosu.models.lazer.LazerScore]
+        :rtype: list[aiosu.models.score.Score]
         """
         return await self.__get_type_scores(user_id, "pinned", **kwargs)
 
@@ -1245,7 +1242,7 @@ class Client(Eventable):
             params,
             kwargs,
             key="mods",
-            converter=lambda x: [str(y) for y in Mods(x)] if len(x) > 0 else "NM",
+            converter=lambda x: Mods(x).to_acronyms() or ["NM"],
         )
         add_param(params, kwargs, key="type")
         add_param(params, kwargs, key="legacy_only", converter=int)
@@ -1357,7 +1354,8 @@ class Client(Eventable):
             param_name="ruleset_id",
             converter=lambda x: int(Gamemode(x)),
         )
-        add_param(data, kwargs, key="mods", converter=lambda x: int(Mods(x)))
+        if "mods" in kwargs:
+            data["mods"] = Mods(kwargs["mods"]).to_api()
         json = await self._request("POST", url, json=data)
         return BeatmapDifficultyAttributes.model_validate(json.get("attributes"))
 
@@ -1785,7 +1783,7 @@ class Client(Eventable):
         legacy_score_id: int,
         mode: Gamemode,
         **kwargs: Any,
-    ) -> Score | LazerScore:
+    ) -> Score:
         r"""Gets data about a score.
 
         :param legacy_score_id: The ID of the score
@@ -1801,7 +1799,7 @@ class Client(Eventable):
         :raises APIException: Contains status code and error message
         :raises RefreshTokenExpiredError: If the client refresh token has expired
         :return: Score data object
-        :rtype: Union[aiosu.models.score.Score, aiosu.models.score.LazerScore]
+        :rtype: aiosu.models.score.Score
         """
         url = f"{self.base_url}/api/v2/scores/{mode}/{legacy_score_id}"
         headers = {}
@@ -1810,8 +1808,6 @@ class Client(Eventable):
             headers = {"x-api-version": "20220705"}
 
         json = await self._request("GET", url, headers=headers)
-        if new_format:
-            return LazerScore.model_validate(json)
         return Score.model_validate(json)
 
     @prepare_token
@@ -1820,7 +1816,7 @@ class Client(Eventable):
     async def get_score_lazer(
         self,
         score_id: int,
-    ) -> LazerScore:
+    ) -> Score:
         r"""Gets data about a score.
 
         :param score_id: The ID of the score
@@ -1828,14 +1824,14 @@ class Client(Eventable):
 
         :raises APIException: Contains status code and error message
         :raises RefreshTokenExpiredError: If the client refresh token has expired
-        :return: LazerScore data object
-        :rtype: aiosu.models.score.LazerScore
+        :return: Score data object
+        :rtype: aiosu.models.score.Score
         """
         url = f"{self.base_url}/api/v2/scores/{score_id}"
         headers = {"x-api-version": "20220705"}
 
         json = await self._request("GET", url, headers=headers)
-        return LazerScore.model_validate(json)
+        return Score.model_validate(json)
 
     async def _download_replay(self, url: str) -> BytesIO:
         try:

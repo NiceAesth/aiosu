@@ -51,15 +51,15 @@ def test_mods():
     assert int(dt_mods) == 64
     assert int(special_mods) == int(combined_mods) == 16992
 
-    assert hd_mods | dt_mods == 72
-    assert hd_mods | dt_mod == 72
-    assert hd_mod | dt_mod == 72
+    assert int(hd_mods | dt_mods) == 72
+    assert int(hd_mods | dt_mod) == 72
+    assert int(hd_mod | dt_mod) == 72
 
-    assert hd_mods & dt_mods == 0
-    assert hd_mods & dt_mod == 0
-    assert hd_mod & dt_mod == 0
+    assert int(hd_mods & dt_mods) == 0
+    assert int(hd_mods & dt_mod) == 0
+    assert int(hd_mod & dt_mod) == 0
 
-    assert hd_mods & hd_mod == 8
+    assert int(hd_mods & hd_mod) == 8
 
     assert str(hd_mods) == "HD"
     assert str(hd_mod) == "HD"

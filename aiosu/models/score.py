@@ -4,11 +4,17 @@ This module contains models for Score objects.
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from datetime import datetime
 from functools import cached_property
 from typing import TYPE_CHECKING
+from typing import Any
 
+from pydantic import Field
+from pydantic import PrivateAttr
 from pydantic import computed_field
+from pydantic import field_serializer
+from pydantic import model_serializer
 from pydantic import model_validator
 
 from ..utils.accuracy import CatchAccuracyCalculator
@@ -26,12 +32,18 @@ from .mods import Mods
 from .user import User
 
 if TYPE_CHECKING:
-    from collections.abc import Mapping
+    from typing import Self
+
+    from pydantic import ModelWrapValidatorHandler
+    from pydantic import SerializationInfo
+    from pydantic import SerializerFunctionWrapHandler
+    from pydantic import ValidationInfo
 
     from .. import v1
 
 __all__ = (
     "Score",
+    "ScoreMatch",
     "ScoreStatistics",
     "ScoreWeight",
     "calculate_score_completion",
@@ -82,7 +94,7 @@ def calculate_score_completion(
         ) * 100
     elif mode == Gamemode.CTB:
         return (
-            (statistics.count_300 + statistics.count_100 + +statistics.count_miss)
+            (statistics.count_300 + statistics.count_100 + statistics.count_miss)
             / beatmap.count_objects
         ) * 100
     elif mode == Gamemode.MANIA:
@@ -106,27 +118,179 @@ class ScoreWeight(BaseModel):
     pp: float
 
 
+class ScoreMatch(BaseModel):
+
+    slot: int
+    team: str
+    passed: bool = Field(validation_alias="pass")
+
+
 class ScoreStatistics(BaseModel):
-    count_miss: int
-    count_50: int
-    count_100: int
-    count_300: int
-    count_geki: int
-    count_katu: int
-    count_large_tick_miss: int | None = None
-    count_slider_tail_hit: int | None = None
+    miss: int = 0
+    meh: int = 0
+    ok: int = 0
+    good: int = 0
+    great: int = 0
+    perfect: int = 0
+    small_tick_miss: int = 0
+    small_tick_hit: int = 0
+    large_tick_hit: int = 0
+    small_bonus: int = 0
+    large_bonus: int = 0
+    ignore_miss: int = 0
+    ignore_hit: int = 0
+    combo_break: int = 0
+    large_tick_miss: int | None = None
+    slider_tail_hit: int | None = None
+    legacy_combo_increase: int = 0
+    _uses_hit_results: bool = PrivateAttr(default=False)
+    _mode: Gamemode = PrivateAttr(default=Gamemode.STANDARD)
+    _taiko_count_katu: int = PrivateAttr(default=0)
 
-    @model_validator(mode="before")
-    @classmethod
-    def _convert_none_to_zero(cls, values: dict[str, object]) -> dict[str, object]:
-        # Lazer API returns null for some statistics
-        for key in values:
-            if values[key] is None:
-                values[key] = 0
-        return values
+    def model_copy(
+        self,
+        *,
+        update: Mapping[str, Any] | None = None,
+        deep: bool = False,
+    ) -> Self:
+        copied = super().model_copy(update=update, deep=deep)
+        for name, value in (update or {}).items():
+            attribute = getattr(type(self), name, None)
+            if isinstance(attribute, property) and attribute.fset is not None:
+                copied.__dict__.pop(name, None)
+                copied.model_fields_set.discard(name)
+                setattr(copied, name, value)
+        return copied
+
+    def _with_mode(self, mode: Gamemode) -> Self:
+        if self._mode == mode:
+            return self
+        if not self._uses_hit_results:
+            return type(self).model_validate(
+                self.model_dump(exclude_none=True),
+                context={"mode": mode},
+            )
+        statistics = self.model_copy()
+        statistics._mode = mode
+        statistics._taiko_count_katu = 0
+        return statistics
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def count_300(self) -> int:
+        return self.great
+
+    @count_300.setter
+    def count_300(self, value: int) -> None:
+        self.great = value
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def count_100(self) -> int:
+        if self._mode == Gamemode.CTB:
+            return self.large_tick_hit
+        return self.ok
+
+    @count_100.setter
+    def count_100(self, value: int) -> None:
+        if self._mode == Gamemode.CTB:
+            self.large_tick_hit = value
+        else:
+            self.ok = value
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def count_50(self) -> int:
+        if self._mode == Gamemode.CTB:
+            return self.small_tick_hit
+        return self.meh
+
+    @count_50.setter
+    def count_50(self, value: int) -> None:
+        if self._mode == Gamemode.CTB:
+            self.small_tick_hit = value
+        else:
+            self.meh = value
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def count_geki(self) -> int:
+        if self._mode == Gamemode.TAIKO:
+            return self.large_bonus - self._taiko_count_katu
+        return self.perfect
+
+    @count_geki.setter
+    def count_geki(self, value: int) -> None:
+        if self._mode == Gamemode.TAIKO:
+            self.large_bonus = value + self._taiko_count_katu
+        else:
+            self.perfect = value
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def count_katu(self) -> int:
+        if self._mode == Gamemode.CTB:
+            return self.small_tick_miss
+        if self._mode == Gamemode.TAIKO:
+            return self._taiko_count_katu
+        return self.good
+
+    @count_katu.setter
+    def count_katu(self, value: int) -> None:
+        if self._mode == Gamemode.CTB:
+            self.small_tick_miss = value
+        elif self._mode == Gamemode.TAIKO:
+            if self._uses_hit_results:
+                raise ValueError("Set large_bonus directly for modern taiko scores")
+            self.large_bonus = self.count_geki + value
+            self._taiko_count_katu = value
+        else:
+            self.good = value
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def count_miss(self) -> int:
+        if self._mode == Gamemode.CTB:
+            return self.miss + cast_int(self.large_tick_miss)
+        return self.miss
+
+    @count_miss.setter
+    def count_miss(self, value: int) -> None:
+        if self._mode == Gamemode.CTB:
+            if self._uses_hit_results:
+                raise ValueError(
+                    "Set miss or large_tick_miss separately for catch scores",
+                )
+            self.miss = value - cast_int(self.large_tick_miss)
+        else:
+            self.miss = value
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def count_large_tick_miss(self) -> int | None:
+        return self.large_tick_miss
+
+    @count_large_tick_miss.setter
+    def count_large_tick_miss(self, value: int | None) -> None:
+        if self._mode == Gamemode.CTB and not self._uses_hit_results:
+            self.miss += cast_int(self.large_tick_miss) - cast_int(value)
+        self.large_tick_miss = value
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def count_slider_tail_hit(self) -> int | None:
+        return self.slider_tail_hit
+
+    @count_slider_tail_hit.setter
+    def count_slider_tail_hit(self, value: int | None) -> None:
+        self.slider_tail_hit = value
 
     @classmethod
-    def _from_api_v1(cls, data: Mapping[str, object]) -> ScoreStatistics:
+    def _from_api_v1(
+        cls,
+        data: Mapping[str, object],
+        mode: Gamemode = Gamemode.STANDARD,
+    ) -> ScoreStatistics:
         return cls.model_validate(
             {
                 "count_50": data["count50"],
@@ -136,7 +300,116 @@ class ScoreStatistics(BaseModel):
                 "count_katu": data["countkatu"],
                 "count_miss": data["countmiss"],
             },
+            context={"mode": mode},
         )
+
+    @model_validator(mode="wrap")
+    @classmethod
+    def _normalize_statistics(
+        cls,
+        values: Any,
+        handler: ModelWrapValidatorHandler[ScoreStatistics],
+        info: ValidationInfo,
+    ) -> ScoreStatistics:
+        if not isinstance(values, Mapping):
+            return handler(values)
+
+        data = dict(values)
+        # Lazer API returns null for some statistics
+        for name, count in data.items():
+            if count is None:
+                data[name] = 0
+
+        uses_hit_results = True
+        for name in data:
+            if name.startswith("count_"):
+                uses_hit_results = False
+                break
+
+        context = info.context or {}
+        mode = Gamemode(context.get("mode", Gamemode.STANDARD))
+        if uses_hit_results:
+            data.setdefault("large_tick_miss", 0)
+            data.setdefault("slider_tail_hit", 0)
+        else:
+            for name in (
+                "count_miss",
+                "count_50",
+                "count_100",
+                "count_300",
+                "count_geki",
+                "count_katu",
+            ):
+                if name not in data:
+                    raise ValueError(f"Missing legacy statistic {name!r}")
+            data = cls._hit_results_from_legacy_counts(data, mode)
+
+        statistics = handler(data)
+        statistics._uses_hit_results = uses_hit_results
+        statistics._mode = mode
+        if not uses_hit_results and mode == Gamemode.TAIKO:
+            statistics._taiko_count_katu = cast_int(values.get("count_katu"))
+        return statistics
+
+    @model_serializer(mode="wrap")
+    def _serialize_statistics(
+        self,
+        handler: SerializerFunctionWrapHandler,
+        info: SerializationInfo,
+    ) -> dict[str, Any]:
+        data = handler(self)
+        result = {}
+        for name, count in data.items():
+            is_legacy_count = name.startswith("count_")
+            if self._uses_hit_results and is_legacy_count:
+                continue
+            if not self._uses_hit_results:
+                if not is_legacy_count:
+                    continue
+                if name in ("count_large_tick_miss", "count_slider_tail_hit"):
+                    if info.exclude_defaults and count is None:
+                        continue
+                    if info.exclude_unset and name[6:] not in self.model_fields_set:
+                        continue
+            result[name] = count
+        return result
+
+    @staticmethod
+    def _hit_results_from_legacy_counts(
+        data: Mapping[str, Any],
+        mode: Gamemode,
+    ) -> dict[str, Any]:
+        hit_results = {
+            "great": data.get("count_300", 0),
+            "miss": data.get("count_miss", 0),
+        }
+
+        if "count_large_tick_miss" in data:
+            hit_results["large_tick_miss"] = data["count_large_tick_miss"]
+        if "count_slider_tail_hit" in data:
+            hit_results["slider_tail_hit"] = data["count_slider_tail_hit"]
+
+        if mode == Gamemode.CTB:
+            hit_results["miss"] = cast_int(data.get("count_miss")) - cast_int(
+                data.get("count_large_tick_miss"),
+            )
+            hit_results["perfect"] = data.get("count_geki", 0)
+            hit_results["large_tick_hit"] = data.get("count_100", 0)
+            hit_results["small_tick_hit"] = data.get("count_50", 0)
+            hit_results["small_tick_miss"] = data.get("count_katu", 0)
+            return hit_results
+
+        hit_results["ok"] = data.get("count_100", 0)
+        hit_results["meh"] = data.get("count_50", 0)
+        if mode == Gamemode.TAIKO:
+            hit_results["large_bonus"] = cast_int(data.get("count_geki")) + cast_int(
+                data.get("count_katu"),
+            )
+        else:
+            hit_results["perfect"] = data.get("count_geki", 0)
+            hit_results["good"] = data.get("count_katu", 0)
+
+        return hit_results
 
 
 class Score(BaseModel):
@@ -167,6 +440,99 @@ class Score(BaseModel):
     beatmap_id: int | None = None
     """Only present on API v1"""
     replay_views: int | None = None
+    is_perfect_combo: bool | None = None
+    maximum_statistics: ScoreStatistics | None = None
+    classic_total_score: int | None = None
+    total_score_without_mods: int | None = None
+    legacy_score_id: int | None = None
+    legacy_total_score: int | None = None
+    build_id: int | None = None
+    preserve: bool | None = None
+    processed: bool | None = None
+    position: int | None = None
+    ranked: bool | None = None
+    playlist_item_id: int | None = None
+    room_id: int | None = None
+    solo_score_id: int | None = None
+    started_at: datetime | None = None
+    match: ScoreMatch | None = None
+
+    _is_lazer: bool = PrivateAttr(default=False)
+
+    def __setattr__(self, name: str, value: Any) -> None:
+        if name == "mode":
+            value = Gamemode(value)
+            for field in ("statistics", "maximum_statistics"):
+                statistics = self.__dict__.get(field)
+                if isinstance(statistics, ScoreStatistics):
+                    super().__setattr__(field, statistics._with_mode(value))
+        super().__setattr__(name, value)
+
+    def model_copy(
+        self,
+        *,
+        update: Mapping[str, Any] | None = None,
+        deep: bool = False,
+    ) -> Self:
+        copied = super().model_copy(update=update, deep=deep)
+        for name, value in (update or {}).items():
+            attribute = getattr(type(self), name, None)
+            if name == "mode":
+                copied.mode = Gamemode(value)
+            elif isinstance(attribute, property) and attribute.fset is not None:
+                copied.__dict__.pop(name, None)
+                copied.model_fields_set.discard(name)
+                setattr(copied, name, value)
+        return copied
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def total_score(self) -> int:
+        return self.score
+
+    @total_score.setter
+    def total_score(self, value: int) -> None:
+        self.score = value
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def ended_at(self) -> datetime:
+        return self.created_at
+
+    @ended_at.setter
+    def ended_at(self, value: datetime) -> None:
+        self.created_at = value
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def has_replay(self) -> bool:
+        return self.replay
+
+    @has_replay.setter
+    def has_replay(self, value: bool) -> None:
+        self.replay = value
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def ruleset_id(self) -> int:
+        return int(self.mode)
+
+    @ruleset_id.setter
+    def ruleset_id(self, value: int) -> None:
+        self.mode = Gamemode(value)
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def legacy_perfect(self) -> bool:
+        return self.perfect
+
+    @legacy_perfect.setter
+    def legacy_perfect(self, value: bool) -> None:
+        self.perfect = value
+
+    @property
+    def mods_str(self) -> str:
+        return str(self.mods)
 
     @property
     def score_url(self) -> str | None:
@@ -215,13 +581,6 @@ class Score(BaseModel):
 
         return calculate_score_completion(self.mode, self.statistics, self.beatmap)
 
-    @model_validator(mode="before")
-    @classmethod
-    def _fail_rank(cls, values: dict[str, object]) -> dict[str, object]:
-        if not values["passed"]:
-            values["rank"] = "F"
-        return values
-
     async def request_beatmap(self, client: v1.Client) -> None:
         r"""For v1 Scores: requests the beatmap from the API and sets it.
 
@@ -244,7 +603,7 @@ class Score(BaseModel):
         data: Mapping[str, object],
         mode: Gamemode,
     ) -> Score:
-        statistics = ScoreStatistics._from_api_v1(data)
+        statistics = ScoreStatistics._from_api_v1(data, mode)
         score = cls.model_validate(
             {
                 "id": data["score_id"],
@@ -266,3 +625,114 @@ class Score(BaseModel):
         )
         score.accuracy = accuracy_calculators[str(mode)].calculate(score)
         return score
+
+    @model_validator(mode="wrap")
+    @classmethod
+    def _record_format(
+        cls,
+        values: Any,
+        handler: ModelWrapValidatorHandler[Score],
+        info: ValidationInfo,
+    ) -> Score:
+        score = handler(values)
+        if isinstance(values, Mapping):
+            score._is_lazer = "ruleset_id" in values
+        return score
+
+    @model_validator(mode="before")
+    @classmethod
+    def _normalize_score(cls, values: Any) -> Any:
+        if not isinstance(values, Mapping):
+            return values
+        values = dict(values)
+        if "ruleset_id" in values:
+            values["mode"] = values["ruleset_id"]
+            if "total_score" in values:
+                values["score"] = values["total_score"]
+            if "ended_at" in values:
+                values["created_at"] = values["ended_at"]
+
+            if "has_replay" in values:
+                values["replay"] = values["has_replay"]
+            elif "replay" not in values:
+                values["replay"] = False
+
+            if "legacy_perfect" in values:
+                values["perfect"] = values["legacy_perfect"]
+            else:
+                values["perfect"] = values.get("is_perfect_combo", False)
+
+        if values.get("mode") is None:
+            return values
+        mode = Gamemode(values["mode"])
+        statistics = values.get("statistics")
+        if isinstance(statistics, ScoreStatistics):
+            statistics = statistics.model_dump(exclude_none=True)
+        if isinstance(statistics, Mapping):
+            values["statistics"] = ScoreStatistics.model_validate(
+                statistics,
+                context={"mode": mode},
+            )
+
+        maximum_statistics = values.get("maximum_statistics")
+        if isinstance(maximum_statistics, ScoreStatistics):
+            maximum_statistics = maximum_statistics.model_dump(exclude_none=True)
+        if isinstance(maximum_statistics, Mapping):
+            values["maximum_statistics"] = ScoreStatistics.model_validate(
+                maximum_statistics,
+                context={"mode": mode},
+            )
+        return values
+
+    @model_validator(mode="before")
+    @classmethod
+    def _fail_rank(cls, values: Any) -> Any:
+        if not isinstance(values, Mapping):
+            return values
+        values = dict(values)
+        if values.get("passed") is False:
+            values["rank"] = "F"
+        return values
+
+    @field_serializer("mods", when_used="json")
+    def _serialize_mods(self, mods: Mods) -> Any:
+        if not self._is_lazer:
+            return mods.to_acronyms()
+        return mods.to_api()
+
+    @model_serializer(mode="wrap")
+    def _serialize_score(
+        self,
+        handler: SerializerFunctionWrapHandler,
+    ) -> dict[str, Any]:
+        data = handler(self)
+        if self._is_lazer:
+            for key in ("score", "created_at", "replay", "mode", "perfect"):
+                data.pop(key, None)
+        else:
+            for key in (
+                "total_score",
+                "ended_at",
+                "has_replay",
+                "ruleset_id",
+                "is_perfect_combo",
+                "legacy_perfect",
+                "maximum_statistics",
+                "classic_total_score",
+                "total_score_without_mods",
+                "legacy_score_id",
+                "legacy_total_score",
+                "build_id",
+                "preserve",
+                "processed",
+                "position",
+                "ranked",
+                "playlist_item_id",
+                "room_id",
+                "solo_score_id",
+                "started_at",
+                "match",
+            ):
+                if key not in self.model_fields_set:
+                    data.pop(key, None)
+        return data

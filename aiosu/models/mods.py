@@ -5,17 +5,17 @@ This module contains models for mods.
 from __future__ import annotations
 
 from collections import UserList
-from enum import IntEnum
-from enum import unique
-from functools import reduce
-from typing import TYPE_CHECKING
+from typing import Any
 
+from pydantic import ConfigDict
+from pydantic import Field
 from pydantic import GetCoreSchemaHandler
+from pydantic import field_validator
+from pydantic import model_validator
 from pydantic_core import CoreSchema
 from pydantic_core import core_schema
 
-if TYPE_CHECKING:
-    pass
+from .base import BaseModel
 
 __all__ = (
     "FreemodAllowed",
@@ -26,46 +26,43 @@ __all__ = (
     "SpeedChangingMods",
 )
 
-_mod_short_names = {
-    "NoMod": "NM",
-    "NoFail": "NF",
-    "Easy": "EZ",
-    "TouchDevice": "TD",
-    "Hidden": "HD",
-    "HardRock": "HR",
-    "SuddenDeath": "SD",
-    "DoubleTime": "DT",
-    "Relax": "RX",
-    "HalfTime": "HT",
-    "Nightcore": "NC",
-    "Flashlight": "FL",
-    "Autoplay": "AT",
-    "SpunOut": "SO",
-    "Autopilot": "AP",
-    "Perfect": "PF",
-    "Key4": "4K",
-    "Key5": "5K",
-    "Key6": "6K",
-    "Key7": "7K",
-    "Key8": "8K",
-    "FadeIn": "FI",
-    "Random": "RD",
-    "Cinema": "CN",
-    "Target": "TP",
-    "Key9": "9K",
-    "KeyCoop": "CO",
-    "Key1": "1K",
-    "Key3": "3K",
-    "Key2": "2K",
-    "ScoreV2": "SV2",
-    "Mirror": "MR",
+_legacy_mods = {
+    "NM": "NoMod",
+    "NF": "NoFail",
+    "EZ": "Easy",
+    "TD": "TouchDevice",
+    "HD": "Hidden",
+    "HR": "HardRock",
+    "SD": "SuddenDeath",
+    "DT": "DoubleTime",
+    "RX": "Relax",
+    "HT": "HalfTime",
+    "NC": "Nightcore",
+    "FL": "Flashlight",
+    "AT": "Autoplay",
+    "SO": "SpunOut",
+    "AP": "Autopilot",
+    "PF": "Perfect",
+    "4K": "Key4",
+    "5K": "Key5",
+    "6K": "Key6",
+    "7K": "Key7",
+    "8K": "Key8",
+    "FI": "FadeIn",
+    "RD": "Random",
+    "CN": "Cinema",
+    "TP": "Target",
+    "9K": "Key9",
+    "CO": "KeyCoop",
+    "1K": "Key1",
+    "3K": "Key3",
+    "2K": "Key2",
+    "V2": "ScoreV2",
+    "MR": "Mirror",
 }
 
 
-@unique
-class Mod(IntEnum):
-    """Bitwise Flags representing osu! mods."""
-
+class _LegacyModFlags:
     NoMod = 0
     NoFail = 1 << 0
     Easy = 1 << 1
@@ -102,16 +99,35 @@ class Mod(IntEnum):
     ScoreV2 = 1 << 29
     Mirror = 1 << 30
 
+
+class Mod(BaseModel, _LegacyModFlags):
+    """An osu! mod with optional settings."""
+
+    model_config = ConfigDict(frozen=True)
+    acronym: str
+    settings: dict[str, Any] = Field(default_factory=dict)
+    __hash__: Any = None
+
+    def __init__(self, acronym: str | int, **data: Any) -> None:
+        super().__init__(acronym=acronym, **data)
+
+    @property
+    def name(self) -> str:
+        return _legacy_mods.get(self.acronym, self.acronym)
+
+    @property
+    def value(self) -> int:
+        return int(self)
+
     @property
     def bitmask(self) -> int:
-        return self.value
+        return int(self)
 
     @property
     def short_name(self) -> str:
-        return _mod_short_names[self.name]
-
-    def __str__(self) -> str:
-        return self.short_name
+        if self.acronym == "V2":
+            return "SV2"
+        return self.acronym
 
     @classmethod
     def from_type(cls, __o: object) -> Mod:
@@ -123,47 +139,101 @@ class Mod(IntEnum):
         :rtype: Mod
         :raises ValueError: If the Mod does not exist
         """
-        from .lazer import LazerMod  # Lazy import to avoid circular imports
-
         if isinstance(__o, cls):
             return __o
-        if isinstance(__o, LazerMod):  # Attempt lossy conversion to stable mods
-            try:
-                return cls.from_type(__o.acronym)
-            except ValueError:
-                return cls.NoMod
-        for mod in list(Mod):
-            if __o == mod.short_name or __o == mod.bitmask:
-                return mod
-        raise ValueError(f"Mod {__o!r} does not exist.")
+        return cls.model_validate(__o)
 
+    def __str__(self) -> str:
+        return self.short_name
+
+    def __int__(self) -> int:
+        if self.settings:
+            raise ValueError(
+                f"Mod {self.acronym!r} has settings which cannot be represented by a legacy flag",
+            )
+        if self.acronym not in _legacy_mods:
+            raise ValueError(f"Mod {self.acronym!r} has no legacy flag")
+        return getattr(type(self), _legacy_mods[self.acronym])
+
+    def __index__(self) -> int:
+        return int(self)
+
+    def __bool__(self) -> bool:
+        return self.acronym != "NM"
+
+    def __eq__(self, other: object) -> bool:
+        if isinstance(other, Mod):
+            return self.acronym == other.acronym and self.settings == other.settings
+        if isinstance(other, int):
+            if self.settings:
+                return False
+            if self.acronym not in _legacy_mods:
+                return False
+            return int(self) == other
+        return NotImplemented
+
+    def __and__(self, other: object) -> Mods:
+        return Mods([self]).__and__(other)
+
+    def __rand__(self, other: object) -> Mods:
+        return Mods([self]).__rand__(other)
+
+    def __or__(self, other: object) -> Mods:
+        return Mods([self]).__or__(other)
+
+    def __ror__(self, other: object) -> Mods:
+        return Mods([self]).__ror__(other)
+
+    def __xor__(self, other: object) -> Mods:
+        return Mods([self]).__xor__(other)
+
+    def __rxor__(self, other: object) -> Mods:
+        return Mods([self]).__rxor__(other)
+
+    def __invert__(self) -> Mods:
+        return ~Mods([self])
+
+    @model_validator(mode="before")
     @classmethod
-    def _missing_(cls, query: object) -> Mod:
-        return cls.from_type(query)
+    def _from_value(cls, value: Any) -> Any:
+        if isinstance(value, (str, int)):
+            return {"acronym": value}
+        return value
+
+    @field_validator("acronym", mode="before")
+    @classmethod
+    def _convert_acronym(cls, value: Any) -> Any:
+        if isinstance(value, int):
+            for acronym, name in _legacy_mods.items():
+                if getattr(cls, name) == value:
+                    return acronym
+            raise ValueError(f"Mod {value!r} does not exist.")
+        if value == "SV2":
+            return "V2"
+        return value
 
 
-class Mods(UserList):
+class Mods(UserList[Mod]):
     """List of Mod objects"""
 
-    def __init__(self, mods: list[str] | str | int) -> None:
-        super().__init__(self)
-        self.data = []
-        if isinstance(mods, str):  # string of mods
-            mods = [mods[i : i + 2] for i in range(0, len(mods), 2)]
+    def __init__(self, mods: list[Any] | str | int | Mod | Mods = "") -> None:
+        super().__init__()
 
-        if isinstance(mods, int):  # Bitwise representation of mods
-            self.data = [mod for mod in list(Mod) if mod & mods]
-        elif isinstance(mods, list) or isinstance(mods, Mods):  # List of Mod types
-            self.data = [Mod(mod) for mod in mods]  # type: ignore
-        else:
+        if isinstance(mods, Mod):
+            mods = [mods]
+        elif isinstance(mods, str):
+            mods = self._parse_string(mods)
+        elif isinstance(mods, int):
+            mods = self._parse_bitmask(mods)
+        elif not isinstance(mods, (list, Mods)):
             raise TypeError(
                 f"Mods must be a list of Mod types, a string, or an int. Not {type(mods)}",
             )
 
-        if Mod.Nightcore in self and Mod.DoubleTime not in self:
-            self.data.append(Mod.DoubleTime)
-        if Mod.Perfect in self and Mod.SuddenDeath not in self:
-            self.data.append(Mod.SuddenDeath)
+        for value in mods:
+            self.data.append(Mod.from_type(value))
+
+        self._add_implied_mods()
 
     @property
     def bitwise(self) -> int:
@@ -172,36 +242,217 @@ class Mods(UserList):
         :return: Bitwise representation of the mod combination
         :rtype: int
         """
-        return reduce(lambda x, y: int(x) | int(y), self, 0)
+        result = 0
+        for mod in self:
+            result |= int(mod)
+        if Mod.Nightcore in self:
+            result |= int(Mod.DoubleTime)
+        if Mod.Perfect in self:
+            result |= int(Mod.SuddenDeath)
+        return result
+
+    def to_api(self) -> list[dict[str, object]]:
+        result = []
+        for mod in self.data:
+            if mod.acronym == "NM":
+                continue
+            if self._is_implied(mod):
+                continue
+            result.append(mod.model_dump(exclude_unset=True))
+        return result
+
+    def to_acronyms(self) -> list[str]:
+        acronyms = []
+        for mod in self.data:
+            if mod.acronym == "NM" or self._is_implied(mod):
+                continue
+            acronyms.append(mod.acronym)
+        return acronyms
 
     def __str__(self) -> str:
-        if len(self) == 0:
+        acronyms = []
+        for mod in self.data:
+            if self._is_implied(mod):
+                continue
+            acronyms.append(str(mod))
+
+        if not acronyms:
             return "NM"
-
-        result: str = ""
-        for mod in self:
-            if Mod.Nightcore in self and mod is Mod.DoubleTime:
-                continue
-            if Mod.Perfect in self and mod is Mod.SuddenDeath:
-                continue
-
-            result += mod.short_name
-        return result
+        return "".join(acronyms)
 
     def __int__(self) -> int:
         return self.bitwise
 
-    def __and__(self, __o: object) -> int:
-        if isinstance(__o, (int, Mod, Mods)):
-            return int(self) & int(__o)
+    def __index__(self) -> int:
+        return int(self)
 
-        return NotImplemented
+    def __contains__(self, item: object) -> bool:
+        if isinstance(item, int):
+            try:
+                item = Mod(item)
+            except ValueError:
+                return False
 
-    def __or__(self, __o: object) -> int:
-        if isinstance(__o, (int, Mod, Mods)):
-            return int(self) | int(__o)
+        if isinstance(item, Mod):
+            if item.settings:
+                return super().__contains__(item)
+            item = item.acronym
 
-        return NotImplemented
+        if isinstance(item, str):
+            if item == "SV2":
+                item = "V2"
+            for mod in self.data:
+                if mod.acronym == item:
+                    return True
+            return False
+
+        return super().__contains__(item)
+
+    def __and__(self, other: object) -> Mods:
+        other_mods = self._from_operand(other)
+        if other_mods is None:
+            return NotImplemented
+
+        mods: list[Mod] = []
+        for mod in self:
+            if not mod:
+                continue
+            for match in other_mods:
+                if mod.acronym != match.acronym:
+                    continue
+                if mod.settings and match.settings and mod != match:
+                    continue
+                selected = mod if mod.settings else match
+                if selected not in mods:
+                    mods.append(selected)
+        return self._operation_result(mods)
+
+    def __rand__(self, other: object) -> Mods:
+        other_mods = self._from_operand(other)
+        if other_mods is None:
+            return NotImplemented
+        return other_mods & self
+
+    def __or__(self, other: object) -> Mods:
+        other_mods = self._from_operand(other)
+        if other_mods is None:
+            return NotImplemented
+
+        mods: list[Mod] = []
+        for mod in (*self, *other_mods):
+            if not mod:
+                continue
+            if mod in mods:
+                continue
+            if mod.settings:
+                mods = [
+                    item
+                    for item in mods
+                    if item.acronym != mod.acronym or item.settings
+                ]
+            elif any(item.acronym == mod.acronym for item in mods):
+                continue
+            mods.append(mod)
+        return self._operation_result(mods)
+
+    def __ror__(self, other: object) -> Mods:
+        other_mods = self._from_operand(other)
+        if other_mods is None:
+            return NotImplemented
+        return other_mods | self
+
+    def __xor__(self, other: object) -> Mods:
+        other_mods = self._from_operand(other)
+        if other_mods is None:
+            return NotImplemented
+
+        mods: list[Mod] = []
+        for mod in self:
+            if mod and other_mods._matching_mod(mod) is None and mod not in mods:
+                mods.append(mod)
+        for mod in other_mods:
+            if mod and self._matching_mod(mod) is None and mod not in mods:
+                mods.append(mod)
+        return self._operation_result(mods)
+
+    def __rxor__(self, other: object) -> Mods:
+        other_mods = self._from_operand(other)
+        if other_mods is None:
+            return NotImplemented
+        return other_mods ^ self
+
+    def __invert__(self) -> Mods:
+        mods: list[Mod] = []
+        for acronym in _legacy_mods:
+            if acronym == "NM" or acronym in self:
+                continue
+            if acronym == "NC" and "DT" in self:
+                continue
+            if acronym == "PF" and "SD" in self:
+                continue
+            mods.append(Mod(acronym))
+        return self._operation_result(mods)
+
+    @staticmethod
+    def _from_operand(value: object) -> Mods | None:
+        if isinstance(value, Mods):
+            return value
+        if isinstance(value, (Mod, int)):
+            return Mods(value)
+        return None
+
+    def _matching_mod(self, value: Mod) -> Mod | None:
+        if not value:
+            return None
+        for mod in self:
+            if mod.acronym != value.acronym:
+                continue
+            if not mod.settings or not value.settings or mod == value:
+                return mod
+        return None
+
+    @staticmethod
+    def _operation_result(mods: list[Mod]) -> Mods:
+        result = Mods()
+        result.data = mods
+        return result
+
+    @staticmethod
+    def _parse_string(value: str) -> list[str]:
+        acronyms = []
+        position = 0
+        while position < len(value):
+            if value.startswith("SV2", position):
+                acronyms.append("SV2")
+                position += 3
+            else:
+                acronyms.append(value[position : position + 2])
+                position += 2
+        return acronyms
+
+    @staticmethod
+    def _parse_bitmask(value: int) -> list[Mod]:
+        mods = []
+        for name in _legacy_mods.values():
+            bitmask = getattr(Mod, name)
+            if bitmask & value:
+                mods.append(Mod(bitmask))
+        return mods
+
+    def _add_implied_mods(self) -> None:
+        if Mod.Nightcore in self and Mod.DoubleTime not in self:
+            self.data.append(Mod(Mod.DoubleTime))
+        if Mod.Perfect in self and Mod.SuddenDeath not in self:
+            self.data.append(Mod(Mod.SuddenDeath))
+
+    def _is_implied(self, mod: Mod) -> bool:
+        if mod.settings:
+            return False
+        if mod.acronym == "DT":
+            return Mod.Nightcore in self
+        if mod.acronym == "SD":
+            return Mod.Perfect in self
+        return False
 
     @classmethod
     def __get_pydantic_core_schema__(
@@ -209,13 +460,23 @@ class Mods(UserList):
         source_type: type[object],
         handler: GetCoreSchemaHandler,
     ) -> CoreSchema:
-        return core_schema.no_info_before_validator_function(
+        input_schema = core_schema.union_schema(
+            [
+                core_schema.is_instance_schema(cls),
+                core_schema.is_instance_schema(Mod),
+                core_schema.int_schema(),
+                core_schema.str_schema(),
+                core_schema.list_schema(),
+            ],
+        )
+        serializer = core_schema.plain_serializer_function_ser_schema(
+            cls.to_api,
+            when_used="json",
+        )
+        return core_schema.no_info_after_validator_function(
             cls,
-            core_schema.json_or_python_schema(
-                json_schema=core_schema.list_schema(),
-                python_schema=handler(source_type),
-            ),
-            serialization=core_schema.to_string_ser_schema(when_used="json"),
+            input_schema,
+            serialization=serializer,
         )
 
 

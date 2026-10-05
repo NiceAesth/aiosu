@@ -325,7 +325,7 @@ class Client:
             "a": int(kwargs.pop("converts", False)),
             "m": int(Gamemode(kwargs.pop("mode", 0))),
         }
-        added = add_param(params, kwargs, key="mods", converter=lambda x: str(Mods(x)))
+        added = add_param(params, kwargs, key="mods", converter=lambda x: int(Mods(x)))
         added |= add_param(params, kwargs, key="beatmap_id", param_name="b")
         added |= add_param(params, kwargs, key="beatmapset_id", param_name="s")
         if add_param(params, kwargs, key="user_query", param_name="u"):
@@ -389,7 +389,7 @@ class Client:
                 param_name="type",
                 converter=lambda x: UserQueryType(x).old_api_name,
             )
-        add_param(params, kwargs, key="mods", converter=lambda x: str(Mods(x)))
+        add_param(params, kwargs, key="mods", converter=lambda x: int(Mods(x)))
         json = await self._request("GET", url, params=params)
         score_conv = lambda x: _beatmap_score_conv(x, mode, beatmap_id)
         return from_list(score_conv, json)
@@ -460,7 +460,7 @@ class Client:
             raise ValueError(
                 "Either score_id or beatmap_id + user_id must be specified.",
             )
-        add_param(params, kwargs, key="mods", converter=lambda x: str(Mods(x)))
+        add_param(params, kwargs, key="mods", converter=lambda x: int(Mods(x)))
         json = await self._request("GET", url, params=params)
         return ReplayCompact.model_validate(json)
 

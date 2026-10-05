@@ -67,7 +67,7 @@ class MatchScore(BaseModel):
         :return: Mods list of Mod objects
         :rtype: Mods
         """
-        return Mods(self.enabled_mods | game.mods)
+        return self.enabled_mods | game.mods
 
     @model_validator(mode="before")
     @classmethod
