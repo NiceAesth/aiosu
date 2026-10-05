@@ -19,7 +19,7 @@ Features
 Installing
 ----------
 
-**Python 3.10 or higher is required**
+**Python 3.12 or higher is required**
 
 To install the library, simply run the following commands
 
@@ -82,7 +82,7 @@ API v2 Example
         token = aiosu.models.OAuthToken(
             access_token="access token",
             refresh_token="refresh token",
-            expires_on=datetime.datetime.utcnow()
+            expires_on=datetime.datetime.now(datetime.UTC)
             + datetime.timedelta(days=1),  # can also be string
         )
 

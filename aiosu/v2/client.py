@@ -10,13 +10,12 @@ import asyncio
 import functools
 from collections.abc import Awaitable
 from collections.abc import Callable
+from datetime import UTC
 from datetime import datetime
-from datetime import timezone
 from functools import partial
 from io import BytesIO
 from typing import TYPE_CHECKING
 from typing import Literal
-from typing import TypeVar
 from typing import cast
 from warnings import warn
 
@@ -95,7 +94,6 @@ if TYPE_CHECKING:
 
 __all__ = ("Client",)
 
-F = TypeVar("F", bound=Callable[..., Awaitable[object]])
 ClientRequestType = Literal["GET", "POST", "DELETE", "PUT", "PATCH"]
 
 
@@ -109,7 +107,7 @@ def get_content_type(content_type: str) -> str:
     return content_type.split(";")[0]
 
 
-def prepare_token(func: F) -> F:
+def prepare_token[F: Callable[..., Awaitable[object]]](func: F) -> F:
     """A decorator that prepares the token for use, to be used as:
     @prepare_token
     """
@@ -123,7 +121,7 @@ def prepare_token(func: F) -> F:
     return cast(F, _prepare_token)
 
 
-def check_token(func: F) -> F:
+def check_token[F: Callable[..., Awaitable[object]]](func: F) -> F:
     """
     A decorator that checks the current token, to be used as:
     @check_token
@@ -137,7 +135,7 @@ def check_token(func: F) -> F:
     return cast(F, _check_token)
 
 
-def requires_scope(
+def requires_scope[F: Callable[..., Awaitable[object]]](
     required_scopes: Scopes,
     any_scope: bool = False,
 ) -> Callable[[F], F]:
@@ -257,7 +255,7 @@ class Client(Eventable):
     ) -> None:
         await self.aclose()
 
-    def on_client_update(
+    def on_client_update[F: Callable[..., Awaitable[object]]](
         self,
         func: F,
     ) -> F:
@@ -298,7 +296,7 @@ class Client(Eventable):
         """
         async with self._refresh_lock:
             token = await self.get_current_token()
-            if datetime.now(timezone.utc) > token.expires_on:
+            if datetime.now(UTC) > token.expires_on:
                 try:
                     await self._refresh()
                 except APIException:
@@ -1846,7 +1844,7 @@ class Client(Eventable):
                 url,
             )
             return replay
-        except (TimeoutError, asyncio.TimeoutError):
+        except TimeoutError:
             raise APIException(404, "Specified replay couldn't be found.")
         except APIException as e:
             if e.status == 504:

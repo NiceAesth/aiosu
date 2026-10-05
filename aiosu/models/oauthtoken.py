@@ -4,9 +4,9 @@ This module contains models for API v2 token objects.
 
 from __future__ import annotations
 
+from datetime import UTC
 from datetime import datetime
 from datetime import timedelta
-from datetime import timezone
 from functools import cached_property
 
 import jwt
@@ -25,7 +25,7 @@ class OAuthToken(FrozenModel):
     """Defaults to 'Bearer'"""
     access_token: str = ""
     refresh_token: str = ""
-    expires_on: datetime = datetime.fromtimestamp(31536000, tz=timezone.utc)
+    expires_on: datetime = datetime.fromtimestamp(31536000, tz=UTC)
     """Can be a datetime.datetime object or a string. Alternatively, expires_in may be passed representing the number of seconds the token will be valid for."""
 
     @computed_field  # type: ignore
@@ -57,7 +57,7 @@ class OAuthToken(FrozenModel):
     def _set_expires_on(cls, values: dict[str, object]) -> dict[str, object]:
         expires_in = values.get("expires_in")
         if isinstance(expires_in, int):
-            values["expires_on"] = datetime.now(timezone.utc) + timedelta(
+            values["expires_on"] = datetime.now(UTC) + timedelta(
                 seconds=expires_in,
             )
         return values
@@ -67,5 +67,5 @@ class OAuthToken(FrozenModel):
     def _ensure_aware(cls, value: datetime) -> datetime:
         """Naive datetimes are treated as UTC."""
         if value.tzinfo is None:
-            return value.replace(tzinfo=timezone.utc)
+            return value.replace(tzinfo=UTC)
         return value

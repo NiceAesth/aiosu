@@ -8,7 +8,6 @@ import functools
 from collections.abc import Awaitable
 from collections.abc import Callable
 from typing import TYPE_CHECKING
-from typing import TypeVar
 from typing import cast
 
 from ..events import ClientAddEvent
@@ -25,8 +24,6 @@ if TYPE_CHECKING:
     from typing import Any
 
 __all__ = ("ClientStorage",)
-
-F = TypeVar("F", bound=Callable[..., Awaitable[object]])
 
 
 class ClientStorage(Eventable):
@@ -80,7 +77,7 @@ class ClientStorage(Eventable):
     ) -> None:
         await self.aclose()
 
-    def on_client_add(self, func: F) -> F:
+    def on_client_add[F: Callable[..., Awaitable[object]]](self, func: F) -> F:
         """
         A decorator that is called whenever a client is added, to be used as:
 
@@ -96,7 +93,7 @@ class ClientStorage(Eventable):
 
         return cast(F, _on_client_add)
 
-    def on_client_update(self, func: F) -> F:
+    def on_client_update[F: Callable[..., Awaitable[object]]](self, func: F) -> F:
         """
         A decorator that is called whenever any stored client is updated, to be used as:
 

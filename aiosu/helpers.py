@@ -11,9 +11,6 @@ if TYPE_CHECKING:
     from collections.abc import Mapping
     from collections.abc import MutableMapping
     from typing import Any
-    from typing import TypeVar
-
-    T = TypeVar("T")
 
 __all__ = (
     "add_param",
@@ -23,7 +20,7 @@ __all__ = (
 )
 
 
-def from_list(f: Callable[[Any], T], x: list) -> list[T]:
+def from_list[T](f: Callable[[Any], T], x: list) -> list[T]:
     r"""Applies a function to all elements in a list.
 
     :param f: Function to apply on list elements
@@ -59,7 +56,7 @@ def append_param(
         l.append(value)
 
 
-def add_param(
+def add_param[T](
     params: MutableMapping[str, Any],
     kwargs: Mapping[str, object],
     key: str,
