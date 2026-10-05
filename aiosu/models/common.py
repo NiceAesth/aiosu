@@ -139,7 +139,7 @@ class CursorModel(BaseModel):
     """
 
     cursor_string: str | None = None
-    next: Callable[[object, object], Awaitable[CursorModel]] | None = Field(
+    next: Callable[[], Awaitable[CursorModel]] | None = Field(
         default=None,
         exclude=True,
     )

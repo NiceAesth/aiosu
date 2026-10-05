@@ -516,17 +516,16 @@ class Client(Eventable):
         """
         url = f"{self.base_url}/api/v2/changelog"
         params: dict[str, object] = {
-            "message_formats": kwargs.pop("message_formats", ["html", "markdown"]),
+            "message_formats[]": kwargs.get("message_formats", ["html", "markdown"]),
         }
         add_param(params, kwargs, key="from")
         add_param(params, kwargs, key="to")
         add_param(params, kwargs, key="max_id")
         add_param(params, kwargs, key="stream")
-        add_param(params, kwargs, key="cursor_string")
         json = await self._request("GET", url, params=params)
         resp = ChangelogListing.model_validate(json)
-        if resp.cursor_string:  # Unused: API does not return cursor_string
-            kwargs["cursor_string"] = resp.cursor_string
+        if resp.builds and len(resp.builds) == resp.search.limit:
+            kwargs["max_id"] = resp.builds[-1].id - 1
             resp.next = partial(self.get_changelog_listing, **kwargs)
         return resp
 
@@ -569,7 +568,7 @@ class Client(Eventable):
         """
         url = f"{self.base_url}/api/v2/changelog/{changelog_query}"
         params: dict[str, object] = {
-            "message_formats": kwargs.pop("message_formats", ["html", "markdown"]),
+            "message_formats[]": kwargs.pop("message_formats", ["html", "markdown"]),
         }
         if "is_id" in kwargs or isinstance(changelog_query, int):
             params["key"] = "id"
