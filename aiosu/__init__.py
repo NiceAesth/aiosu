@@ -30,12 +30,7 @@ __all__ = (
 try:
     __version__ = metadata.version(__package__)
 except metadata.PackageNotFoundError:
-    import sys
-
-    if sys.version_info >= (3, 11):
-        import tomllib
-    else:
-        import tomli as tomllib
+    import tomllib
 
     with open("pyproject.toml", "rb") as f:
         __version__ = tomllib.load(f)["project"]["version"] + "dev"

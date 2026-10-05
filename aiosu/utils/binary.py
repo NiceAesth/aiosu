@@ -6,8 +6,8 @@ from __future__ import annotations
 
 import lzma
 import struct
+from datetime import UTC
 from datetime import datetime
-from datetime import timezone
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -142,7 +142,7 @@ def unpack_timestamp(file: BinaryIO) -> datetime:
     :rtype: datetime
     """
     seconds = unpack_long(file) // 10000000 - 62135596800
-    return datetime.fromtimestamp(seconds, tz=timezone.utc)
+    return datetime.fromtimestamp(seconds, tz=UTC)
 
 
 def unpack_uleb128(file: BinaryIO) -> int:

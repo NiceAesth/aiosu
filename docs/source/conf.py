@@ -7,21 +7,18 @@
 
 # isort: dont-add-imports
 
-import os
 import sys
+import tomllib
 from datetime import date
+from pathlib import Path
 
-if sys.version_info >= (3, 11):
-    import tomllib
-else:
-    import tomli as tomllib
-
-sys.path.insert(0, os.path.abspath("../../aiosu/"))
+project_root = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(project_root))
 
 project = "aiosu"
 author = "Nice Aesthetics"
 project_copyright = f"{date.today().year}, {author}"
-with open(os.path.abspath("../../pyproject.toml"), "rb") as _f:
+with (project_root / "pyproject.toml").open("rb") as _f:
     release = tomllib.load(_f)["project"]["version"]
 
 # -- General configuration ---------------------------------------------------
@@ -39,4 +36,4 @@ exclude_patterns = []
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
 html_theme = "furo"
-html_static_path = ["_static"]
+html_static_path = []

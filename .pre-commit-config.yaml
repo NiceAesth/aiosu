@@ -11,16 +11,16 @@ repos:
       - id: requirements-txt-fixer
       - id: trailing-whitespace
   - repo: https://github.com/psf/black-pre-commit-mirror
-    rev: 26.5.1
+    rev: 26.10.0
     hooks:
       - id: black
   - repo: https://github.com/asottile/pyupgrade
     rev: v3.21.2
     hooks:
       - id: pyupgrade
-        args: [--py310-plus, --keep-runtime-typing]
+        args: [--py312-plus]
   - repo: https://github.com/pycqa/isort
-    rev: 9.0.1
+    rev: 9.0.2
     hooks:
       - id: isort
   - repo: https://github.com/asottile/add-trailing-comma
@@ -45,4 +45,4 @@ repos:
       - id: sort-all
 
 default_language_version:
-  python: python3.10
+  python: python3.12
