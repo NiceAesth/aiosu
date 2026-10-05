@@ -36,7 +36,7 @@ classifiers = [
     "Typing :: Typed",
 ]
 authors = [{ name = "Nice Aesthetics", email = "nice@aesth.dev" }]
-license = "GPL-3.0-or-later"
+license = "AGPL-3.0-or-later"
 readme = "README.rst"
 keywords = ["osu!", "osu", "api"]
 dependencies = [
