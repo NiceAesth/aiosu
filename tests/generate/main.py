@@ -20,6 +20,7 @@ from aiohttp import web
 from dotenv import load_dotenv
 
 import aiosu
+from aiosu.v2.client import API_VERSION
 
 API_MODES = ["osu", "taiko", "fruits", "mania"]
 BASE_URL = "https://osu.ppy.sh"
@@ -390,7 +391,7 @@ class TestGeneratorV2(TestGeneratorBase):
             "GET",
             f"{BASE_URL}/api/v2/friends",
             f"{DATA_DIR}/v2/get_own_friends_200.json",
-            headers={"x-api-version": "20241022"},
+            headers={"x-api-version": API_VERSION},
         )
         self._register_route(
             "GET",
@@ -640,7 +641,7 @@ class TestGeneratorV2(TestGeneratorBase):
             "GET",
             f"{BASE_URL}/api/v2/scores/osu/4220635589",
             f"{DATA_DIR}/v2/get_score_lazer_200.json",
-            headers={"x-api-version": "20220705"},
+            headers={"x-api-version": API_VERSION},
         )
         self._register_route(
             "GET",
@@ -653,7 +654,7 @@ class TestGeneratorV2(TestGeneratorBase):
             f"{BASE_URL}/api/v2/scores/osu/0",
             f"{DATA_DIR}/v2/get_score_lazer_404.json",
             expect_status=404,
-            headers={"x-api-version": "20220705"},
+            headers={"x-api-version": API_VERSION},
         )
         # Invalid score IDs no longer return a 404 on the download routes;
         # the request stalls until the gateway responds with a 504, so the
@@ -754,6 +755,12 @@ class TestGeneratorV2(TestGeneratorBase):
             f"{DATA_DIR}/v2/get_multiplayer_scores_404.json",
             expect_status=404,
         )
+        self._register_route(
+            "GET",
+            f"{BASE_URL}/api/v2/beatmaps/315",
+            f"{DATA_DIR}/v2/beatmap_performance_315.json",
+            headers={"x-api-version": API_VERSION},
+        )
         for mode in API_MODES:
             self._register_route(
                 "GET",
@@ -761,6 +768,22 @@ class TestGeneratorV2(TestGeneratorBase):
                 f"{DATA_DIR}/v2/score_{mode}.json",
                 params={"mode": mode, "limit": 1},
             )
+            if mode in ("osu", "taiko"):
+                self._register_route(
+                    "GET",
+                    f"{BASE_URL}/api/v2/beatmaps/315/scores",
+                    f"{DATA_DIR}/v2/score_performance_{mode}.json",
+                    headers={"x-api-version": API_VERSION},
+                    params={"mode": mode, "mods[]": "NM", "limit": 10},
+                )
+            else:
+                self._register_route(
+                    "GET",
+                    f"{BASE_URL}/api/v2/users/3792472/scores/best",
+                    f"{DATA_DIR}/v2/score_performance_{mode}.json",
+                    headers={"x-api-version": API_VERSION},
+                    params={"mode": mode, "limit": 1},
+                )
 
     async def run(self) -> None:
         await self.client._prepare_token()
@@ -771,16 +794,25 @@ class TestGeneratorV2(TestGeneratorBase):
             await super().run()
 
             for mode in API_MODES:
-                with open(f"{DATA_DIR}/v2/score_{mode}.json") as f:
+                with open(f"{DATA_DIR}/v2/score_performance_{mode}.json") as f:
                     data = f.read()
                     data_json = orjson.loads(data)
-                    for score in data_json:
+                    score_list = (
+                        data_json["scores"]
+                        if isinstance(data_json, dict)
+                        else data_json
+                    )
+                    for score in score_list:
+                        beatmap_id = score.get("beatmap_id") or score["beatmap"]["id"]
                         await self._save_data(
                             "POST",
-                            f"{BASE_URL}/api/v2/beatmaps/{score['beatmap']['id']}/attributes",
+                            f"{BASE_URL}/api/v2/beatmaps/{beatmap_id}/attributes",
                             f"{DATA_DIR}/v2/difficulty_attributes_{mode}.json",
                             200,
-                            params={"ruleset_id": score["mode_int"]},
+                            data={
+                                "ruleset_id": score["ruleset_id"],
+                                "mods": score["mods"],
+                            },
                         )
         finally:
             await self.client.aclose()

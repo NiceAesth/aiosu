@@ -26,13 +26,19 @@ class OsuPerformanceAttributes(PerformanceAttributes):
     speed: float
     accuracy: float
     flashlight: float
+    reading: float
     effective_miss_count: float
+    combo_based_estimated_miss_count: float
+    score_based_estimated_miss_count: float | None
+    aim_estimated_slider_breaks: float
+    speed_estimated_slider_breaks: float
+    speed_deviation: float | None
 
 
 class TaikoPerformanceAttributes(PerformanceAttributes):
     difficulty: float
     accuracy: float
-    effective_miss_count: float
+    estimated_unstable_rate: float | None
 
 
 class ManiaPerformanceAttributes(PerformanceAttributes):

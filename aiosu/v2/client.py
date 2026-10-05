@@ -94,6 +94,8 @@ if TYPE_CHECKING:
 
 __all__ = ("Client",)
 
+API_VERSION = "20250913"
+
 ClientRequestType = Literal["GET", "POST", "DELETE", "PUT", "PATCH"]
 
 
@@ -788,7 +790,7 @@ class Client(Eventable):
         :rtype: list[aiosu.models.user.UserRelation]
         """
         url = f"{self.base_url}/api/v2/friends"
-        headers = {"x-api-version": "20241022"}
+        headers = {"x-api-version": API_VERSION}
         json = await self._request("GET", url, headers=headers)
         return from_list(UserRelation.model_validate, json)
 
@@ -934,7 +936,7 @@ class Client(Eventable):
         headers = {}
         new_format = kwargs.pop("new_format", False)
         if new_format:
-            headers = {"x-api-version": "20220705"}
+            headers = {"x-api-version": API_VERSION}
         json = await self._request("GET", url, params=params, headers=headers)
         return from_list(Score.model_validate, json)
 
@@ -1805,7 +1807,7 @@ class Client(Eventable):
         headers = {}
         new_format = kwargs.pop("new_format", False)
         if new_format:
-            headers = {"x-api-version": "20220705"}
+            headers = {"x-api-version": API_VERSION}
 
         json = await self._request("GET", url, headers=headers)
         return Score.model_validate(json)
@@ -1828,7 +1830,7 @@ class Client(Eventable):
         :rtype: aiosu.models.score.Score
         """
         url = f"{self.base_url}/api/v2/scores/{score_id}"
-        headers = {"x-api-version": "20220705"}
+        headers = {"x-api-version": API_VERSION}
 
         json = await self._request("GET", url, headers=headers)
         return Score.model_validate(json)
