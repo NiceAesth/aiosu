@@ -5,12 +5,11 @@ import math
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from ...models.score import Score
-
 if TYPE_CHECKING:
     from ...models.beatmap import BeatmapDifficultyAttributes
     from ...models.mods import Mod
     from ...models.performance import PerformanceAttributes
+    from ...models.score import Score
 
 
 @dataclass
@@ -116,5 +115,7 @@ class AbstractPerformanceCalculator(abc.ABC):
 
     @staticmethod
     def _validate_score(score: Score) -> None:
+        from ...models.score import Score
+
         if not isinstance(score, Score):
             raise TypeError("Performance calculators require a Score.")

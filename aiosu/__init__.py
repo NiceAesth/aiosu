@@ -11,12 +11,12 @@ __copyright__ = f"Copyright {date.today().year} {__author__}"
 from . import events
 from . import exceptions
 from . import helpers
-from . import lazer
 from . import utils
 from . import v1
 from . import v2
 
 from . import models  # isort: skip
+from . import lazer  # isort: skip
 
 __all__ = (
     "events",
