@@ -6,6 +6,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from datetime import datetime
+from typing import Any
 from typing import Literal
 
 from pydantic import Field
@@ -18,7 +19,7 @@ from .common import CursorModel
 from .gamemode import Gamemode
 from .mods import Mods
 from .score import Score
-from .user import User
+from .user import UserCompact
 
 __all__ = (
     "MultiplayerEvent",
@@ -110,6 +111,8 @@ class MultiplayerGame(BaseModel):
     team_type: MultiplayerTeamType
     mods: Mods
     beatmap_id: int
+    match_id: int | None = None
+    mode_int: int | None = None
     scores: list[Score]
     beatmap: Beatmap | None = None
     end_time: datetime | None = None
@@ -143,7 +146,7 @@ class MultiplayerEvent(BaseModel):
 class MultiplayerMatchResponse(BaseModel):
     match: MultiplayerMatch
     events: list[MultiplayerEvent]
-    users: list[User]
+    users: list[UserCompact]
     first_event_id: int
     latest_event_id: int
     current_game_id: int | None = None
@@ -167,6 +170,8 @@ class MultiplayerPlaylistItem(BaseModel):
     created_at: datetime | None = None
     playlist_order: int | None = None
     played_at: datetime | None = None
+    details: dict[str, Any] | None = None
+    scores: list[Score] | None = None
 
 
 class MultiplayerRoomDifficultyRange(BaseModel):
@@ -194,6 +199,8 @@ class MultiplayerUserScoreSummary(BaseModel):
     total_score: int
     user_id: int
     playlist_item_attempts: list[MultiplayerPlaylistItemAttempt] | None = None
+    position: int | None = None
+    user: UserCompact | None = None
 
 
 class MultiplayerRoom(BaseModel):
@@ -206,9 +213,9 @@ class MultiplayerRoom(BaseModel):
     active: bool
     has_password: bool
     auto_skip: bool
-    host: User
+    host: UserCompact
     queue_mode: MultiplayerQueueMode
-    recent_participants: list[User]
+    recent_participants: list[UserCompact]
     playlist: list[MultiplayerPlaylistItem] | None = None
     current_playlist_item: MultiplayerPlaylistItem | None = None
     difficulty_range: MultiplayerRoomDifficultyRange | None = None
@@ -232,7 +239,7 @@ class MultiplayerLeaderboardItem(BaseModel):
     room_id: int
     total_score: int
     user_id: int
-    user: User
+    user: UserCompact
     position: int | None = None
 
 

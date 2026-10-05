@@ -94,6 +94,7 @@ class ArtistAlbum(BaseModel):
     genre: str
     is_new: bool
     cover_url: str
+    tracks: list[ArtistTrack] | None = None
 
 
 class ArtistTrack(BaseModel):

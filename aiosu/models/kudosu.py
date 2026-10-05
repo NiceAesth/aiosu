@@ -5,6 +5,7 @@ This module contains models for kudosu objects.
 from __future__ import annotations
 
 from datetime import datetime
+from typing import Any
 from typing import Literal
 
 from .base import BaseModel
@@ -42,5 +43,6 @@ class KudosuHistory(BaseModel):
     created_at: datetime
     amount: int
     model: str
+    details: dict[str, Any] | None = None
     giver: KudosuGiver | None = None
     post: KudosuPost | None = None

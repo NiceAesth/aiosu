@@ -31,6 +31,7 @@ ChangelogEntryType = Literal["add", "fix"]
 class GithubUser(BaseModel):
     display_name: str
     github_url: str | None = None
+    github_username: str | None = None
     id: int | None = None
     osu_username: str | None = None
     user_id: int | None = None

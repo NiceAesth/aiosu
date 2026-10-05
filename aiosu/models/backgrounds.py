@@ -7,7 +7,7 @@ from __future__ import annotations
 from datetime import datetime
 
 from .base import BaseModel
-from .user import User
+from .user import UserCompact
 
 __all__ = (
     "Background",
@@ -17,7 +17,7 @@ __all__ = (
 
 class Background(BaseModel):
     url: str
-    user: User
+    user: UserCompact
 
 
 class SeasonalBackgroundSet(BaseModel):

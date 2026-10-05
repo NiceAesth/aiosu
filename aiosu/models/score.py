@@ -9,6 +9,7 @@ from datetime import datetime
 from functools import cached_property
 from typing import TYPE_CHECKING
 from typing import Any
+from typing import Literal
 
 from pydantic import Field
 from pydantic import PrivateAttr
@@ -23,13 +24,16 @@ from ..utils.accuracy import OsuAccuracyCalculator
 from ..utils.accuracy import TaikoAccuracyCalculator
 from .base import BaseModel
 from .base import cast_int
-from .beatmap import Beatmap
+from .beatmap import BeatmapExtended
 from .beatmap import Beatmapset
+from .beatmap import LegacyBeatmap
+from .beatmap import LegacyBeatmapset
 from .common import CurrentUserAttributes
+from .common import CursorModel
 from .common import ScoreType
 from .gamemode import Gamemode
 from .mods import Mods
-from .user import User
+from .user import UserCompact
 
 if TYPE_CHECKING:
     from typing import Self
@@ -44,6 +48,10 @@ if TYPE_CHECKING:
 __all__ = (
     "Score",
     "ScoreMatch",
+    "ScoreRoomSummary",
+    "ScoreScoresAround",
+    "ScoreScoresParams",
+    "ScoreScoresResponse",
     "ScoreStatistics",
     "ScoreWeight",
     "calculate_score_completion",
@@ -60,7 +68,7 @@ accuracy_calculators = {
 def calculate_score_completion(
     mode: Gamemode,
     statistics: ScoreStatistics,
-    beatmap: Beatmap,
+    beatmap: BeatmapExtended | LegacyBeatmap,
 ) -> float | None:
     """Calculates completion for a score.
 
@@ -412,6 +420,28 @@ class ScoreStatistics(BaseModel):
         return hit_results
 
 
+class ScoreRoomSummary(BaseModel):
+    playlist_item_id: int
+    is_realtime: bool
+    room_id: int
+    room_name: str
+
+
+class ScoreScoresParams(BaseModel):
+    limit: int
+    sort: Literal["score_asc", "score_desc"]
+
+
+class ScoreScoresResponse(CursorModel):
+    scores: list[Score]
+    params: ScoreScoresParams
+
+
+class ScoreScoresAround(BaseModel):
+    higher: ScoreScoresResponse
+    lower: ScoreScoresResponse
+
+
 class Score(BaseModel):
     user_id: int
     accuracy: float
@@ -430,10 +460,10 @@ class Score(BaseModel):
     """Always present except for API v1 recent scores."""
     pp: float | None = 0
     best_id: int | None = None
-    beatmap: Beatmap | None = None
-    beatmapset: Beatmapset | None = None
+    beatmap: BeatmapExtended | LegacyBeatmap | None = None
+    beatmapset: Beatmapset | LegacyBeatmapset | None = None
     weight: ScoreWeight | None = None
-    user: User | None = None
+    user: UserCompact | None = None
     rank_global: int | None = None
     rank_country: int | None = None
     current_user_attributes: CurrentUserAttributes | None = None
@@ -456,6 +486,8 @@ class Score(BaseModel):
     solo_score_id: int | None = None
     started_at: datetime | None = None
     match: ScoreMatch | None = None
+    room_summary: ScoreRoomSummary | None = None
+    scores_around: ScoreScoresAround | None = None
 
     _is_lazer: bool = PrivateAttr(default=False)
 
@@ -732,6 +764,8 @@ class Score(BaseModel):
                 "solo_score_id",
                 "started_at",
                 "match",
+                "room_summary",
+                "scores_around",
             ):
                 if key not in self.model_fields_set:
                     data.pop(key, None)

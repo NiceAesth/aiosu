@@ -10,7 +10,7 @@ from pydantic import Field
 
 from .base import BaseModel
 from .common import CurrentUserAttributes
-from .user import User
+from .user import UserCompact
 
 __all__ = (
     "ChatChannel",
@@ -57,6 +57,10 @@ class ChatChannel(BaseModel):
     last_message_id: int | None = None
     user_ids: list[int] | None = Field(default=None, alias="users")
     current_user_attributes: CurrentUserAttributes | None = None
+    active_user_count: int | None = None
+    last_read_id: int | None = None
+    recent_messages: list[ChatMessage] | None = None
+    uuid: str | None = None
 
 
 class ChatMessage(BaseModel):
@@ -66,8 +70,9 @@ class ChatMessage(BaseModel):
     timestamp: str
     content: str
     is_action: bool
+    type: Literal["action", "markdown", "plain"] | None = None
     uuid: str | None = None
-    sender: User | None = None
+    sender: UserCompact | None = None
 
 
 class ChatMessageCreateResponse(BaseModel):
@@ -83,4 +88,4 @@ class ChatUpdateResponse(BaseModel):
 
 class ChatChannelResponse(BaseModel):
     channel: ChatChannel
-    users: list[User] | None = None
+    users: list[UserCompact] | None = None

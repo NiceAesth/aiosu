@@ -7,7 +7,7 @@ from __future__ import annotations
 from typing import Literal
 
 from .base import BaseModel
-from .user import User
+from .user import UserCompact
 from .wiki import WikiPage
 
 __all__ = (
@@ -20,7 +20,7 @@ SearchMode = Literal["all", "user", "wiki_page"]
 
 
 class SearchResult(BaseModel):
-    data: list[User | WikiPage]
+    data: list[UserCompact | WikiPage]
     total: int
 
 

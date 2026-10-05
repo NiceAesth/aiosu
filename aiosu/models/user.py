@@ -24,24 +24,33 @@ from .gamemode import Gamemode
 
 __all__ = (
     "DailyChallengeUserStats",
+    "LegacyUser",
     "ManiaStatsVariantsType",
     "MatchmakingPool",
+    "MatchmakingUserEloHistory",
     "MatchmakingUserStats",
+    "Season",
+    "SeasonDivision",
     "SeasonUserStats",
     "User",
     "UserAccountHistory",
     "UserAccountHistoryType",
     "UserBadge",
+    "UserCompact",
+    "UserCurrentAttributes",
+    "UserGlobalRank",
     "UserGradeCounts",
     "UserGroup",
     "UserKudosu",
     "UserLevel",
+    "UserPreferences",
     "UserProfileCover",
     "UserProfileTournamentBanner",
     "UserQueryType",
     "UserRankHighest",
     "UserRankHistoryElement",
     "UserRelation",
+    "UserStatisticsRank",
     "UserStats",
     "UserStatsRulesets",
     "UserStatsVariant",
@@ -107,6 +116,7 @@ class UserLevel(BaseModel):
 class UserKudosu(BaseModel):
     total: int
     available: int
+    rank: int | None = None
 
 
 class UserRankHistoryElement(BaseModel):
@@ -159,6 +169,8 @@ class UserAccountHistory(BaseModel):
     permanent: bool
     type: UserAccountHistoryType
     description: str | None = None
+    actor: UserCompact | None = None
+    supporting_url: str | None = None
 
 
 class UserGradeCounts(BaseModel):
@@ -196,7 +208,7 @@ class UserGroup(BaseModel):
     is_probationary: bool
     colour: str | None = None
     playmodes: list[Gamemode] | None = None
-    description: str | None = None
+    description: HTMLBody | None = None
 
 
 class UserStatsVariant(BaseModel):
@@ -205,6 +217,10 @@ class UserStatsVariant(BaseModel):
     pp: float
     country_rank: int | None = None
     global_rank: int | None = None
+
+
+class UserStatisticsRank(BaseModel):
+    country: int | None
 
 
 class UserStats(BaseModel):
@@ -226,12 +242,16 @@ class UserStats(BaseModel):
     global_rank: int | None = None
     global_rank_exp: int | None = None
     country_rank: int | None = None
-    user: User | None = None
+    user: UserCompact | None = None
     count_300: int | None = None
     count_100: int | None = None
     count_50: int | None = None
     count_miss: int | None = None
     variants: list[UserStatsVariant] | None = None
+    accuracy: float | None = None
+    global_rank_percent: float | None = None
+    rank: UserStatisticsRank | None = None
+    rank_change_since_30_days: int | None = None
 
     @computed_field  # type: ignore
     @cached_property
@@ -287,7 +307,7 @@ class UserRelation(BaseModel):
     target_id: int
     relation_type: str
     mutual: bool
-    target: User | None = None
+    target: UserCompact | None = None
 
 
 class UserTeam(BaseModel):
@@ -319,6 +339,14 @@ class MatchmakingPool(BaseModel):
     variant_id: int
 
 
+class MatchmakingUserEloHistory(BaseModel):
+    id: int
+    created_at: datetime | None
+    elo_after: int
+    result: str
+    room_id: int
+
+
 class MatchmakingUserStats(BaseModel):
     user_id: int
     pool_id: int
@@ -330,47 +358,70 @@ class MatchmakingUserStats(BaseModel):
     rating: int | None = None
     total_points: int | None = None
     pool: MatchmakingPool | None = None
+    recent_history: list[MatchmakingUserEloHistory] | None = None
+
+
+class Season(BaseModel):
+    id: int
+    name: str
+    room_count: int
+    start_date: datetime | None
+    end_date: datetime | None
+
+
+class SeasonDivision(BaseModel):
+    id: int
+    name: str
+    colour_tier: str
+    image_url: str
+    threshold: float
 
 
 class SeasonUserStats(BaseModel):
-    user_id: int | None = None
-    season_id: int | None = None
-    total_score: float | None = None
-    division_id: int | None = None
-    playcount: int | None = None
+    division: SeasonDivision
+    rank: int
+    season: Season
+    total_score: float
 
 
-class User(BaseModel):
-    avatar_url: str
-    country_code: str
-    id: int
+class UserCurrentAttributes(BaseModel):
+    has_blocked: bool
+
+
+class UserGlobalRank(BaseModel):
+    rank: int | None
+    ruleset_id: int
+
+
+class UserPreferences(BaseModel):
+    audio_autoplay: bool
+    audio_muted: bool
+    audio_volume: float
+    beatmapset_card_size: Literal["normal", "extra"]
+    beatmapset_download: Literal["all", "no_video", "direct"]
+    beatmapset_show_anime_cover: bool
+    beatmapset_show_nsfw: bool
+    beatmapset_title_show_original: bool
+    comments_show_deleted: bool
+    forum_posts_show_deleted: bool
+    legacy_score_only: bool
+    profile_cover_expanded: bool
+    profile_detail_v2: bool
+    scoring_mode: Literal["standardised", "classic"]
+    user_list_filter: Literal["all", "online", "offline"]
+    user_list_sort: Literal["last_visit", "rank", "username"]
+    user_list_view: Literal["card", "list", "brick"]
+
+
+class _UserBase(BaseModel):
+    avatar_url: str | None
+    country_code: str | None
+    id: int | None
     username: str
     default_group: str | None = None
-    is_active: bool | None = None
-    is_bot: bool | None = None
-    is_online: bool | None = None
-    is_supporter: bool | None = None
-    pm_friends_only: bool | None = None
     profile_colour: str | None = None
-    is_deleted: bool | None = None
     last_visit: datetime | None = None
-    discord: str | None = None
-    has_supported: bool | None = None
-    interests: str | None = None
-    join_date: datetime | None = None
     kudosu: UserKudosu | None = None
-    location: str | None = None
-    max_blocks: int | None = None
-    max_friends: int | None = None
-    occupation: str | None = None
-    playmode: Gamemode | None = None
-    playstyle: list[str] | None = None
-    post_count: int | None = None
-    profile_hue: int | None = None
-    profile_order: list[str] | None = None
-    title: str | None = None
-    twitter: str | None = None
-    website: str | None = None
     country: Country | None = None
     cover: UserProfileCover | None = None
     is_restricted: bool | None = None
@@ -379,7 +430,6 @@ class User(BaseModel):
     active_tournament_banners: list[UserProfileTournamentBanner] | None = None
     badges: list[UserBadge] | None = None
     comments_count: int | None = None
-    cover_url: str | None = None
     daily_challenge_user_stats: DailyChallengeUserStats | None = None
     matchmaking_stats: list[MatchmakingUserStats] | None = None
     current_season_stats: SeasonUserStats | None = None
@@ -388,7 +438,6 @@ class User(BaseModel):
     ranked_and_approved_beatmapset_count: int | None = None
     unranked_beatmapset_count: int | None = None
     scores_pinned_count: int | None = None
-    title_url: str | None = None
     beatmap_playcounts_count: int | None = None
     favourite_beatmapset_count: int | None = None
     follow_user_mapping: list[int] | None = None
@@ -416,13 +465,101 @@ class User(BaseModel):
     unread_pm_count: int | None = None
     user_achievements: list[UserAchievmement] | None = None
 
+    blocks: list[UserRelation] | None = None
+    current_user_attributes: UserCurrentAttributes | None = None
+    global_rank: UserGlobalRank | None = None
+    is_admin: bool | None = None
+    is_bng: bool | None = None
+    is_full_bn: bool | None = None
+    is_gmt: bool | None = None
+    is_limited_bn: bool | None = None
+    is_moderator: bool | None = None
+    is_nat: bool | None = None
+    is_silenced: bool | None = None
+    score_processing_notice_url: str | None = None
+    session_verified: bool | None = None
+    session_verification_method: str | None = None
+    user_preferences: UserPreferences | None = None
+
     @computed_field  # type: ignore
     @property
     def url(self) -> str:
         return f"https://osu.ppy.sh/users/{self.id}"
 
+
+class UserCompact(_UserBase):
+    avatar_url: str | None
+    country_code: str | None
+    id: int | None
+    is_active: bool
+    is_bot: bool
+    is_deleted: bool
+    is_online: bool
+    is_supporter: bool
+    pm_friends_only: bool
+    default_group: str | None = Field(...)
+    last_visit: datetime | None = Field(...)
+    profile_colour: str | None = Field(...)
+
+
+class User(UserCompact):
+    avatar_url: str
+    country_code: str
+    id: int
+    country: Country | None = Field(...)
+    cover: UserProfileCover
+    cover_url: str
+    discord: str | None
+    has_supported: bool
+    interests: str | None
+    join_date: datetime
+    kudosu: UserKudosu
+    location: str | None
+    max_blocks: int
+    max_friends: int
+    occupation: str | None
+    playmode: Gamemode
+    playstyle: list[str] | None
+    post_count: int
+    profile_hue: int | None
+    profile_order: list[str]
+    title: str | None
+    title_url: str | None
+    twitter: str | None
+    website: str | None
+
+
+class LegacyUser(_UserBase):
+    is_active: bool | None = None
+    is_bot: bool | None = None
+    is_deleted: bool | None = None
+    is_online: bool | None = None
+    is_supporter: bool | None = None
+    pm_friends_only: bool | None = None
+    avatar_url: str
+    country_code: str
+    id: int
+    discord: str | None = None
+    has_supported: bool | None = None
+    interests: str | None = None
+    join_date: datetime | None = None
+    location: str | None = None
+    max_blocks: int | None = None
+    max_friends: int | None = None
+    occupation: str | None = None
+    playmode: Gamemode | None = None
+    playstyle: list[str] | None = None
+    post_count: int | None = None
+    profile_hue: int | None = None
+    profile_order: list[str] | None = None
+    title: str | None = None
+    twitter: str | None = None
+    website: str | None = None
+    cover_url: str | None = None
+    title_url: str | None = None
+
     @classmethod
-    def _from_api_v1(cls, data: Mapping[str, object]) -> User:
+    def _from_api_v1(cls, data: Mapping[str, object]) -> LegacyUser:
         return cls.model_validate(
             {
                 "avatar_url": f"https://s.ppy.sh/a/{data['user_id']}",
