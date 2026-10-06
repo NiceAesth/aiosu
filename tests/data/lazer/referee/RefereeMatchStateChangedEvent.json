@@ -1,0 +1,11 @@
+{
+  "room_id": 8986,
+  "state": {
+    "type": "team_versus",
+    "locked": true,
+    "slots": [
+      664,
+      null
+    ]
+  }
+}

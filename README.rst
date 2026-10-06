@@ -1,7 +1,7 @@
 aiosu
 =====
 
-|Python| |pypi| |pre-commit.ci status| |rtd| |pytest| |mypy| |codacy|
+|Python| |pypi| |pre-commit.ci status| |rtd| |pytest| |mypy|
 
 Simple and fast asynchronous osu! API v1 and v2 library with various utilities.
 
@@ -138,6 +138,3 @@ Acknowledgments
 .. |rtd| image:: https://readthedocs.org/projects/aiosu/badge/?version=latest
     :target: https://aiosu.readthedocs.io/en/latest/?badge=latest
     :alt: Documentation Status
-.. |codacy| image:: https://app.codacy.com/project/badge/Grade/9bf211d7e29546dc99cc0b1a3d89b291
-    :target: https://app.codacy.com/gh/NiceAesth/aiosu/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=NiceAesth/aiosu&amp;utm_campaign=Badge_Grade
-    :alt: Codacy Status

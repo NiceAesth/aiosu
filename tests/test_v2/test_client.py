@@ -27,16 +27,6 @@ STATUS_CAN_200_OCTET = {
 }
 
 
-@pytest.fixture(autouse=True)
-def token():
-    token = aiosu.models.OAuthToken(
-        access_token="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiI5OTk5IiwianRpIjoiYXNkZiIsImlhdCI6MTY3Mjk1MDI0NS45MjAxMzMsIm5iZiI6MTY3Mjk1MDI0NS45MjAxMzYsImV4cCI6MTY3MzAzNTc4NC4wMTY2MjEsInN1YiI6Ijc3ODI1NTMiLCJzY29wZXMiOlsiY2hhdC5yZWFkIiwiY2hhdC53cml0ZSIsImNoYXQud3JpdGVfbWFuYWdlIiwiZm9ydW0ud3JpdGUiLCJmcmllbmRzLnJlYWQiLCJpZGVudGlmeSIsInB1YmxpYyJdfQ.S_JhNdYLm0PdDpPj42xumaNyKARZUxDOesLwNPTLBrQ",
-        refresh_token="hi",
-        expires_in=86400,
-    )
-    return token
-
-
 def get_data(func_name: str, status_code: int, extension: str = "json") -> bytes:
     with open(f"tests/data/v2/{func_name}_{status_code}.{extension}", "rb") as f:
         data = f.read()
@@ -54,8 +44,8 @@ def generate_test(
 
     @pytest.mark.asyncio
     @pytest.mark.parametrize("status_code, content_type", status_codes.items())
-    async def test_generated(status_code, content_type, token, mocker):
-        async with aiosu.v2.Client(token=token) as client:
+    async def test_generated(status_code, content_type, api_token, mocker):
+        async with aiosu.v2.Client(token=api_token) as client:
             file_extension = "json"
             if content_type == "application/octet-stream":
                 file_extension = "osr"

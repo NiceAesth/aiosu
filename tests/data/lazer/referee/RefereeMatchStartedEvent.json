@@ -1,0 +1,11 @@
+{
+  "room_id": 42,
+  "playlist_item_id": 7,
+  "type": "team_versus",
+  "teams": {
+    "5": "red"
+  },
+  "slots": {
+    "5": 0
+  }
+}

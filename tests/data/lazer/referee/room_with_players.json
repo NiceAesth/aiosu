@@ -1,0 +1,51 @@
+{
+  "room_id": 42,
+  "chat_channel_id": 43,
+  "name": "Tournament",
+  "password": "secret",
+  "max_participants": 2,
+  "state": {
+    "type": "team_versus",
+    "locked": true,
+    "slots": [
+      5,
+      null
+    ]
+  },
+  "players": [
+    {
+      "user_id": 5,
+      "status": "ready",
+      "team": "red"
+    }
+  ],
+  "referees": [
+    {
+      "user_id": 6
+    }
+  ],
+  "playlist": [
+    {
+      "id": 7,
+      "ruleset_id": 0,
+      "beatmap_id": 8,
+      "required_mods": [
+        {
+          "acronym": "DT",
+          "settings": {
+            "speed_change": 1.2
+          }
+        }
+      ],
+      "allowed_mods": [
+        {
+          "acronym": "HD",
+          "settings": null
+        }
+      ],
+      "freestyle": false,
+      "was_played": false,
+      "order": 0
+    }
+  ]
+}

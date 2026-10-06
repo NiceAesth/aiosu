@@ -4,7 +4,27 @@ This module contains custom exception types.
 
 from __future__ import annotations
 
-__all__ = ("APIException", "InvalidClientRequestedError", "RefreshTokenExpiredError")
+import re
+
+__all__ = (
+    "APIException",
+    "InvalidClientRequestedError",
+    "RefereeInvocationError",
+    "RefreshTokenExpiredError",
+)
+
+
+class RefereeInvocationError(Exception):
+    """Referee Invocation Error
+
+    :param message: error message returned
+    :type message: str
+    """
+
+    def __init__(self, message: str) -> None:
+        super().__init__(message)
+        match = re.match(r"Error (\d+):", message)
+        self.code: int | None = int(match[1]) if match else None
 
 
 class APIException(Exception):

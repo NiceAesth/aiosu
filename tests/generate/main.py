@@ -77,7 +77,7 @@ async def interactive_oauth_token(
 
     app = web.Application()
     app.router.add_get(parsed.path or "/", callback)
-    runner = web.AppRunner(app)
+    runner = web.AppRunner(app, access_log=None)
     await runner.setup()
     site = web.TCPSite(runner, parsed.hostname or "localhost", parsed.port or 80)
     await site.start()
@@ -105,7 +105,11 @@ async def interactive_oauth_token(
     )
 
 
-async def get_token(env_prefix: str, base_url: str) -> aiosu.models.OAuthToken:
+async def get_token(
+    env_prefix: str,
+    base_url: str,
+    scopes: aiosu.models.Scopes = FULL_SCOPES,
+) -> aiosu.models.OAuthToken:
     """
     Build a token from ``{env_prefix}ACCESS_TOKEN`` if set, otherwise run the
     interactive browser flow using ``{env_prefix}CLIENT_ID``/``{env_prefix}CLIENT_SECRET``.
@@ -134,6 +138,7 @@ async def get_token(env_prefix: str, base_url: str) -> aiosu.models.OAuthToken:
         client_secret,
         redirect_uri,
         base_url=base_url,
+        scopes=scopes,
     )
 
 
@@ -144,6 +149,21 @@ class TestGeneratorBase(ABC):
         self.client = None
         self.routes = []
 
+    @abstractmethod
+    def _register_routes(self) -> None: ...
+
+    def _ensure_dir(self, path: str) -> None:
+        if not os.path.exists(path):
+            os.makedirs(path)
+
+    async def run(self) -> None:
+        self._register_routes()
+        for route in self.routes:
+            logger.info(f"Running {route}")
+            await route()
+
+
+class TestGeneratorHTTP(TestGeneratorBase):
     def _register_route(
         self,
         method: str,
@@ -166,13 +186,6 @@ class TestGeneratorBase(ABC):
                 data,
             ),
         )
-
-    @abstractmethod
-    def _register_routes(self) -> None: ...
-
-    def _ensure_dir(self, path: str) -> None:
-        if not os.path.exists(path):
-            os.makedirs(path)
 
     async def _save_data(
         self,
@@ -208,14 +221,8 @@ class TestGeneratorBase(ABC):
                 )
             await asyncio.sleep(RETRY_DELAY * attempt)
 
-    async def run(self) -> None:
-        self._register_routes()
-        for route in self.routes:
-            logger.info(f"Running {route}")
-            await route()
 
-
-class TestGeneratorV1(TestGeneratorBase):
+class TestGeneratorV1(TestGeneratorHTTP):
     def __init__(self, api_key: str) -> None:
         super().__init__()
 
@@ -286,7 +293,7 @@ class TestGeneratorV1(TestGeneratorBase):
             await self.client.aclose()
 
 
-class TestGeneratorV2(TestGeneratorBase):
+class TestGeneratorV2(TestGeneratorHTTP):
     def __init__(self, token: aiosu.models.OAuthToken) -> None:
         super().__init__()
 
@@ -818,7 +825,7 @@ class TestGeneratorV2(TestGeneratorBase):
             await self.client.aclose()
 
 
-class TestGeneratorDev(TestGeneratorBase):
+class TestGeneratorDev(TestGeneratorHTTP):
     """Generates data for endpoints that mutate state, against https://dev.ppy.sh."""
 
     def __init__(self, token: aiosu.models.OAuthToken) -> None:
@@ -919,6 +926,151 @@ class TestGeneratorDev(TestGeneratorBase):
             await self.client.aclose()
 
 
+class TestGeneratorReferee(TestGeneratorBase):
+    def __init__(self, token: aiosu.models.OAuthToken) -> None:
+        super().__init__()
+
+        self.client = aiosu.lazer.RefereeClient(
+            token=token,
+            base_url=f"{BASE_URL_DEV}/signalr",
+        )
+        self._ensure_dir(f"{DATA_DIR}/lazer/referee")
+
+    def _register_route(self, method: str, filename: str, *args: object) -> None:
+        self.routes.append(partial(self._save_data, method, filename, *args))
+
+    def _register_routes(self) -> None:
+        self._register_route(
+            "list_rooms",
+            f"{DATA_DIR}/lazer/referee/list_rooms.json",
+        )
+        self._register_route(
+            "change_room_settings",
+            f"{DATA_DIR}/lazer/referee/change_room_settings.json",
+            self.room_id,
+            aiosu.models.RefereeChangeRoomSettingsRequest(type="team_versus"),
+        )
+        self._register_route(
+            "set_lock_state",
+            f"{DATA_DIR}/lazer/referee/set_lock_state.json",
+            self.room_id,
+            aiosu.models.RefereeSetLockStateRequest(locked=True),
+        )
+        self._register_route(
+            "edit_current_playlist_item",
+            f"{DATA_DIR}/lazer/referee/edit_current_playlist_item.json",
+            self.room_id,
+            aiosu.models.RefereeEditCurrentPlaylistItemRequest(
+                required_mods=[aiosu.models.RefereeMod(acronym="HD")],
+            ),
+        )
+        self._register_route(
+            "add_playlist_item",
+            f"{DATA_DIR}/lazer/referee/add_playlist_item.json",
+            self.room_id,
+            aiosu.models.RefereeAddPlaylistItemRequest(ruleset_id=0, beatmap_id=315),
+        )
+        self._register_route(
+            "edit_playlist_item",
+            f"{DATA_DIR}/lazer/referee/edit_playlist_item.json",
+            self.room_id,
+            aiosu.models.RefereeEditPlaylistItemRequest(
+                playlist_item_id=self.playlist_item_id,
+                required_mods=[aiosu.models.RefereeMod(acronym="HR")],
+            ),
+        )
+        self._register_route(
+            "remove_playlist_item",
+            f"{DATA_DIR}/lazer/referee/remove_playlist_item.json",
+            self.room_id,
+            aiosu.models.RefereeRemovePlaylistItemRequest(
+                playlist_item_id=self.playlist_item_id,
+            ),
+        )
+        self._register_route(
+            "roll",
+            f"{DATA_DIR}/lazer/referee/roll.json",
+            self.room_id,
+            aiosu.models.RefereeRollRequest(max=10),
+        )
+        self._register_route(
+            "start_match",
+            f"{DATA_DIR}/lazer/referee/start_match.json",
+            self.room_id,
+            aiosu.models.RefereeStartGameplayRequest(countdown=60),
+        )
+        self._register_route(
+            "stop_match_countdown",
+            f"{DATA_DIR}/lazer/referee/stop_match_countdown.json",
+            self.room_id,
+        )
+
+    async def _save_data(
+        self,
+        method: str,
+        filename: str,
+        *args: object,
+    ) -> aiosu.models.BaseModel | None:
+        response = await getattr(self.client, method)(*args)
+        data = response.model_dump(mode="json") if response is not None else None
+        with open(os.path.normpath(filename), "wb") as f:
+            f.write(orjson.dumps(data, option=orjson.OPT_INDENT_2))
+        return response
+
+    async def _save_event(self, event: aiosu.models.RefereeEvent) -> None:
+        filename = f"{DATA_DIR}/lazer/referee/{type(event).__name__}.json"
+        with open(os.path.normpath(filename), "wb") as f:
+            f.write(
+                orjson.dumps(event.model_dump(mode="json"), option=orjson.OPT_INDENT_2),
+            )
+
+    async def run(self) -> None:
+        self.client.on_room_settings_changed(self._save_event)
+        self.client.on_match_state_changed(self._save_event)
+        self.client.on_playlist_item_added(self._save_event)
+        self.client.on_playlist_item_changed(self._save_event)
+        self.client.on_playlist_item_removed(self._save_event)
+        self.client.on_roll_completed(self._save_event)
+        self.client.on_countdown_started(self._save_event)
+        self.client.on_countdown_stopped(self._save_event)
+
+        await self.client.connect()
+        try:
+            room = await self._save_data(
+                "make_room",
+                f"{DATA_DIR}/lazer/referee/make_room.json",
+                aiosu.models.RefereeMakeRoomRequest(
+                    name="aiosu staging test",
+                    ruleset_id=0,
+                    beatmap_id=315,
+                    max_participants=2,
+                ),
+            )
+            self.room_id = room.room_id
+            self.playlist_item_id = room.playlist[0].id
+            logger.info(f"Created staging room {self.room_id}")
+            try:
+                await super().run()
+                await self.client.aclose()
+                await self.client.connect()
+                await self._save_data(
+                    "join_room",
+                    f"{DATA_DIR}/lazer/referee/join_room.json",
+                    self.room_id,
+                )
+            finally:
+                if not self.client.connected:
+                    await self.client.connect()
+                await self._save_data(
+                    "close_room",
+                    f"{DATA_DIR}/lazer/referee/close_room.json",
+                    self.room_id,
+                )
+                logger.info(f"Closed staging room {self.room_id}")
+        finally:
+            await self.client.aclose()
+
+
 async def main() -> None:
     load_dotenv()
 
@@ -931,9 +1083,15 @@ async def main() -> None:
     await generator_v2.run()
 
     if os.environ.get("OSU_DEV_ACCESS_TOKEN") or os.environ.get("OSU_DEV_CLIENT_ID"):
-        dev_token = await get_token("OSU_DEV_", BASE_URL_DEV)
+        dev_token = await get_token(
+            "OSU_DEV_",
+            BASE_URL_DEV,
+            scopes=FULL_SCOPES | aiosu.models.Scopes.MULTIPLAYER_WRITE_MANAGE,
+        )
         generator_dev = TestGeneratorDev(token=dev_token)
         await generator_dev.run()
+        generator_referee = TestGeneratorReferee(token=dev_token)
+        await generator_referee.run()
     else:
         logger.info(
             "Skipping dev endpoints: set OSU_DEV_CLIENT_ID and OSU_DEV_CLIENT_SECRET "

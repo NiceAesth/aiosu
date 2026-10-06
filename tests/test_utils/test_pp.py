@@ -2,45 +2,14 @@ from __future__ import annotations
 
 from typing import TypeVar
 
-import orjson
-import pytest
-
 import aiosu
 from aiosu.helpers import from_list
 
 T = TypeVar("T")
 
 
-@pytest.fixture
-def difficulty_attributes():
-    def _difficulty_attributes(mode="osu"):
-        with open(f"tests/data/v2/difficulty_attributes_{mode}.json", "rb") as f:
-            data = orjson.loads(f.read())
-        return data
-
-    return _difficulty_attributes
-
-
-@pytest.fixture
-def scores():
-    def _scores(mode="osu"):
-        with open(f"tests/data/v2/score_performance_{mode}.json", "rb") as f:
-            data = orjson.loads(f.read())
-        if isinstance(data, dict):
-            with open("tests/data/v2/beatmap_performance_315.json", "rb") as f:
-                beatmap = orjson.loads(f.read())
-            score_list = data["scores"]
-            for score in score_list:
-                assert score["beatmap_id"] == beatmap["id"] == 315
-                score["beatmap"] = beatmap
-            return score_list
-        return data
-
-    return _scores
-
-
-def test_osu_performance(scores, difficulty_attributes):
-    score_list = scores("osu")
+def test_osu_performance(performance_scores, difficulty_attributes):
+    score_list = performance_scores("osu")
     for score in from_list(aiosu.models.Score.model_validate, score_list):
         diffatrib = aiosu.models.BeatmapDifficultyAttributes.model_validate(
             difficulty_attributes("osu")["attributes"],
@@ -50,8 +19,8 @@ def test_osu_performance(scores, difficulty_attributes):
         assert performance_attributes.total > 0
 
 
-def test_taiko_performance(scores, difficulty_attributes):
-    score_list = scores("taiko")
+def test_taiko_performance(performance_scores, difficulty_attributes):
+    score_list = performance_scores("taiko")
     for score in from_list(aiosu.models.Score.model_validate, score_list):
         diffatrib = aiosu.models.BeatmapDifficultyAttributes.model_validate(
             difficulty_attributes("taiko")["attributes"],
@@ -61,8 +30,8 @@ def test_taiko_performance(scores, difficulty_attributes):
         assert performance_attributes.total > 0
 
 
-def test_mania_performance(scores, difficulty_attributes):
-    score_list = scores("mania")
+def test_mania_performance(performance_scores, difficulty_attributes):
+    score_list = performance_scores("mania")
     for score in from_list(aiosu.models.Score.model_validate, score_list):
         diffatrib = aiosu.models.BeatmapDifficultyAttributes.model_validate(
             difficulty_attributes("mania")["attributes"],
@@ -72,8 +41,8 @@ def test_mania_performance(scores, difficulty_attributes):
         assert performance_attributes.total > 0
 
 
-def test_catch_performance(scores, difficulty_attributes):
-    score_list = scores("fruits")
+def test_catch_performance(performance_scores, difficulty_attributes):
+    score_list = performance_scores("fruits")
     for score in from_list(aiosu.models.Score.model_validate, score_list):
         diffatrib = aiosu.models.BeatmapDifficultyAttributes.model_validate(
             difficulty_attributes("fruits")["attributes"],

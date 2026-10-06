@@ -1,0 +1,374 @@
+[
+  {
+    "method": "make_room",
+    "target": "MakeRoom",
+    "kwargs": {
+      "request": {
+        "ruleset_id": 0,
+        "beatmap_id": 8,
+        "name": "Tournament",
+        "max_participants": 2
+      }
+    },
+    "arguments": [
+      {
+        "ruleset_id": 0,
+        "beatmap_id": 8,
+        "name": "Tournament",
+        "max_participants": 2
+      }
+    ],
+    "request_model": "RefereeMakeRoomRequest",
+    "response": "make_room",
+    "response_model": "RefereeRoomJoinedResponse"
+  },
+  {
+    "method": "join_room",
+    "target": "JoinRoom",
+    "kwargs": {
+      "room_id": 42
+    },
+    "arguments": [
+      42
+    ],
+    "request_model": null,
+    "response": "join_room",
+    "response_model": "RefereeRoomJoinedResponse"
+  },
+  {
+    "method": "list_rooms",
+    "target": "ListRooms",
+    "kwargs": {},
+    "arguments": [],
+    "request_model": null,
+    "response": "list_rooms",
+    "response_model": "RefereeListRoomsResponse"
+  },
+  {
+    "method": "close_room",
+    "target": "CloseRoom",
+    "kwargs": {
+      "room_id": 42
+    },
+    "arguments": [
+      42
+    ],
+    "request_model": null,
+    "response": "close_room",
+    "response_model": null
+  },
+  {
+    "method": "stop_match_countdown",
+    "target": "StopMatchCountdown",
+    "kwargs": {
+      "room_id": 42
+    },
+    "arguments": [
+      42
+    ],
+    "request_model": null,
+    "response": "stop_match_countdown",
+    "response_model": null
+  },
+  {
+    "method": "abort_match",
+    "target": "AbortMatch",
+    "kwargs": {
+      "room_id": 42
+    },
+    "arguments": [
+      42
+    ],
+    "request_model": null,
+    "response": "command_completed",
+    "response_model": null
+  },
+  {
+    "method": "invite_player",
+    "target": "InvitePlayer",
+    "kwargs": {
+      "room_id": 42,
+      "user_id": 5
+    },
+    "arguments": [
+      42,
+      5
+    ],
+    "request_model": null,
+    "response": "command_completed",
+    "response_model": null
+  },
+  {
+    "method": "kick_player",
+    "target": "KickPlayer",
+    "kwargs": {
+      "room_id": 42,
+      "user_id": 5
+    },
+    "arguments": [
+      42,
+      5
+    ],
+    "request_model": null,
+    "response": "command_completed",
+    "response_model": null
+  },
+  {
+    "method": "ban_user",
+    "target": "BanUser",
+    "kwargs": {
+      "room_id": 42,
+      "user_id": 5
+    },
+    "arguments": [
+      42,
+      5
+    ],
+    "request_model": null,
+    "response": "command_completed",
+    "response_model": null
+  },
+  {
+    "method": "add_referee",
+    "target": "AddReferee",
+    "kwargs": {
+      "room_id": 42,
+      "user_id": 5
+    },
+    "arguments": [
+      42,
+      5
+    ],
+    "request_model": null,
+    "response": "command_completed",
+    "response_model": null
+  },
+  {
+    "method": "remove_referee",
+    "target": "RemoveReferee",
+    "kwargs": {
+      "room_id": 42,
+      "user_id": 5
+    },
+    "arguments": [
+      42,
+      5
+    ],
+    "request_model": null,
+    "response": "command_completed",
+    "response_model": null
+  },
+  {
+    "method": "change_room_settings",
+    "target": "ChangeRoomSettings",
+    "kwargs": {
+      "room_id": 42,
+      "request": {
+        "password": "",
+        "max_participants": 0
+      }
+    },
+    "arguments": [
+      42,
+      {
+        "name": null,
+        "password": "",
+        "type": null,
+        "max_participants": 0
+      }
+    ],
+    "request_model": "RefereeChangeRoomSettingsRequest",
+    "response": "change_room_settings",
+    "response_model": null
+  },
+  {
+    "method": "edit_current_playlist_item",
+    "target": "EditCurrentPlaylistItem",
+    "kwargs": {
+      "room_id": 42,
+      "request": {
+        "required_mods": [],
+        "freestyle": false
+      }
+    },
+    "arguments": [
+      42,
+      {
+        "ruleset_id": null,
+        "beatmap_id": null,
+        "required_mods": [],
+        "allowed_mods": null,
+        "freestyle": false
+      }
+    ],
+    "request_model": "RefereeEditCurrentPlaylistItemRequest",
+    "response": "edit_current_playlist_item",
+    "response_model": null
+  },
+  {
+    "method": "add_playlist_item",
+    "target": "AddPlaylistItem",
+    "kwargs": {
+      "room_id": 42,
+      "request": {
+        "ruleset_id": 0,
+        "beatmap_id": 8,
+        "required_mods": [
+          {
+            "acronym": "DT",
+            "settings": {
+              "speed_change": 1.2
+            }
+          }
+        ],
+        "allowed_mods": [
+          {
+            "acronym": "HD"
+          }
+        ]
+      }
+    },
+    "arguments": [
+      42,
+      {
+        "ruleset_id": 0,
+        "beatmap_id": 8,
+        "required_mods": [
+          {
+            "acronym": "DT",
+            "settings": {
+              "speed_change": 1.2
+            }
+          }
+        ],
+        "allowed_mods": [
+          {
+            "acronym": "HD",
+            "settings": null
+          }
+        ],
+        "freestyle": false
+      }
+    ],
+    "request_model": "RefereeAddPlaylistItemRequest",
+    "response": "add_playlist_item",
+    "response_model": null
+  },
+  {
+    "method": "edit_playlist_item",
+    "target": "EditPlaylistItem",
+    "kwargs": {
+      "room_id": 42,
+      "request": {
+        "playlist_item_id": 7,
+        "allowed_mods": []
+      }
+    },
+    "arguments": [
+      42,
+      {
+        "ruleset_id": null,
+        "beatmap_id": null,
+        "required_mods": null,
+        "allowed_mods": [],
+        "freestyle": null,
+        "playlist_item_id": 7
+      }
+    ],
+    "request_model": "RefereeEditPlaylistItemRequest",
+    "response": "edit_playlist_item",
+    "response_model": null
+  },
+  {
+    "method": "remove_playlist_item",
+    "target": "RemovePlaylistItem",
+    "kwargs": {
+      "room_id": 42,
+      "request": {
+        "playlist_item_id": 7
+      }
+    },
+    "arguments": [
+      42,
+      {
+        "playlist_item_id": 7
+      }
+    ],
+    "request_model": "RefereeRemovePlaylistItemRequest",
+    "response": "remove_playlist_item",
+    "response_model": null
+  },
+  {
+    "method": "move_user",
+    "target": "MoveUser",
+    "kwargs": {
+      "room_id": 42,
+      "request": {
+        "user_id": 5,
+        "slot": 0,
+        "team": "blue"
+      }
+    },
+    "arguments": [
+      42,
+      {
+        "user_id": 5,
+        "slot": 0,
+        "team": "blue"
+      }
+    ],
+    "request_model": "RefereeMoveUserRequest",
+    "response": "command_completed",
+    "response_model": null
+  },
+  {
+    "method": "set_lock_state",
+    "target": "SetLockState",
+    "kwargs": {
+      "room_id": 42,
+      "request": {
+        "locked": false
+      }
+    },
+    "arguments": [
+      42,
+      {
+        "locked": false
+      }
+    ],
+    "request_model": "RefereeSetLockStateRequest",
+    "response": "set_lock_state",
+    "response_model": null
+  },
+  {
+    "method": "start_match",
+    "target": "StartMatch",
+    "kwargs": {
+      "room_id": 42,
+      "request": {}
+    },
+    "arguments": [
+      42,
+      {
+        "countdown": null
+      }
+    ],
+    "request_model": "RefereeStartGameplayRequest",
+    "response": "start_match",
+    "response_model": null
+  },
+  {
+    "method": "roll",
+    "target": "Roll",
+    "kwargs": {
+      "room_id": 42
+    },
+    "arguments": [
+      42,
+      null
+    ],
+    "request_model": null,
+    "response": "roll",
+    "response_model": null
+  }
+]

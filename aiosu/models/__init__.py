@@ -24,6 +24,7 @@ from .news import *
 from .oauthtoken import *
 from .performance import *
 from .rankings import *
+from .referee import *
 from .scopes import *
 from .score import *
 from .search import *
