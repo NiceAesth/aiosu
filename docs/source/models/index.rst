@@ -1,6 +1,15 @@
 Models
 ======
 
+Referee
+-------
+
+.. automodule:: aiosu.models.referee
+    :members:
+    :exclude-members: Config
+    :undoc-members:
+    :inherited-members: BaseModel
+
 WebSocket
 ---------
 

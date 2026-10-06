@@ -1,0 +1,33 @@
+{
+  "room_id": 8986,
+  "chat_channel_id": 6868,
+  "name": "aiosu staging test",
+  "password": "c3f8f9d0-259f-4db6-84a7-4ea5ed6c1c90",
+  "max_participants": 2,
+  "state": {
+    "type": "team_versus",
+    "locked": true,
+    "slots": [
+      664,
+      null
+    ]
+  },
+  "playlist": [
+    {
+      "id": 30628,
+      "ruleset_id": 0,
+      "beatmap_id": 315,
+      "required_mods": [],
+      "allowed_mods": [],
+      "freestyle": false,
+      "was_played": false,
+      "order": 0
+    }
+  ],
+  "players": [],
+  "referees": [
+    {
+      "user_id": 664
+    }
+  ]
+}

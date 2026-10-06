@@ -10,21 +10,9 @@ import pytest
 import aiosu
 
 
-@pytest.fixture
-def beatmap_state():
-    with open("tests/data/lazer/beatmap_state.json", "rb") as f:
-        return f.read()
-
-
-@pytest.fixture
-def user_activity():
-    with open("tests/data/lazer/user_activity.json", "rb") as f:
-        return f.read()
-
-
-def test_beatmap_state(beatmap_state):
+def test_beatmap_state(lazer_beatmap_state):
     message = aiosu.models.BeatmapStateWebSocketMessage.model_validate_json(
-        beatmap_state,
+        lazer_beatmap_state,
     )
     assert message.beatmap.beatmap_id == 974423
     assert message.beatmap.status == aiosu.models.BeatmapRankStatus.RANKED
@@ -33,8 +21,8 @@ def test_beatmap_state(beatmap_state):
 
 
 @pytest.mark.parametrize("status", ["None", "LocallyModified"])
-def test_local_status(beatmap_state, status):
-    payload = orjson.loads(beatmap_state)
+def test_local_status(lazer_beatmap_state, status):
+    payload = orjson.loads(lazer_beatmap_state)
     payload["beatmap"]["status"] = status
     message = aiosu.models.BeatmapStateWebSocketMessage.model_validate(payload)
     assert message.beatmap.status == status
@@ -60,20 +48,20 @@ def test_activity_without_data():
     assert message.data is None
 
 
-def test_unknown_activity(user_activity):
-    payload = orjson.loads(user_activity)
+def test_unknown_activity(lazer_user_activity):
+    payload = orjson.loads(lazer_user_activity)
     payload["status"] = "FutureActivity"
     message = aiosu.models.UserActivityWebSocketMessage.model_validate(payload)
     assert message.data == payload["data"]
 
 
 @pytest.mark.asyncio
-async def test_client_events(mocker, beatmap_state, user_activity):
+async def test_client_events(mocker, lazer_beatmap_state, lazer_user_activity):
     socket = MagicMock()
     socket.close = AsyncMock()
     socket.__aiter__.return_value = [
-        aiohttp.WSMessage(aiohttp.WSMsgType.TEXT, beatmap_state.decode(), ""),
-        aiohttp.WSMessage(aiohttp.WSMsgType.TEXT, user_activity.decode(), ""),
+        aiohttp.WSMessage(aiohttp.WSMsgType.TEXT, lazer_beatmap_state.decode(), ""),
+        aiohttp.WSMessage(aiohttp.WSMsgType.TEXT, lazer_user_activity.decode(), ""),
         aiohttp.WSMessage(aiohttp.WSMsgType.TEXT, '{"type":"FutureMessage"}', ""),
     ]
     connect = mocker.patch(
@@ -109,8 +97,8 @@ async def test_client_events(mocker, beatmap_state, user_activity):
 
     assert len(received) == 2
     assert raw_messages == [
-        beatmap_state.decode(),
-        user_activity.decode(),
+        lazer_beatmap_state.decode(),
+        lazer_user_activity.decode(),
         '{"type":"FutureMessage"}',
     ]
     connect.assert_awaited_once_with("ws://localhost:49727/")

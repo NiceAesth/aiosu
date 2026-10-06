@@ -1,0 +1,13 @@
+{
+  "room_id": 8986,
+  "playlist_item": {
+    "id": 30628,
+    "ruleset_id": 0,
+    "beatmap_id": 315,
+    "required_mods": [],
+    "allowed_mods": [],
+    "freestyle": false,
+    "was_played": false,
+    "order": 65535
+  }
+}

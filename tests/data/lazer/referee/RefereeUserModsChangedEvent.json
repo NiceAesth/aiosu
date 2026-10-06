@@ -1,0 +1,12 @@
+{
+  "room_id": 42,
+  "user_id": 5,
+  "mods": [
+    {
+      "acronym": "DT",
+      "settings": {
+        "speed_change": 1.2
+      }
+    }
+  ]
+}
