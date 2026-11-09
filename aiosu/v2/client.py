@@ -1495,7 +1495,7 @@ class Client(Eventable):
         add_param(params, kwargs, key="language", param_name="l")
         add_param(params, kwargs, key="bundled")
         add_param(params, kwargs, key="sort")
-        add_param(params, kwargs, key="cursor_string", param_name="cursor")
+        add_param(params, kwargs, key="cursor_string")
         json = await self._request("GET", url, params=params)
         resp = BeatmapsetSearchResponse.model_validate(json)
         if resp.cursor_string:
